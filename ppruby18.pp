@@ -1,3 +1,8 @@
+(*
+	unit ppRuby18
+	license : GNU GPL
+*)
+
 {$h+}
 {$mode objfpc}
 {$packenum 4}
