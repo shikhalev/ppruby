@@ -11,7 +11,7 @@
         <CompilerPath Value="$(CompPath)"/>
       </Other>
     </CompilerOptions>
-    <Files Count="2">
+    <Files Count="3">
       <Item1>
         <Filename Value="ppruby18.pp"/>
         <UnitName Value="ppRuby18"/>
@@ -20,6 +20,11 @@
         <Filename Value="ruby18.pp"/>
         <UnitName Value="Ruby18"/>
       </Item2>
+      <Item3>
+        <Filename Value="rubyscript.pas"/>
+        <HasRegisterProc Value="True"/>
+        <UnitName Value="RubyScript"/>
+      </Item3>
     </Files>
     <Type Value="RunAndDesignTime"/>
     <RequiredPkgs Count="1">

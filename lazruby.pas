@@ -7,12 +7,13 @@ unit lazruby;
 interface
 
 uses
-  ppRuby18, Ruby18, LazarusPackageIntf;
+  ppRuby18, Ruby18, RubyScript, LazarusPackageIntf;
 
 implementation
 
 procedure Register; 
 begin
+  RegisterUnit('RubyScript', @RubyScript.Register); 
 end; 
 
 initialization
