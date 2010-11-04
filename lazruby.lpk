@@ -2,15 +2,18 @@
 <CONFIG>
   <Package Version="3">
     <Name Value="lazruby"/>
+    <Author Value="Ivan Shikhalev"/>
     <CompilerOptions>
       <Version Value="9"/>
       <SearchPaths>
-        <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)/"/>
+        <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/>
       </SearchPaths>
       <Other>
         <CompilerPath Value="$(CompPath)"/>
       </Other>
     </CompilerOptions>
+    <License Value="GNU General Public License"/>
+    <Version Minor="9"/>
     <Files Count="3">
       <Item1>
         <Filename Value="ppruby18.pp"/>
@@ -27,11 +30,14 @@
       </Item3>
     </Files>
     <Type Value="RunAndDesignTime"/>
-    <RequiredPkgs Count="1">
+    <RequiredPkgs Count="2">
       <Item1>
+        <PackageName Value="LCL"/>
+      </Item1>
+      <Item2>
         <PackageName Value="FCL"/>
         <MinVersion Major="1" Valid="True"/>
-      </Item1>
+      </Item2>
     </RequiredPkgs>
     <UsageOptions>
       <UnitPath Value="$(PkgOutDir)"/>
