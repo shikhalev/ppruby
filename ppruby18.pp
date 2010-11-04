@@ -14,7 +14,6 @@ unit ppRuby18;
 interface
 
 uses
-  CMem,
   Ruby18;
 
 implementation
