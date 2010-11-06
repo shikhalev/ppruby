@@ -1,0 +1,8 @@
+*~
+*.bak
+test
+*.ppu
+*.o
+*.a
+*.so
+lib
