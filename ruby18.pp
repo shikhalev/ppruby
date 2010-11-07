@@ -23,10 +23,13 @@ procedure ruby_xfree (x : pointer); cdecl; external 'ruby18';
 type
 	PPVALUE	= ^PVALUE;
 	PVALUE	= ^VALUE;
-	VALUE	= type ptruint;
+	VALUE	= record data : ptruint end;
 
 	PID	= ^ID;
-	ID	= type ptruint;
+	ID	= record data : ptruint end;
+
+operator = (a, b : VALUE) : boolean; inline;
+operator = (a, b : ID) : boolean; inline;
 
 const
 	FIXNUM_MAX	= high(ptrint) shr 1;
@@ -45,10 +48,14 @@ const
 
 	SYMBOL_FLAG	= $0E;
 
-	Qfalse	= VALUE(0);
-	Qtrue	= VALUE(2);
-	Qnil	= VALUE(4);
-	Qundef	= VALUE(6);
+	_Qfalse	= 0;
+	_Qtrue	= 2;
+	_Qnil	= 4;
+	_Qundef	= 6;
+	Qfalse	: VALUE = (data : _Qfalse);
+	Qtrue	: VALUE = (data : _Qtrue);
+	Qnil	: VALUE = (data : _Qnil);
+	Qundef	: VALUE = (data : _Qundef);
 
 	T_NONE		= $00;
 
@@ -741,8 +748,8 @@ var
 	rb_stderr			: VALUE; cvar; external 'ruby18';
 	ruby_errinfo		: VALUE; cvar; external 'ruby18';
 
-function rb_class_of (obj : VALUE) : VALUE;
-function rb_type (obj : VALUE) : integer;
+function rb_class_of (obj : VALUE) : VALUE; inline;
+function rb_type (obj : VALUE) : integer; inline;
 
 procedure rb_mem_clear (mem : PVALUE; size : ptrint);
 	register; external 'ruby18';
@@ -1682,46 +1689,56 @@ procedure ruby_show_copyright (); cdecl; external 'ruby18';
 
 implementation
 
-function rb_class_of (obj : VALUE) : VALUE;
+function rb_class_of (obj : VALUE) : VALUE; inline;
 	begin
-	if (obj and FIXNUM_FLAG) <> 0 then
+	if (obj.data and FIXNUM_FLAG) <> 0 then
 		result := rb_cFixnum
 	else
-		case obj of
-			Qnil :
+		case obj.data of
+			_Qnil :
 				result := rb_cNilClass;
-			Qfalse :
+			_Qfalse :
 				result := rb_cFalseClass;
-			Qtrue :
+			_Qtrue :
 				result := rb_cTrueClass
 		else
-			if (obj and $FF) = $0E then
+			if (obj.data and $FF) = $0E then
 				result := rb_cSymbol
 			else
 				result := PRBasic(obj)^.klass
 		end;
 	end;
 
-function rb_type (obj : VALUE) : integer;
+function rb_type (obj : VALUE) : integer; inline;
 	begin
-	if (obj and FIXNUM_FLAG) <> 0 then
+	if (obj.data and FIXNUM_FLAG) <> 0 then
 		result := T_FIXNUM
 	else
-		case obj of
-			Qnil :
+		case obj.data of
+			_Qnil :
 				result := T_NIL;
-			Qfalse :
+			_Qfalse :
 				result := T_FALSE;
-			Qtrue :
+			_Qtrue :
 				result := T_TRUE;
-			Qundef :
+			_Qundef :
 				result := T_UNDEF
 		else
-			if (obj and $FF) = $0E then
+			if (obj.data and $FF) = $0E then
 				result := T_SYMBOL
 			else
 				result := (PRBasic(obj)^.flags and T_MASK)
 		end;
 	end;
+
+operator = (a, b : VALUE) : boolean; inline;
+ begin
+ result := (a.data = b.data)
+ end;
+
+operator = (a, b : ID) : boolean; inline;
+ begin
+ result := (a.data = b.data)
+ end;
 
 end.
