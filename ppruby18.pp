@@ -214,7 +214,7 @@ function do_inspect (v : VALUE) : utf8string; inline;
 
 function do_classname (cls : TClass) : ansistring;
  begin
- result := 'Pascal' + cls.ClassName;
+ result := 'Pas' + cls.ClassName;
  end;
 
 function do_args (argc : integer; argv : PVALUE) : TRubyArgs;
