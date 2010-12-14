@@ -214,7 +214,9 @@ function do_inspect (v : VALUE) : utf8string; inline;
 
 function do_classname (cls : TClass) : ansistring;
  begin
- result := 'Pas' + cls.ClassName;
+ if cls.ClassName[1] = 'T'
+    then result := 'Pas' + Copy(cls.ClassName, 2, length(cls.ClassName) - 1)
+    else result := 'Pas' + cls.ClassName;
  end;
 
 function do_args (argc : integer; argv : PVALUE) : TRubyArgs;
