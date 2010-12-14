@@ -3,8 +3,7 @@
 	license : GNU GPL
 *)
 
-{$h+}
-{$mode objfpc}
+{$mode objfpc}{$h+}
 {$packenum 4}
 {$packrecords C}
 {$smartlink on}
@@ -1687,6 +1686,8 @@ function rb_mod_remove_cvar (m, name : VALUE) : VALUE; cdecl; external 'ruby18';
 procedure ruby_show_version (); cdecl; external 'ruby18';
 procedure ruby_show_copyright (); cdecl; external 'ruby18';
 
+function Data_Wrap_Struct (klass : VALUE; mark, free : RUBY_DATA_FUNC; data : pointer) : VALUE; inline;
+
 implementation
 
 function rb_class_of (obj : VALUE) : VALUE; inline;
@@ -1730,6 +1731,11 @@ function rb_type (obj : VALUE) : integer; inline;
 				result := (PRBasic(obj)^.flags and T_MASK)
 		end;
 	end;
+
+function Data_Wrap_Struct (klass : VALUE; mark, free : RUBY_DATA_FUNC; data : pointer) : VALUE; inline;
+ begin
+ result := rb_data_object_alloc(klass, data, mark, free)
+ end;
 
 operator = (a, b : VALUE) : boolean; inline;
  begin
