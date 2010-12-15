@@ -7,13 +7,13 @@
 {$smartlink on}
 {$typeinfo on}
 
-unit ppRuby18;
+unit rb18System;
 
 interface
 
 uses
   SysUtils, TypInfo,
-  Ruby18;
+  ruby18;
 
 function getActive : boolean; inline;
 procedure setActive (Val : boolean);
@@ -869,6 +869,8 @@ function ClassToValue (cls : TClass) : VALUE;
  rb_define_method(result,'method_missing',Pmethod(@do_method_missing),-1);
  rb_define_singleton_method(result,'unitname',Pmethod(@do_unitname),0);
  rb_define_method(result,'to_s',Pmethod(@do_to_s),0);
+ (* Здесь должна была быть реализация each для классов, поддерживающих
+    IEnumerable, но как это сделать — непонятно. *)
  end;
 
 function ObjectToValue(obj : TObject) : VALUE;

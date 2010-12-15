@@ -1,5 +1,5 @@
 (*
-	unit Ruby18
+	unit ruby18
 	license : GNU GPL
 *)
 
@@ -9,7 +9,7 @@
 {$smartlink on}
 {$writeableconst off}
 
-unit Ruby18;
+unit ruby18;
 
 interface
 
