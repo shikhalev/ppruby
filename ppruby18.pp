@@ -152,6 +152,8 @@ function do_find_object (obj : TObject; out idx : ptrint) : boolean;
    left, right : ptrint;
  begin
  idx := 0;
+ if length(objCache) = 0
+    then exit(false);
  if ptrint(obj) < ptrint(objCache[idx].pp_object)
     then exit(false);
  if ptrint(obj) = ptrint(objCache[idx].pp_object)
@@ -832,6 +834,16 @@ function do_method_missing (argc : integer; argv : PVALUE; slf : VALUE) : VALUE;
  result := msg.Return;
  end;
 
+function do_unitname (slf : VALUE) : VALUE; cdecl;
+ begin
+ result := StrToValue(ValueToClass(slf).UnitName)
+ end;
+
+function do_to_s (slf : VALUE) : VALUE; cdecl;
+ begin
+ result := StrToValue(ValueToObject(slf).toString);
+ end;
+
 function ClassToValue (cls : TClass) : VALUE;
  var
    idx : ptrint;
@@ -855,6 +867,8 @@ function ClassToValue (cls : TClass) : VALUE;
          rb_define_method(result,'initialize',Pmethod(@do_initialize),-1);
          end;
  rb_define_method(result,'method_missing',Pmethod(@do_method_missing),-1);
+ rb_define_singleton_method(result,'unitname',Pmethod(@do_unitname),0);
+ rb_define_method(result,'to_s',Pmethod(@do_to_s),0);
  end;
 
 function ObjectToValue(obj : TObject) : VALUE;
@@ -1011,6 +1025,7 @@ procedure TRubyManaged.rb_mark;
 
 initialization
  scriptName := ParamStr(0);
+ AddAutoClass(TRubyManaged);
 finalization
  Finalize;
 end.
