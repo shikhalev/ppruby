@@ -129,8 +129,13 @@ operator := (v : VALUE) : TObject; inline;
 operator := (v : TClass) : VALUE; inline;
 operator := (v : TObject) : VALUE; inline;
 
-procedure AddAutoClass(cls : TClass);
-procedure DelAutoClass(cls : TClass);
+type
+  TRubyHook = procedure;
+
+procedure AddInitHook (hook : TRubyHook);
+procedure DelInitHook (hook : TRubyHook);
+
+procedure RegObject (obj : TObject; v : VALUE);
 
 implementation
 
@@ -145,7 +150,7 @@ var
     rb_object : VALUE;
     pp_object : TObject;
   end = nil;
-  clsAuto : array of TClass = nil;
+  hooksActivate : array of TRubyHook = nil;
 
 function do_find_object (obj : TObject; out idx : ptrint) : boolean;
  var
@@ -200,8 +205,9 @@ procedure do_init;
  setLength(objCache, 0);
  setLength(clsCache, 0);
  isActive := true;
- for idx := 0 to high(clsAuto) do
-     ClassToValue(clsAuto[idx])
+ for idx := 0 to high(hooksActivate) do
+     if hooksActivate[idx] <> nil
+        then hooksActivate[idx]();
  end;
 
 procedure do_done;
@@ -689,16 +695,12 @@ function do_alloc (cls : VALUE) : VALUE; cdecl;
  var
    pp_class : TClass;
    obj : TObject;
-   idx : ptrint;
  begin
  pp_class := ValueToClass(cls);
  obj := pp_class.Create;
  (obj as IRubyManaged)._AddRef; // Else we have AV :(
  result := rb_data_object_alloc(cls,pointer(obj),@do_mark,@do_free);
- if do_find_object(obj, idx)
-    then objCache[idx].rb_object := result // if we have dead object
-                                           //  with same address... o_O
-    else do_insert_object(obj, result, idx);
+ RegObject(obj, result);
  end;
 
 function do_initialize (argc : integer; argv : PVALUE; slf : VALUE) : VALUE; cdecl;
@@ -867,10 +869,6 @@ function ClassToValue (cls : TClass) : VALUE;
          rb_define_method(result,'initialize',Pmethod(@do_initialize),-1);
          end;
  rb_define_method(result,'method_missing',Pmethod(@do_method_missing),-1);
- rb_define_singleton_method(result,'unitname',Pmethod(@do_unitname),0);
- rb_define_method(result,'to_s',Pmethod(@do_to_s),0);
- (* Здесь должна была быть реализация each для классов, поддерживающих
-    IEnumerable, но как это сделать — непонятно. *)
  end;
 
 function ObjectToValue(obj : TObject) : VALUE;
@@ -985,32 +983,41 @@ operator := (v : TObject) : VALUE;
  result := ObjectToValue(v);
  end;
 
-procedure AddAutoClass(cls : TClass);
+procedure AddInitHook (hook : TRubyHook);
  var
    len : ptrint;
  begin
- if cls <> nil
+ if hook <> nil
     then begin
-         len := length(clsAuto);
-         setLength(clsAuto, len + 1);
-         clsAuto[len] := cls
+         len := length(hooksActivate);
+         setLength(hooksActivate, len + 1);
+         hooksActivate[len] := hook
          end;
  end;
 
-procedure DelAutoClass(cls : TClass);
+procedure DelInitHook (hook : TRubyHook);
  var
    idx, delidx : ptrint;
  begin
- if cls <> nil
+ if hook <> nil
     then begin
-         for idx := 0 to high(clsAuto) do
-             if clsAuto[idx] = cls
+         for idx := 0 to high(hooksActivate) do
+             if hooksActivate[idx] = hook
                 then begin
-                     for delidx := idx to high(clsAuto) - 1 do
-                         clsAuto[delidx] := clsAuto[delidx + 1];
-                     setLength(clsAuto, length(clsAuto) - 1)
+                     for delidx := idx to high(hooksActivate) - 1 do
+                         hooksActivate[delidx] := hooksActivate[delidx + 1];
+                     setLength(hooksActivate, length(hooksActivate) - 1)
                      end;
          end;
+ end;
+
+procedure RegObject(obj : TObject; v : VALUE);
+ var
+   idx : ptrint;
+ begin
+ if do_find_object(obj, idx)
+    then objCache[idx].rb_object := v
+    else do_insert_object(obj, v, idx);
  end;
 
 { TRubyManaged }
@@ -1025,9 +1032,20 @@ procedure TRubyManaged.rb_mark;
  end;
 {$hints on}
 
+procedure InitHook;
+ var
+   cObject : VALUE;
+ begin
+ cObject := ClassToValue(TObject);
+ rb_define_singleton_method(cObject,'unitname',Pmethod(@do_unitname),0);
+ rb_define_method(cObject,'to_s',Pmethod(@do_to_s),0);
+ (* Здесь должна была быть реализация each для классов, поддерживающих
+    IEnumerable, но как это сделать — непонятно. *)
+ end;
+
 initialization
  scriptName := ParamStr(0);
- AddAutoClass(TRubyManaged);
+ AddInitHook(@InitHook);
 finalization
  Finalize;
 end.
