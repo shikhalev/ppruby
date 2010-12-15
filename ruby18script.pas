@@ -1,4 +1,4 @@
-unit Ruby18Scipt;
+unit Ruby18Script;
 
 {$mode objfpc}{$H+}
 
@@ -10,13 +10,13 @@ uses
 type
   TRuby18Scipt = class(TComponent)
   private
-    { Private declarations }
+    fldRoot : TComponent;
   protected
     { Protected declarations }
   public
     { Public declarations }
   published
-    { Published declarations }
+    property Root : TComponent read fldRoot write fldRoot;
   end;
 
 procedure Register;
