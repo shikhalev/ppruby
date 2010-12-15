@@ -13,12 +13,24 @@
       </Other>
     </CompilerOptions>
     <Version Minor="9"/>
-    <Files Count="1">
+    <Files Count="4">
       <Item1>
-        <Filename Value="ruby18script.pas"/>
+        <Filename Value="rb18script.pas"/>
         <HasRegisterProc Value="True"/>
-        <UnitName Value="ruby18script"/>
+        <UnitName Value="rb18script"/>
       </Item1>
+      <Item2>
+        <Filename Value="rb18classes.pp"/>
+        <UnitName Value="rb18Classes"/>
+      </Item2>
+      <Item3>
+        <Filename Value="rb18system.pp"/>
+        <UnitName Value="rb18System"/>
+      </Item3>
+      <Item4>
+        <Filename Value="ruby18.pp"/>
+        <UnitName Value="ruby18"/>
+      </Item4>
     </Files>
     <Type Value="RunAndDesignTime"/>
     <RequiredPkgs Count="2">
