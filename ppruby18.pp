@@ -111,6 +111,13 @@ operator := (v : boolean) : VALUE; inline;
 operator := (const v : utf8string) : VALUE; inline;
 operator := (const v : unicodestring) : VALUE; inline;
 
+{$IFDEF CPU32}
+operator := (v : VALUE) : int64; inline;
+operator := (v : VALUE) : qword; inline;
+operator := (const v : int64) : VALUE; inline;
+operator := (const v : qword) : VALUE; inline;
+{$ENDIF CPU32}
+
 operator := (v : VALUE) : ID; inline;
 operator := (v : ID) : VALUE; inline;
 
@@ -121,6 +128,9 @@ operator := (v : VALUE) : TClass; inline;
 operator := (v : VALUE) : TObject; inline;
 operator := (v : TClass) : VALUE; inline;
 operator := (v : TObject) : VALUE; inline;
+
+procedure AddAutoClass(cls : TClass);
+procedure DelAutoClass(cls : TClass);
 
 implementation
 
@@ -135,6 +145,7 @@ var
     rb_object : VALUE;
     pp_object : TObject;
   end = nil;
+  clsAuto : array of TClass = nil;
 
 function do_find_object (obj : TObject; out idx : ptrint) : boolean;
  var
@@ -178,6 +189,8 @@ procedure do_insert_object (obj : TObject; v : VALUE; idx : ptrint);
  end;
 
 procedure do_init;
+ var
+   idx : ptrint;
  begin
  ruby_init;
  ruby_init_loadpath;
@@ -185,6 +198,8 @@ procedure do_init;
  setLength(objCache, 0);
  setLength(clsCache, 0);
  isActive := true;
+ for idx := 0 to high(clsAuto) do
+     ClassToValue(clsAuto[idx])
  end;
 
 procedure do_done;
@@ -541,6 +556,26 @@ function UInt64ToValue (v : qword) : VALUE;
  rb_protect(@try_uint64tovalue,VALUE(@rec),@res);
  do_check_conversion('UInt64ToValue()',res);
  result := rec.value;
+ end;
+
+operator := (v : VALUE) : int64; inline;
+ begin
+ result := ValueToInt64(v);
+ end;
+
+operator := (v : VALUE) : qword; inline;
+ begin
+ result := ValueToUInt64(v);
+ end;
+
+operator := (const v : int64) : VALUE; inline;
+ begin
+ result := Int64ToValue(v);
+ end;
+
+operator := (const v : qword) : VALUE; inline;
+ begin
+ result := UInt64ToValue(v);
  end;
 {$ENDIF CPU32}
 
@@ -932,6 +967,34 @@ operator := (v : TClass) : VALUE;
 operator := (v : TObject) : VALUE;
  begin
  result := ObjectToValue(v);
+ end;
+
+procedure AddAutoClass(cls : TClass);
+ var
+   len : ptrint;
+ begin
+ if cls <> nil
+    then begin
+         len := length(clsAuto);
+         setLength(clsAuto, len + 1);
+         clsAuto[len] := cls
+         end;
+ end;
+
+procedure DelAutoClass(cls : TClass);
+ var
+   idx, delidx : ptrint;
+ begin
+ if cls <> nil
+    then begin
+         for idx := 0 to high(clsAuto) do
+             if clsAuto[idx] = cls
+                then begin
+                     for delidx := idx to high(clsAuto) - 1 do
+                         clsAuto[delidx] := clsAuto[delidx + 1];
+                     setLength(clsAuto, length(clsAuto) - 1)
+                     end;
+         end;
  end;
 
 { TRubyManaged }
