@@ -13,17 +13,20 @@
       </Other>
     </CompilerOptions>
     <Version Minor="9"/>
-    <Files Count="2">
+    <Files Count="3">
       <Item1>
         <Filename Value="rb18script.pas"/>
-        <HasRegisterProc Value="True"/>
         <UnitName Value="rb18Script"/>
       </Item1>
       <Item2>
         <Filename Value="rb18scriptsource.pas"/>
-        <HasRegisterProc Value="True"/>
         <UnitName Value="rb18ScriptSource"/>
       </Item2>
+      <Item3>
+        <Filename Value="rb18lazlclregister.pas"/>
+        <HasRegisterProc Value="True"/>
+        <UnitName Value="rb18lazlclregister"/>
+      </Item3>
     </Files>
     <Type Value="RunAndDesignTime"/>
     <RequiredPkgs Count="2">

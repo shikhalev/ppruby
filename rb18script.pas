@@ -5,8 +5,8 @@ unit rb18Script;
 interface
 
 uses
-  Classes, SysUtils, LResources, Forms, Controls, Graphics, Dialogs,
-  ruby18, rb18System, rb18Classes, rb18ScriptSource;
+  Classes, SysUtils, Forms, Controls, Graphics, Dialogs,
+  ruby18, rb18System, rb18Classes, rb18Source;
 
 type
 
@@ -14,7 +14,7 @@ type
 
   TRuby18Script = class(TComponent)
   private
-    fldSource : TScriptSource;
+    fldSource : TRuby18CustomSource;
     function getActive : boolean;
     procedure setActive (v : boolean);
   protected
@@ -22,19 +22,10 @@ type
     procedure Execute;
   published
     property Active : boolean read getActive write setActive;
-    property Source : TScriptSource read fldSource write fldSource;
+    property Source : TRuby18CustomSource read fldSource write fldSource;
   end;
 
-procedure Register;
-
 implementation
-
-procedure Register;
-begin
-  RegisterComponents('Scripts',[TRuby18Script]);
-end;
-
-{ TScriptSource }
 
 { TRuby18Script }
 

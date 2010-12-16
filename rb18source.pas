@@ -1,4 +1,4 @@
-unit rb18ScriptSource;
+unit rb18Source;
 
 {$mode objfpc}{$H+}
 
@@ -8,16 +8,15 @@ uses
   Classes, SysUtils; 
 
 type
-  TScriptSource = class(TComponent)
+
+  TRuby18CustomSource = class(TComponent)
   private
     function getText : UTF8String; virtual; abstract;
   public
     property Text : UTF8String read getText;
   end;
 
-  { TMemScriptSource }
-
-  TMemScriptSource = class(TScriptSource)
+  TRuby18Source = class(TRuby18CustomSource)
   private
     fldLines : TStrings;
     function getText : UTF8String; override;
@@ -31,35 +30,26 @@ type
     property Lines : TStrings read fldLines write setLines;
   end;
 
-procedure Register;
-
 implementation
 
-procedure Register;
-begin
-  RegisterComponents('Scripts',[TMemScriptSource]);
-end;
-
-{ TMemScriptSource }
-
-function TMemScriptSource.getText : UTF8String;
+function TRuby18Source.getText : UTF8String;
 begin
   result := fldLines.Text;
 end;
 
-procedure TMemScriptSource.setLines(const Value : TStrings);
+procedure TRuby18Source.setLines(const Value : TStrings);
 begin
   if Value = nil
      then fldLines.Clear
      else fldLines.Assign(Value);
 end;
 
-procedure TMemScriptSource.setText(const Value : UTF8String);
+procedure TRuby18Source.setText(const Value : UTF8String);
 begin
   fldLines.Text := Value;
 end;
 
-constructor TMemScriptSource.Create(AOwner : TComponent);
+constructor TRuby18Source.Create(AOwner : TComponent);
 begin
   inherited Create(AOwner);
   fldLines := TStringList.Create;
