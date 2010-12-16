@@ -5,10 +5,9 @@ unit rb18Source;
 interface
 
 uses
-  Classes, SysUtils; 
+  Classes, SysUtils, Controls, StdCtrls;
 
 type
-
   TRuby18CustomSource = class(TComponent)
   private
     function getText : UTF8String; virtual; abstract;
@@ -30,7 +29,57 @@ type
     property Lines : TStrings read fldLines write setLines;
   end;
 
+  { TRuby18FileSource }
+
+  TRuby18FileSource = class(TRuby18CustomSource)
+  private
+    fldFileName : UTF8String;
+    function getText : UTF8String; override;
+  public
+    constructor Create (AOwner : TComponent); override;
+  published
+    property FileName : TFileName read fldFileName write fldFileName;
+  end;
+
+  { TRuby18EditSource }
+
+  TRuby18EditSource = class(TRuby18CustomSource)
+  private
+    fldEdit : TCustomEdit;
+    function getText : UTF8String; override;
+  public
+    constructor Create (AOwner : TComponent); override;
+  published
+    property Edit : TCustomEdit read fldEdit write fldEdit;
+  end;
+
 implementation
+
+{ TRuby18EditSource }
+
+function TRuby18EditSource.getText : UTF8String;
+begin
+  Result := fldEdit.Text;
+end;
+
+constructor TRuby18EditSource.Create(AOwner : TComponent);
+begin
+  inherited Create(AOwner);
+  fldEdit := nil;
+end;
+
+{ TRuby18FileSource }
+
+function TRuby18FileSource.getText : UTF8String;
+begin
+
+end;
+
+constructor TRuby18FileSource.Create(AOwner : TComponent);
+begin
+  inherited Create(AOwner);
+  fldFileName := '';
+end;
 
 function TRuby18Source.getText : UTF8String;
 begin

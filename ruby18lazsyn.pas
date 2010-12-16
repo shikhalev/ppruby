@@ -2,20 +2,20 @@
   This source is only used to compile and install the package.
  }
 
-unit Ruby18LazLCL; 
+unit Ruby18LazSyn; 
 
 interface
 
 uses
-  rb18Script, rb18Source, rb18LazLCLRegister, LazarusPackageIntf;
+  SynHighlighterRuby, rb18LazSynRegister, LazarusPackageIntf;
 
 implementation
 
 procedure Register; 
 begin
-  RegisterUnit('rb18LazLCLRegister', @rb18LazLCLRegister.Register); 
+  RegisterUnit('rb18LazSynRegister', @rb18LazSynRegister.Register); 
 end; 
 
 initialization
-  RegisterPackage('Ruby18LazLCL', @Register); 
+  RegisterPackage('Ruby18LazSyn', @Register); 
 end.
