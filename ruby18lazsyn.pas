@@ -7,7 +7,7 @@ unit Ruby18LazSyn;
 interface
 
 uses
-  SynHighlighterRuby, rb18LazSynRegister, LazarusPackageIntf;
+  rb18LazSynRegister, rb18SynEditSource, LazarusPackageIntf;
 
 implementation
 

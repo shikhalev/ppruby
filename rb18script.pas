@@ -11,7 +11,7 @@ uses
 type
 
   TRuby18CustomSource = class(TComponent)
-  private
+  protected
     function getText : UTF8String; virtual; abstract;
   public
     property Text : UTF8String read getText;
@@ -35,9 +35,10 @@ type
   TRuby18Source = class(TRuby18CustomSource)
   private
     fldLines : TStrings;
-    function getText : UTF8String; override;
     procedure setLines(const Value : TStrings);
     procedure setText(const Value : UTF8String);
+  protected
+    function getText : UTF8String; override;
   public
     constructor Create (AOwner : TComponent); override;
   public
@@ -51,6 +52,7 @@ type
   TRuby18FileSource = class(TRuby18CustomSource)
   private
     fldFileName : UTF8String;
+  protected
     function getText : UTF8String; override;
   public
     constructor Create (AOwner : TComponent); override;
@@ -63,6 +65,7 @@ type
   TRuby18EditSource = class(TRuby18CustomSource)
   private
     fldEdit : TCustomEdit;
+  protected
     function getText : UTF8String; override;
   public
     constructor Create (AOwner : TComponent); override;
@@ -111,9 +114,17 @@ end;
 { TRuby18FileSource }
 
 function TRuby18FileSource.getText : UTF8String;
-begin
-
-end;
+ begin
+ result := '';
+ if FileExists(fldFileName)
+    then with TStringList.Create do
+              try
+               LoadFromFile(fldFileName);
+               result := Text;
+              finally
+               Free;
+              end;
+ end;
 
 constructor TRuby18FileSource.Create(AOwner : TComponent);
 begin

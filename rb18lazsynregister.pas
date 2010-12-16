@@ -5,7 +5,7 @@ unit rb18LazSynRegister;
 interface
 
 uses
-  Classes, SysUtils;
+  Classes, SysUtils, rb18SynEditSource;
 
 procedure Register;
 
@@ -13,6 +13,7 @@ implementation
 
 procedure Register;
  begin
+   RegisterComponents('Scripts',[TRuby18SynEditSource]);
  end;
 
 end.
