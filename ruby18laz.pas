@@ -7,13 +7,15 @@ unit Ruby18Laz;
 interface
 
 uses
-  rb18Script, rb18Classes, rb18System, ruby18, LazarusPackageIntf;
+    rb18Classes, rb18Script, rb18ScriptSource, rb18System, ruby18, 
+  LazarusPackageIntf;
 
 implementation
 
 procedure Register; 
 begin
   RegisterUnit('rb18Script', @rb18Script.Register); 
+  RegisterUnit('rb18ScriptSource', @rb18ScriptSource.Register); 
 end; 
 
 initialization
