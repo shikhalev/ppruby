@@ -99,18 +99,14 @@ function do_component_settag (slf : VALUE; tag : VALUE) : VALUE; cdecl;
  result := slf;
  end;
 
-procedure InitHook;
- var
-   cPersistent : VALUE;
-   cComponent : VALUE;
-//   cStrings : VALUE;
-//   cCollection : VALUE;
-//   cCollectionItem : VALUE;
+procedure TPersistentHook (cPersistent : VALUE);
  begin
- cPersistent := ClassToValue(TPersistent);
  rb_define_method(cPersistent,'assign',Pmethod(@do_persistent_assign),1);
  rb_define_method(cPersistent,'namepath',Pmethod(@do_persistent_getnamepath),0);
- cComponent := ClassToValue(TComponent);
+ end;
+
+procedure TComponentHook (cComponent : VALUE);
+ begin
  rb_define_alloc_func(cComponent,@do_prealloc);
  rb_define_method(cComponent,'initialize',Pmethod(@do_component_initialize),1);
  rb_define_method(cComponent,'[]',Pmethod(@do_component_child),1);
@@ -121,11 +117,9 @@ procedure InitHook;
  rb_define_method(cComponent,'name=',Pmethod(@do_component_setname),1);
  rb_define_method(cComponent,'tag',Pmethod(@do_component_tag),0);
  rb_define_method(cComponent,'tag=',Pmethod(@do_component_settag),1);
-// cStrings := ClassToValue(TStrings); // Надо бы сделать, да дофига...
-// cCollection := ClassToValue(TCollection);
-// cCollectionItem := ClassToValue(TCollectionItem);
  end;
 
 initialization
- rb18System.AddInitHook(@InitHook);
+ rb18System.AddClassHook(TPersistent, @TPersistentHook);
+ rb18System.AddClassHook(TComponent, @TComponentHook);
 end.

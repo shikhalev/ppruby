@@ -129,13 +129,19 @@ operator := (v : VALUE) : TObject; inline;
 operator := (v : TClass) : VALUE; inline;
 operator := (v : TObject) : VALUE; inline;
 
+procedure RegObject (obj : TObject; v : VALUE);
+
+type
+  TRubyClassHook = procedure (rb_class : VALUE);
+
+procedure AddClassHook (cls : TClass; hook : TRubyClassHook);
+procedure DelClassHook (cls : TClass; hook : TRubyClassHook);
+
 type
   TRubyHook = procedure;
 
 procedure AddInitHook (hook : TRubyHook);
 procedure DelInitHook (hook : TRubyHook);
-
-procedure RegObject (obj : TObject; v : VALUE);
 
 implementation
 
@@ -150,7 +156,71 @@ var
     rb_object : VALUE;
     pp_object : TObject;
   end = nil;
+  clsHooks : array of record
+    cls : TClass;
+    hooks : array of TRubyClassHook;
+  end;
   hooksActivate : array of TRubyHook = nil;
+
+procedure AddClassHook (cls : TClass; hook : TRubyClassHook);
+ var
+   clsidx : ptrint;
+ begin
+ for clsidx := 0 to high(clsHooks) do
+     if clsHooks[clsidx].cls = cls
+        then begin
+             setLength(clsHooks[clsidx].hooks, length(clsHooks[clsidx].hooks) + 1);
+             clsHooks[clsidx].hooks[high(clsHooks[clsidx].hooks)] := hook;
+             exit;
+             end;
+ setLength(clsHooks, length(clsHooks) + 1);
+ clsHooks[high(clsHooks)].cls := cls;
+ setLength(clsHooks[high(clsHooks)].hooks, 1);
+ clsHooks[high(clsHooks)].hooks[0] := hook;
+ end;
+
+procedure DelClassHook (cls : TClass; hook : TRubyClassHook);
+ var
+   clsidx, hookidx, delidx : ptrint;
+ begin
+ for clsidx := 0 to high(clsHooks) do
+     if clsHooks[clsidx].cls = cls
+        then for hookidx := 0 to high(clsHooks[clsidx].hooks) do
+                 if clsHooks[clsidx].hooks[hookidx] = hook
+                    then begin
+                         for delidx := hookidx to high(clsHooks[clsidx].hooks) - 1 do
+                             clsHooks[clsidx].hooks[delidx] := clsHooks[clsidx].hooks[delidx + 1];
+                         setLength(clsHooks[clsidx].hooks, length(clsHooks[clsidx].hooks) - 1);
+                         end;
+ end;
+
+procedure AddInitHook (hook : TRubyHook);
+ var
+   len : ptrint;
+ begin
+ if hook <> nil
+    then begin
+         len := length(hooksActivate);
+         setLength(hooksActivate, len + 1);
+         hooksActivate[len] := hook
+         end;
+ end;
+
+procedure DelInitHook (hook : TRubyHook);
+ var
+   idx, delidx : ptrint;
+ begin
+ if hook <> nil
+    then begin
+         for idx := 0 to high(hooksActivate) do
+             if hooksActivate[idx] = hook
+                then begin
+                     for delidx := idx to high(hooksActivate) - 1 do
+                         hooksActivate[delidx] := hooksActivate[delidx + 1];
+                     setLength(hooksActivate, length(hooksActivate) - 1)
+                     end;
+         end;
+ end;
 
 function do_find_object (obj : TObject; out idx : ptrint) : boolean;
  var
@@ -848,7 +918,7 @@ function do_to_s (slf : VALUE) : VALUE; cdecl;
 
 function ClassToValue (cls : TClass) : VALUE;
  var
-   idx : ptrint;
+   idx, clsidx, hookidx : ptrint;
  begin
  if cls = nil
     then raise ERubyConversion.CreateFmt(msgRubyNilClass,['ClassToValue()']);
@@ -869,6 +939,10 @@ function ClassToValue (cls : TClass) : VALUE;
          rb_define_method(result,'initialize',Pmethod(@do_initialize),-1);
          end;
  rb_define_method(result,'method_missing',Pmethod(@do_method_missing),-1);
+ for clsidx := 0 to high(clsHooks) do
+     if clsHooks[clsidx].cls = cls
+        then for hookidx := 0 to high(clsHooks[clsidx].hooks) do
+                 clsHooks[clsidx].hooks[hookidx](result);
  end;
 
 function ObjectToValue(obj : TObject) : VALUE;
@@ -983,34 +1057,6 @@ operator := (v : TObject) : VALUE;
  result := ObjectToValue(v);
  end;
 
-procedure AddInitHook (hook : TRubyHook);
- var
-   len : ptrint;
- begin
- if hook <> nil
-    then begin
-         len := length(hooksActivate);
-         setLength(hooksActivate, len + 1);
-         hooksActivate[len] := hook
-         end;
- end;
-
-procedure DelInitHook (hook : TRubyHook);
- var
-   idx, delidx : ptrint;
- begin
- if hook <> nil
-    then begin
-         for idx := 0 to high(hooksActivate) do
-             if hooksActivate[idx] = hook
-                then begin
-                     for delidx := idx to high(hooksActivate) - 1 do
-                         hooksActivate[delidx] := hooksActivate[delidx + 1];
-                     setLength(hooksActivate, length(hooksActivate) - 1)
-                     end;
-         end;
- end;
-
 procedure RegObject(obj : TObject; v : VALUE);
  var
    idx : ptrint;
@@ -1032,11 +1078,8 @@ procedure TRubyManaged.rb_mark;
  end;
 {$hints on}
 
-procedure InitHook;
- var
-   cObject : VALUE;
+procedure TObjectHook (cObject : VALUE);
  begin
- cObject := ClassToValue(TObject);
  rb_define_singleton_method(cObject,'unitname',Pmethod(@do_unitname),0);
  rb_define_method(cObject,'to_s',Pmethod(@do_to_s),0);
  (* Здесь должна была быть реализация each для классов, поддерживающих
@@ -1045,7 +1088,7 @@ procedure InitHook;
 
 initialization
  scriptName := ParamStr(0);
- AddInitHook(@InitHook);
+ AddClassHook(TObject, @TObjectHook);
 finalization
  Finalize;
 end.
