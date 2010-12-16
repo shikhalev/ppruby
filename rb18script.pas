@@ -115,45 +115,45 @@ end;
 
 function TRuby18FileSource.getText : UTF8String;
  begin
- result := '';
- if FileExists(fldFileName)
-    then with TStringList.Create do
-              try
-               LoadFromFile(fldFileName);
-               result := Text;
-              finally
-               Free;
-              end;
+  result := '';
+  if FileExists(fldFileName)
+     then with TStringList.Create do
+               try
+                LoadFromFile(fldFileName);
+                result := Text;
+               finally
+                Free;
+               end;
  end;
 
 constructor TRuby18FileSource.Create(AOwner : TComponent);
-begin
+ begin
   inherited Create(AOwner);
   fldFileName := '';
-end;
+ end;
 
 function TRuby18Source.getText : UTF8String;
-begin
+ begin
   result := fldLines.Text;
-end;
+ end;
 
 procedure TRuby18Source.setLines(const Value : TStrings);
-begin
+ begin
   if Value = nil
      then fldLines.Clear
      else fldLines.Assign(Value);
-end;
+ end;
 
 procedure TRuby18Source.setText(const Value : UTF8String);
-begin
+ begin
   fldLines.Text := Value;
-end;
+ end;
 
 constructor TRuby18Source.Create(AOwner : TComponent);
-begin
+ begin
   inherited Create(AOwner);
   fldLines := TStringList.Create;
-end;
+ end;
 
 
 {$hints off}
@@ -165,7 +165,7 @@ function do_application (slf : VALUE) : VALUE; cdecl;
 
 procedure InitHook;
  begin
- rb_define_global_function('pasApplication',Pmethod(@do_application),0);
+ rb_define_global_function('application',Pmethod(@do_application),0);
  end;
 
 initialization
