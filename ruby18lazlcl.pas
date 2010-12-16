@@ -7,7 +7,7 @@ unit Ruby18LazLCL;
 interface
 
 uses
-  rb18Script, rb18Source, rb18LazLCLRegister, LazarusPackageIntf;
+  rb18Script, rb18LazLCLRegister, LazarusPackageIntf;
 
 implementation
 

@@ -5,8 +5,7 @@ unit rb18LazSynRegister;
 interface
 
 uses
-  Classes, SysUtils,
-  SynHighlighterRuby;
+  Classes, SysUtils;
 
 procedure Register;
 
@@ -14,7 +13,6 @@ implementation
 
 procedure Register;
  begin
- RegisterComponents('SynEdit',[TSynRubySyn]);
  end;
 
 end.

@@ -5,10 +5,17 @@ unit rb18Script;
 interface
 
 uses
-  Classes, SysUtils, Forms, Controls, Graphics, Dialogs,
-  ruby18, rb18System, rb18Classes, rb18Source;
+  Classes, SysUtils, Forms, Controls, StdCtrls, Graphics, Dialogs,
+  ruby18, rb18System, rb18Classes;
 
 type
+
+  TRuby18CustomSource = class(TComponent)
+  private
+    function getText : UTF8String; virtual; abstract;
+  public
+    property Text : UTF8String read getText;
+  end;
 
   { TRuby18Script }
 
@@ -23,14 +30,6 @@ type
   published
     property Active : boolean read getActive write setActive;
     property Source : TRuby18CustomSource read fldSource write fldSource;
-  end;
-
-type
-  TRuby18CustomSource = class(TComponent)
-  private
-    function getText : UTF8String; virtual; abstract;
-  public
-    property Text : UTF8String read getText;
   end;
 
   TRuby18Source = class(TRuby18CustomSource)

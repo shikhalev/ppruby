@@ -6,7 +6,7 @@ interface
 
 uses
   Classes,
-  rb18Source, rb18Script;
+  rb18Script;
 
 procedure Register;
 
@@ -14,7 +14,7 @@ implementation
 
 procedure Register;
  begin
- RegisterComponents('Scripts',[TRuby18Source, TRuby18Script]);
+ RegisterComponents('Scripts',[TRuby18Script, TRuby18Source, TRuby18FileSource, TRuby18EditSource]);
  end;
 
 end.

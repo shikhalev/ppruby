@@ -189,6 +189,7 @@ type
   private
   protected
     function GetKeywordIdentifiers: TStringList; virtual;
+    function GetEol : boolean; override;
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy;                     override;
@@ -209,6 +210,11 @@ begin
     Result.AddObject(KEYWORDS_LIST[i],
      TObject(ord(tkReservedWord)));
   end;
+end;
+
+function TSynRubySyn.GetEol : boolean;
+begin
+  Result := fTokenID = tkNull;
 end;
 
 constructor TSynRubySyn.Create ( AOwner : TComponent ) ;
