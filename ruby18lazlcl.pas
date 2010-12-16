@@ -2,7 +2,7 @@
   This source is only used to compile and install the package.
  }
 
-unit Ruby18Laz; 
+unit Ruby18LazLCL; 
 
 interface
 
@@ -19,5 +19,5 @@ begin
 end; 
 
 initialization
-  RegisterPackage('Ruby18Laz', @Register); 
+  RegisterPackage('Ruby18LazLCL', @Register); 
 end.

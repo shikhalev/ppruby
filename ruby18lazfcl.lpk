@@ -1,51 +1,37 @@
 <?xml version="1.0"?>
 <CONFIG>
   <Package Version="3">
-    <Name Value="Ruby18Laz"/>
-    <Author Value="Ivan Shikhalev <shikhalev@gmail.com>"/>
+    <Name Value="Ruby18LazFCL"/>
     <CompilerOptions>
       <Version Value="9"/>
       <SearchPaths>
-        <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/>
+        <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)/"/>
       </SearchPaths>
       <Other>
         <CompilerPath Value="$(CompPath)"/>
       </Other>
     </CompilerOptions>
     <Version Minor="9"/>
-    <Files Count="5">
+    <Files Count="3">
       <Item1>
         <Filename Value="rb18classes.pp"/>
         <UnitName Value="rb18Classes"/>
       </Item1>
       <Item2>
-        <Filename Value="rb18script.pas"/>
-        <HasRegisterProc Value="True"/>
-        <UnitName Value="rb18Script"/>
-      </Item2>
-      <Item3>
-        <Filename Value="rb18scriptsource.pas"/>
-        <HasRegisterProc Value="True"/>
-        <UnitName Value="rb18ScriptSource"/>
-      </Item3>
-      <Item4>
         <Filename Value="rb18system.pp"/>
         <UnitName Value="rb18System"/>
-      </Item4>
-      <Item5>
+      </Item2>
+      <Item3>
         <Filename Value="ruby18.pp"/>
         <UnitName Value="ruby18"/>
-      </Item5>
+      </Item3>
     </Files>
     <Type Value="RunAndDesignTime"/>
-    <RequiredPkgs Count="2">
+    <RequiredPkgs Count="1">
       <Item1>
-        <PackageName Value="LCL"/>
-      </Item1>
-      <Item2>
         <PackageName Value="FCL"/>
         <MinVersion Major="1" Valid="True"/>
-      </Item2>
+      </Item1>
     </RequiredPkgs>
     <UsageOptions>
       <UnitPath Value="$(PkgOutDir)"/>
@@ -53,5 +39,6 @@
     <PublishOptions>
       <Version Value="2"/>
     </PublishOptions>
+    <Provides Count="3"/>
   </Package>
 </CONFIG>
