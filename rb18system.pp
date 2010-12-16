@@ -96,6 +96,8 @@ resourcestring
     '<%s> is not a Pascal object. [%s]';
   msgRubyNilClass =
     'Nil class value is not allowed. [%s]';
+  msgRubyError =
+    'Error #%d while Ruby execution. [%s]';
 
 operator := (v : VALUE) : ptrint; inline;
 operator := (v : VALUE) : ptruint; inline;
@@ -315,8 +317,9 @@ function do_args (argc : integer; argv : PVALUE) : TRubyArgs;
    idx : integer;
  begin
  setLength(result, argc);
- for idx := 0 to argc - 1 do
-     result[idx] := argv[idx]
+ if argc > 0
+    then for idx := 0 to argc - 1 do
+             result[idx] := argv[idx]
  end;
 
 function getActive : boolean; inline;
@@ -808,8 +811,9 @@ function do_property_get(obj : TObject; const name : shortstring; out return : V
    info : PPropInfo;
  begin
  info := GetPropInfo(obj, name);
+ result := false;
  if info = nil
-    then exit(false);
+    then exit;
  result := true;
  case info^.PropType^.Kind of
       tkInteger :
@@ -892,7 +896,7 @@ function do_method_missing (argc : integer; argv : PVALUE; slf : VALUE) : VALUE;
  begin
  obj := ValueToObject(slf);
  msg.Msg := IdToStr(ValueToId(argv[0]));
- msg.Return := Qundef;
+ msg.Return := Qnil;
  if (argc = 1) and do_property_get(obj, msg.Msg, result)
     then exit;
  result := argv[1];

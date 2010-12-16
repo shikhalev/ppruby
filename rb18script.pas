@@ -91,11 +91,16 @@ procedure TRuby18Script.setActive(v : boolean);
 procedure TRuby18Script.Execute;
  var
    oldActive : boolean;
+   res : integer;
  begin
- oldActive := self.Active;
+// oldActive := self.Active;
  self.Active := true;
- rb_eval_string(pchar(fldSource.Text));
- self.Active := oldActive;
+ rb_eval_string_protect(pchar(fldSource.Text),@res);
+ WriteLn(fldSource.Text);
+// rb_eval_string(pchar(fldSource.Text));
+// self.Active := oldActive;
+ if res <> 0
+    then raise ERuby.CreateFmt(msgRubyError, [res, 'TRuby18Script.Execute()']);
  end;
 
 { TRuby18EditSource }
