@@ -15,7 +15,13 @@ uses
   SysUtils, DynLibs;
 
 const
+{$IFDEF UNIX}
   RUBY18_LIB = 'libruby18.so';
+{$ELSE ~UNIX}
+ {$IFDEF WINDOWS}
+  RUBY18_LIB = 'ruby18.dll';
+ {$ENDIF WINDOWS}
+{$ENDIF UNIX}
 
 type
   PPVALUE = ^PVALUE;
@@ -228,6 +234,8 @@ procedure load_variables; inline;
  end;
 
 procedure LoadRuby;
+ var
+   res : integer;
  begin
   if hLib <> 0
      then raise ERubyLibError.Create(msgRubyAlreadyLoaded);
@@ -239,6 +247,9 @@ procedure LoadRuby;
   ruby_init_loadpath();
   ruby_script(pchar(ParamStr(0)));
   load_variables();
+  rb_eval_string_protect('$-K = "UTF8"', @res);
+  if not (res = 0)
+     then raise ERubyLibError.CreateFmt(msgRubyLibError, [res]);
  end;
 
 procedure UnloadRuby;

@@ -93,11 +93,11 @@ procedure TRuby18Script.Execute;
    oldActive : boolean;
    res : integer;
  begin
-// oldActive := self.Active;
+ oldActive := self.Active;
  self.Active := true;
  rb_eval_string_protect(pchar(fldSource.Text),@res);
 // rb_eval_string(pchar(fldSource.Text));
-// self.Active := oldActive;
+ self.Active := oldActive;
  if res <> 0
     then raise ERuby.CreateFmt(msgRubyError, [res, 'TRuby18Script.Execute()']);
  end;
