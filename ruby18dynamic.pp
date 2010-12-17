@@ -134,6 +134,7 @@ var
   rb_include_module : procedure (klass : VALUE; module : VALUE); cdecl;
   rb_eval_string_protect : function (str : pchar; state : PInteger) : VALUE; cdecl;
   rb_define_global_function : procedure (name : pchar; func : Pmethod; argc : integer); cdecl;
+  rb_notimplement : procedure (); cdecl;
 
 var
   rb_cObject : VALUE;
@@ -144,6 +145,8 @@ var
   rb_cSymbol : VALUE;
 
   rb_mEnumerable : VALUE;
+
+  p_ruby_errinfo : PVALUE;
 
 type
   ERubyError = class(Exception)end;
@@ -168,6 +171,7 @@ procedure UnloadRuby;
 
 function rb_class_of (obj : VALUE) : VALUE; inline;
 function rb_type (obj : VALUE) : integer; inline;
+function ruby_errinfo : VALUE; inline;
 
 operator = (a, b : VALUE) : boolean; inline;
 operator = (a, b : ID) : boolean; inline;
@@ -201,6 +205,7 @@ procedure load_functions; inline;
   pointer(rb_inspect)                 := GetProcedureAddress(hLib, 'rb_inspect');
   pointer(rb_int2inum)                := GetProcedureAddress(hLib, 'rb_int2inum');
   pointer(rb_intern)                  := GetProcedureAddress(hLib, 'rb_intern');
+  pointer(rb_notimplement)            := GetProcedureAddress(hLib, 'rb_notimplement');
   pointer(rb_num2dbl)                 := GetProcedureAddress(hLib, 'rb_num2dbl');
   pointer(rb_num2long)                := GetProcedureAddress(hLib, 'rb_num2long');
   pointer(rb_num2ulong)               := GetProcedureAddress(hLib, 'rb_num2ulong');
@@ -216,6 +221,7 @@ procedure load_variables; inline;
  var
    res : integer;
  begin
+  p_ruby_errinfo := GetProcedureAddress(hLib, 'ruby_errinfo');
   rb_cFalseClass := rb_eval_string_protect('FalseClass', @res);
   if res = 0
      then rb_cFixnum := rb_eval_string_protect('Fixnum', @res);
@@ -298,6 +304,11 @@ function rb_type (obj : VALUE) : integer; inline;
                  then result := T_SYMBOL
                  else result := (PRBasic(obj)^.flags and T_MASK)
           end;
+ end;
+
+function ruby_errinfo : VALUE; inline;
+ begin
+  result := p_ruby_errinfo^;
  end;
 
 operator = (a, b : VALUE) : boolean; inline;

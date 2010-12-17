@@ -17,6 +17,8 @@ uses
 
 implementation
 
+// TODO: Коллекции
+
 function do_persistent_assign (slf : VALUE; src : VALUE) : VALUE; cdecl;
  begin
  (ValueToObject(slf) as TPersistent).Assign(ValueToObject(src) as TPersistent);

@@ -22,6 +22,8 @@ property Active : boolean read getActive write setActive;
 procedure Initialize;
 procedure Finalize;
 
+function ErrorInfo : utf8string;
+
 function ValueToInt    (v : VALUE) : ptrint;
 function ValueToUInt   (v : VALUE) : ptruint;
 function ValueToDouble (v : VALUE) : double;
@@ -81,7 +83,9 @@ resourcestring
   msgRubyNilClass =
     'Nil class value is not allowed. [%s]';
   msgRubyError =
-    'Error #%d while Ruby execution. [%s]';
+    'Error #%d while Ruby execution. [%s]'+LineEnding+'%s';
+
+// TODO: Привести к единому знаменателю сообщения.
 
 operator := (v : VALUE) : ptrint; inline;
 operator := (v : VALUE) : ptruint; inline;
@@ -337,6 +341,11 @@ function try_valuetoint (v : VALUE) : VALUE; cdecl;
  begin
  PRecInt(v)^.ptrint := rb_num2long(PRecInt(v)^.value);
  result := Qnil
+ end;
+
+function ErrorInfo : utf8string;
+ begin
+  result := do_inspect(ruby_errinfo);
  end;
 
 function ValueToInt (v : VALUE) : ptrint;
@@ -832,7 +841,7 @@ function do_method_missing (argc : integer; argv : PVALUE; slf : VALUE) : VALUE;
  begin
  obj := ValueToObject(slf);
  msg.Msg := IdToStr(ValueToId(argv[0]));
- msg.Return := Qnil;
+ msg.Return := Qundef;
  if (argc = 1) and do_property_get(obj, msg.Msg, result)
     then exit;
  result := argv[1];
@@ -842,6 +851,8 @@ function do_method_missing (argc : integer; argv : PVALUE; slf : VALUE) : VALUE;
  obj.DispatchStr(msg);
  setLength(msg.Args, 0);
  result := msg.Return;
+ if result = Qundef
+    then rb_notimplement();
  end;
 
 function do_unitname (slf : VALUE) : VALUE; cdecl;

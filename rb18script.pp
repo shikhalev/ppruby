@@ -96,10 +96,10 @@ procedure TRuby18Script.Execute;
  oldActive := self.Active;
  self.Active := true;
  rb_eval_string_protect(pchar(fldSource.Text),@res);
+ if res <> 0
+    then raise ERuby.CreateFmt(msgRubyError, [res, 'TRuby18Script.Execute()', ErrorInfo]);
 // rb_eval_string(pchar(fldSource.Text));
  self.Active := oldActive;
- if res <> 0
-    then raise ERuby.CreateFmt(msgRubyError, [res, 'TRuby18Script.Execute()']);
  end;
 
 { TRuby18EditSource }
