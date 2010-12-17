@@ -81,8 +81,6 @@ resourcestring
   msgRubyNilClass =
     'Nil class value is not allowed.';
 
-// TODO: Привести к единому знаменателю сообщения.
-
 operator := (v : VALUE) : ptrint; inline;
 operator := (v : VALUE) : ptruint; inline;
 operator := (v : VALUE) : double; inline;
@@ -824,8 +822,6 @@ function do_property_set(obj : TObject; const name : shortstring; const val : VA
         result := false;
       end;
  end;
-
-// TODO: Альтернатива: элементы как свойства.
 
 type
   PRecProp = ^TRecProp;

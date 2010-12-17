@@ -74,6 +74,11 @@ function do_component_owner (slf : VALUE) : VALUE; cdecl;
  result := ObjectToValue((ValueToObject(slf) as TComponent).Owner);
  end;
 
+function do_component_parent (slf : VALUE) : VALUE; cdecl;
+ begin
+ result := ObjectToValue((ValueToObject(slf) as TComponent).GetParentComponent);
+ end;
+
 function do_component_name (slf : VALUE) : VALUE; cdecl;
  begin
  result := IdToValue(StrToId((ValueToObject(slf) as TComponent).Name));
@@ -115,6 +120,7 @@ procedure TComponentHook (cComponent : VALUE);
  rb_include_module(cComponent, rb_mEnumerable);
  rb_define_method(cComponent,'each',Pmethod(@do_component_each),0);
  rb_define_method(cComponent,'owner',Pmethod(@do_component_owner),0);
+ rb_define_method(cComponent,'parent',Pmethod(@do_component_parent),0);
  rb_define_method(cComponent,'name',Pmethod(@do_component_name),0);
  rb_define_method(cComponent,'name=',Pmethod(@do_component_setname),1);
  rb_define_method(cComponent,'tag',Pmethod(@do_component_tag),0);
