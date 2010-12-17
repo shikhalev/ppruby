@@ -15,13 +15,13 @@
     <Version Minor="9"/>
     <Files Count="2">
       <Item1>
-        <Filename Value="rb18script.pas"/>
+        <Filename Value="rb18script.pp"/>
         <UnitName Value="rb18Script"/>
       </Item1>
       <Item2>
-        <Filename Value="rb18lazlclregister.pas"/>
+        <Filename Value="rb18lazlclregister.pp"/>
         <HasRegisterProc Value="True"/>
-        <UnitName Value="rb18lazlclregister"/>
+        <UnitName Value="rb18LazLCLRegister"/>
       </Item2>
     </Files>
     <Type Value="RunAndDesignTime"/>

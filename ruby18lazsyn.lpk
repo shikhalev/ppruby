@@ -14,12 +14,12 @@
     <Version Minor="9"/>
     <Files Count="2">
       <Item1>
-        <Filename Value="rb18lazsynregister.pas"/>
+        <Filename Value="rb18lazsynregister.pp"/>
         <HasRegisterProc Value="True"/>
         <UnitName Value="rb18lazsynregister"/>
       </Item1>
       <Item2>
-        <Filename Value="rb18syneditsource.pas"/>
+        <Filename Value="rb18syneditsource.pp"/>
         <UnitName Value="rb18syneditsource"/>
       </Item2>
     </Files>
