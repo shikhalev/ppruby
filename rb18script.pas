@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, Forms, Controls, StdCtrls, Graphics, Dialogs,
-  ruby18, rb18System, rb18Classes;
+  ruby18dynamic, rb18System, rb18Classes;
 
 type
 
@@ -96,7 +96,6 @@ procedure TRuby18Script.Execute;
 // oldActive := self.Active;
  self.Active := true;
  rb_eval_string_protect(pchar(fldSource.Text),@res);
- WriteLn(fldSource.Text);
 // rb_eval_string(pchar(fldSource.Text));
 // self.Active := oldActive;
  if res <> 0
@@ -164,7 +163,7 @@ constructor TRuby18Source.Create(AOwner : TComponent);
 {$hints off}
 function do_application (slf : VALUE) : VALUE; cdecl;
  begin
- result := ObjectToValue(Application);
+  result := ObjectToValue(Application);
  end;
 {$hints on}
 

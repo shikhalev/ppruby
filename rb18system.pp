@@ -13,14 +13,13 @@ interface
 
 uses
   SysUtils, TypInfo,
-  ruby18;
+  ruby18dynamic;
 
 function getActive : boolean; inline;
 procedure setActive (Val : boolean);
 
 property Active : boolean read getActive write setActive;
 procedure Initialize;
-procedure Initialize (const ScrName : utf8string);
 procedure Finalize;
 
 function ValueToInt    (v : VALUE) : ptrint;
@@ -148,7 +147,6 @@ procedure DelInitHook (hook : TRubyHook);
 implementation
 
 var
-  isActive : boolean = false;
   scriptName : utf8string;
   clsCache : array of record
     rb_class : VALUE;
@@ -271,12 +269,9 @@ procedure do_init;
  var
    idx : ptrint;
  begin
- ruby_init;
- ruby_init_loadpath;
- ruby_script(pchar(scriptName));
+ LoadRuby();
  setLength(objCache, 0);
  setLength(clsCache, 0);
- isActive := true;
  for idx := 0 to high(hooksActivate) do
      if hooksActivate[idx] <> nil
         then hooksActivate[idx]();
@@ -284,15 +279,14 @@ procedure do_init;
 
 procedure do_done;
  begin
- ruby_finalize;
+ UnloadRuby;
  setLength(objCache, 0);
  setLength(clsCache, 0);
- isActive := false;
  end;
 
 procedure do_check_active (const source : ansistring); inline;
  begin
- if not isActive
+ if not isRubyLoaded
     then raise ERubyInactive.CreateFmt(msgRubyInactive, [source]);
  end;
 
@@ -324,12 +318,12 @@ function do_args (argc : integer; argv : PVALUE) : TRubyArgs;
 
 function getActive : boolean; inline;
  begin
- result := isActive
+ result := isRubyLoaded
  end;
 
 procedure setActive (Val : boolean);
  begin
- if not (Val = isActive)
+ if not (Val = isRubyLoaded)
     then if Val
             then do_init
             else do_done;
@@ -337,22 +331,13 @@ procedure setActive (Val : boolean);
 
 procedure Initialize;
  begin
- if not isActive
+ if not isRubyLoaded
     then do_init;
- end;
-
-procedure Initialize (const ScrName : utf8string); inline;
- begin
- if not isActive
-    then begin
-         scriptName := ScrName;
-         do_init;
-         end;
  end;
 
 procedure Finalize;
  begin
- if isActive
+ if isRubyLoaded
     then do_done;
  end;
 
@@ -935,11 +920,6 @@ function ClassToValue (cls : TClass) : VALUE;
     then result := rb_define_class(pchar(do_classname(cls)),rb_cObject)
     else result := rb_define_class(pchar(do_classname(cls)),ClassToValue(cls.ClassParent));
  clsCache[idx].rb_class := result;
- if cls.GetInterfaceEntry(IRubyManaged) <> nil
-    then begin
-         rb_define_alloc_func(result,@do_alloc);
-         rb_define_method(result,'initialize',Pmethod(@do_initialize),-1);
-         end;
  rb_define_method(result,'method_missing',Pmethod(@do_method_missing),-1);
  for clsidx := 0 to high(clsHooks) do
      if clsHooks[clsidx].cls = cls
@@ -951,12 +931,12 @@ function ObjectToValue(obj : TObject) : VALUE;
  var
    idx : ptrint;
  begin
- if obj = nil
-    then exit(Qnil);
- if do_find_object(obj, idx)
-    then exit(objCache[idx].rb_object);
- result := rb_data_object_alloc(ClassToValue(obj.ClassType), pointer(obj), nil, nil);
- do_insert_object(obj, result, idx);
+  if obj = nil
+     then exit(Qnil);
+  if do_find_object(obj, idx)
+     then exit(objCache[idx].rb_object);
+  result := rb_data_object_alloc(ClassToValue(obj.ClassType), pointer(obj), nil, nil);
+  do_insert_object(obj, result, idx);
  end;
 
 operator := (v : VALUE) : ptrint;

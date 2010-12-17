@@ -91,8 +91,8 @@ procedure rb_check_type (x : VALUE; t : integer); cdecl; external 'ruby18';
 
 function rb_str_to_str (str : VALUE) : VALUE; cdecl; external 'ruby18';
 function rb_string_value (var str : VALUE) : VALUE; cdecl; external 'ruby18';
-function rb_string_value_ptr (var str : VALUE) : PByte; external 'ruby18';
-function rb_string_value_cstr (var str : VALUE) : pchar; external 'ruby18';
+function rb_string_value_ptr (var str : VALUE) : PByte; cdecl; external 'ruby18';
+function rb_string_value_cstr (var str : VALUE) : pchar; cdecl; external 'ruby18';
 
 procedure rb_check_safe_obj (x : VALUE); cdecl; external 'ruby18';
 procedure rb_check_safe_str (x : VALUE); cdecl; external 'ruby18';

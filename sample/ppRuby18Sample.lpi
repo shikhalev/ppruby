@@ -38,12 +38,12 @@
         <PackageName Value="LCL"/>
       </Item2>
     </RequiredPackages>
-    <Units Count="5">
+    <Units Count="10">
       <Unit0>
         <Filename Value="ppRuby18Sample.lpr"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="ppRuby18Sample"/>
-        <UsageCount Value="23"/>
+        <UsageCount Value="29"/>
       </Unit0>
       <Unit1>
         <Filename Value="mainform.pas"/>
@@ -55,18 +55,19 @@
         <WindowIndex Value="0"/>
         <TopLine Value="4"/>
         <CursorPos X="36" Y="9"/>
-        <UsageCount Value="23"/>
+        <UsageCount Value="29"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
       </Unit1>
       <Unit2>
         <Filename Value="../rb18script.pas"/>
         <UnitName Value="rb18Script"/>
+        <IsVisibleTab Value="True"/>
         <EditorIndex Value="1"/>
         <WindowIndex Value="0"/>
-        <TopLine Value="88"/>
-        <CursorPos X="1" Y="98"/>
-        <UsageCount Value="11"/>
+        <TopLine Value="153"/>
+        <CursorPos X="1" Y="172"/>
+        <UsageCount Value="14"/>
         <Loaded Value="True"/>
       </Unit2>
       <Unit3>
@@ -74,52 +75,192 @@
         <UnitName Value="ruby18"/>
         <EditorIndex Value="3"/>
         <WindowIndex Value="0"/>
-        <TopLine Value="580"/>
-        <CursorPos X="10" Y="592"/>
-        <UsageCount Value="11"/>
+        <TopLine Value="546"/>
+        <CursorPos X="11" Y="570"/>
+        <UsageCount Value="14"/>
         <Loaded Value="True"/>
       </Unit3>
       <Unit4>
         <Filename Value="../rb18system.pp"/>
         <UnitName Value="rb18System"/>
-        <IsVisibleTab Value="True"/>
         <EditorIndex Value="2"/>
         <WindowIndex Value="0"/>
-        <TopLine Value="892"/>
-        <CursorPos X="20" Y="899"/>
-        <UsageCount Value="11"/>
+        <TopLine Value="821"/>
+        <CursorPos X="1" Y="844"/>
+        <UsageCount Value="14"/>
         <Loaded Value="True"/>
       </Unit4>
+      <Unit5>
+        <Filename Value="../ruby18dynamic.pp"/>
+        <UnitName Value="ruby18dynamic"/>
+        <EditorIndex Value="4"/>
+        <WindowIndex Value="0"/>
+        <TopLine Value="209"/>
+        <CursorPos X="70" Y="225"/>
+        <UsageCount Value="12"/>
+        <Loaded Value="True"/>
+      </Unit5>
+      <Unit6>
+        <Filename Value="../../../../opt/src/freepascal/rtl/inc/dynlibs.pas"/>
+        <UnitName Value="dynlibs"/>
+        <EditorIndex Value="6"/>
+        <WindowIndex Value="0"/>
+        <TopLine Value="88"/>
+        <CursorPos X="19" Y="115"/>
+        <UsageCount Value="11"/>
+        <Loaded Value="True"/>
+      </Unit6>
+      <Unit7>
+        <Filename Value="../../../../opt/src/freepascal/rtl/unix/dynlibs.inc"/>
+        <EditorIndex Value="7"/>
+        <WindowIndex Value="0"/>
+        <TopLine Value="38"/>
+        <CursorPos X="3" Y="58"/>
+        <UsageCount Value="11"/>
+        <Loaded Value="True"/>
+      </Unit7>
+      <Unit8>
+        <Filename Value="../../../../opt/src/freepascal/rtl/unix/dl.pp"/>
+        <UnitName Value="dl"/>
+        <EditorIndex Value="8"/>
+        <WindowIndex Value="0"/>
+        <TopLine Value="14"/>
+        <CursorPos X="25" Y="20"/>
+        <UsageCount Value="11"/>
+        <Loaded Value="True"/>
+      </Unit8>
+      <Unit9>
+        <Filename Value="../rb18classes.pp"/>
+        <UnitName Value="rb18Classes"/>
+        <EditorIndex Value="5"/>
+        <WindowIndex Value="0"/>
+        <TopLine Value="101"/>
+        <CursorPos X="39" Y="113"/>
+        <UsageCount Value="10"/>
+        <Loaded Value="True"/>
+      </Unit9>
     </Units>
-    <JumpHistory Count="7" HistoryIndex="6">
+    <JumpHistory Count="30" HistoryIndex="29">
       <Position1>
-        <Filename Value="mainform.pas"/>
-        <Caret Line="1" Column="1" TopLine="1"/>
+        <Filename Value="../rb18classes.pp"/>
+        <Caret Line="41" Column="57" TopLine="29"/>
       </Position1>
       <Position2>
-        <Filename Value="mainform.pas"/>
-        <Caret Line="9" Column="36" TopLine="4"/>
+        <Filename Value="../ruby18.pp"/>
+        <Caret Line="1712" Column="1" TopLine="1690"/>
       </Position2>
       <Position3>
-        <Filename Value="../rb18script.pas"/>
-        <Caret Line="97" Column="9" TopLine="80"/>
+        <Filename Value="../ruby18.pp"/>
+        <Caret Line="1" Column="1" TopLine="1"/>
       </Position3>
       <Position4>
-        <Filename Value="../rb18script.pas"/>
-        <Caret Line="9" Column="17" TopLine="1"/>
+        <Filename Value="../rb18classes.pp"/>
+        <Caret Line="67" Column="24" TopLine="55"/>
       </Position4>
       <Position5>
-        <Filename Value="../rb18system.pp"/>
-        <Caret Line="910" Column="19" TopLine="892"/>
+        <Filename Value="../ruby18.pp"/>
+        <Caret Line="657" Column="1" TopLine="637"/>
       </Position5>
       <Position6>
-        <Filename Value="../rb18system.pp"/>
-        <Caret Line="520" Column="30" TopLine="519"/>
+        <Filename Value="../rb18classes.pp"/>
+        <Caret Line="113" Column="19" TopLine="101"/>
       </Position6>
       <Position7>
         <Filename Value="../rb18script.pas"/>
-        <Caret Line="102" Column="3" TopLine="80"/>
+        <Caret Line="98" Column="21" TopLine="88"/>
       </Position7>
+      <Position8>
+        <Filename Value="../rb18script.pas"/>
+        <Caret Line="166" Column="12" TopLine="153"/>
+      </Position8>
+      <Position9>
+        <Filename Value="../rb18script.pas"/>
+        <Caret Line="9" Column="16" TopLine="1"/>
+      </Position9>
+      <Position10>
+        <Filename Value="../ruby18.pp"/>
+        <Caret Line="518" Column="1" TopLine="506"/>
+      </Position10>
+      <Position11>
+        <Filename Value="../ruby18.pp"/>
+        <Caret Line="1" Column="1" TopLine="1"/>
+      </Position11>
+      <Position12>
+        <Filename Value="../ruby18.pp"/>
+        <Caret Line="593" Column="1" TopLine="573"/>
+      </Position12>
+      <Position13>
+        <Filename Value="../ruby18.pp"/>
+        <Caret Line="1" Column="1" TopLine="1"/>
+      </Position13>
+      <Position14>
+        <Filename Value="../ruby18.pp"/>
+        <Caret Line="546" Column="26" TopLine="526"/>
+      </Position14>
+      <Position15>
+        <Filename Value="../rb18system.pp"/>
+        <Caret Line="1083" Column="23" TopLine="1060"/>
+      </Position15>
+      <Position16>
+        <Filename Value="../rb18system.pp"/>
+        <Caret Line="220" Column="12" TopLine="204"/>
+      </Position16>
+      <Position17>
+        <Filename Value="../rb18system.pp"/>
+        <Caret Line="151" Column="1" TopLine="133"/>
+      </Position17>
+      <Position18>
+        <Filename Value="../rb18system.pp"/>
+        <Caret Line="276" Column="1" TopLine="264"/>
+      </Position18>
+      <Position19>
+        <Filename Value="../rb18system.pp"/>
+        <Caret Line="286" Column="1" TopLine="274"/>
+      </Position19>
+      <Position20>
+        <Filename Value="../rb18system.pp"/>
+        <Caret Line="290" Column="21" TopLine="279"/>
+      </Position20>
+      <Position21>
+        <Filename Value="../rb18system.pp"/>
+        <Caret Line="322" Column="24" TopLine="311"/>
+      </Position21>
+      <Position22>
+        <Filename Value="../rb18system.pp"/>
+        <Caret Line="327" Column="28" TopLine="315"/>
+      </Position22>
+      <Position23>
+        <Filename Value="../rb18system.pp"/>
+        <Caret Line="341" Column="17" TopLine="324"/>
+      </Position23>
+      <Position24>
+        <Filename Value="../rb18script.pas"/>
+        <Caret Line="96" Column="3" TopLine="83"/>
+      </Position24>
+      <Position25>
+        <Filename Value="../rb18script.pas"/>
+        <Caret Line="173" Column="20" TopLine="153"/>
+      </Position25>
+      <Position26>
+        <Filename Value="../rb18script.pas"/>
+        <Caret Line="167" Column="22" TopLine="153"/>
+      </Position26>
+      <Position27>
+        <Filename Value="../rb18system.pp"/>
+        <Caret Line="947" Column="30" TopLine="929"/>
+      </Position27>
+      <Position28>
+        <Filename Value="../rb18system.pp"/>
+        <Caret Line="946" Column="40" TopLine="928"/>
+      </Position28>
+      <Position29>
+        <Filename Value="../rb18system.pp"/>
+        <Caret Line="910" Column="1" TopLine="905"/>
+      </Position29>
+      <Position30>
+        <Filename Value="../rb18classes.pp"/>
+        <Caret Line="113" Column="39" TopLine="101"/>
+      </Position30>
     </JumpHistory>
   </ProjectOptions>
   <CompilerOptions>
@@ -138,7 +279,6 @@
         <OverflowChecks Value="True"/>
         <StackChecks Value="True"/>
       </Checks>
-      <VerifyObjMethodCallValidity Value="True"/>
       <Optimizations>
         <OptimizationLevel Value="2"/>
       </Optimizations>

@@ -13,7 +13,7 @@ interface
 
 uses
   Classes, SysUtils,
-  ruby18, rb18System;
+  ruby18dynamic, rb18System;
 
 implementation
 

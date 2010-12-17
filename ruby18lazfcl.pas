@@ -7,7 +7,7 @@ unit Ruby18LazFCL;
 interface
 
 uses
-  rb18Classes, rb18System, ruby18, LazarusPackageIntf;
+  rb18Classes, rb18System, ruby18dynamic, LazarusPackageIntf;
 
 implementation
 
