@@ -4,6 +4,7 @@
 
 {$codepage utf8}
 {$mode objfpc}{$h+}
+{$packrecords C}
 {$smartlink on}
 {$typeinfo on}
 
@@ -21,8 +22,6 @@ procedure setActive (Val : boolean);
 property Active : boolean read getActive write setActive;
 procedure Initialize;
 procedure Finalize;
-
-function ErrorInfo : utf8string;
 
 function ValueToInt    (v : VALUE) : ptrint;
 function ValueToUInt   (v : VALUE) : ptruint;
@@ -65,25 +64,22 @@ type
   end;
 
 type
-  ERuby = class(Exception)end;
-  ERubyInactive = class(ERuby)end;
-  ERubyConversion = class(ERuby)end;
+  ERubyInactive = class(ERubyError)end;
+  ERubyConversion = class(ERubyError)end;
 
 resourcestring
   msgRubyInactive =
-    'Ruby binding is inactive. [%s]';
+    'Ruby binding is inactive.';
   msgRubyConversion =
-    'Error <%d> while Ruby <-> Pascal conversion. [%s]';
+    'Error while Ruby <-> Pascal conversion.';
   msgRubyNotClass =
-    '<%s> is not a Class. [%s]';
+    '<%s> is not a Class.';
   msgRubyNotPascalClass =
-    '<%s> is not a Pascal Class. [%s]';
+    '<%s> is not a Pascal Class.';
   msgRubyNotPascalObject =
-    '<%s> is not a Pascal object. [%s]';
+    '<%s> is not a Pascal object.';
   msgRubyNilClass =
-    'Nil class value is not allowed. [%s]';
-  msgRubyError =
-    'Error #%d while Ruby execution. [%s]'+LineEnding+'%s';
+    'Nil class value is not allowed.';
 
 // TODO: Привести к единому знаменателю сообщения.
 
@@ -273,16 +269,16 @@ procedure do_done;
  setLength(clsCache, 0);
  end;
 
-procedure do_check_active (const source : ansistring); inline;
+procedure do_check_active; inline;
  begin
  if not isRubyLoaded
-    then raise ERubyInactive.CreateFmt(msgRubyInactive, [source]);
+    then raise ERubyInactive.Create(msgRubyInactive);
  end;
 
-procedure do_check_conversion (const source : ansistring; res : integer); inline;
+procedure do_check_conversion (res : integer); inline;
  begin
  if res <> 0
-    then raise ERubyConversion.CreateFmt(msgRubyConversion, [res, source]);
+    then raise ERubyConversion.Create(msgRubyConversion);
  end;
 
 function do_inspect (v : VALUE) : utf8string; inline;
@@ -343,20 +339,15 @@ function try_valuetoint (v : VALUE) : VALUE; cdecl;
  result := Qnil
  end;
 
-function ErrorInfo : utf8string;
- begin
-  result := do_inspect(ruby_errinfo);
- end;
-
 function ValueToInt (v : VALUE) : ptrint;
  var
    rec : TRecInt;
    res : integer;
  begin
- do_check_active('ValueToInt()');
+ do_check_active;
  rec.value := v;
  rb_protect(@try_valuetoint, VALUE(@rec), @res);
- do_check_conversion('ValueToInt()',res);
+ do_check_conversion(res);
  result := rec.ptrint;
  end;
 
@@ -378,10 +369,10 @@ function ValueToUInt (v : VALUE) : ptruint;
    rec : TRecUInt;
    res : integer;
  begin
- do_check_active('ValueToUInt()');
+ do_check_active;
  rec.value := v;
  rb_protect(@try_valuetouint,VALUE(@rec),@res);
- do_check_conversion('ValueToUInt()',res);
+ do_check_conversion(res);
  result := rec.ptruint;
  end;
 
@@ -403,10 +394,10 @@ function ValueToDouble (v : VALUE) : double;
    rec : TRecDouble;
    res : integer;
  begin
- do_check_active('ValueToDouble()');
+ do_check_active;
  rec.value := v;
  rb_protect(@try_valuetodouble,VALUE(@rec),@res);
- do_check_conversion('ValueToDouble()',res);
+ do_check_conversion(res);
  result := rec.double;
  end;
 
@@ -433,10 +424,10 @@ function ValueToStr (v : VALUE) : utf8string;
    rec : TRecStr;
    res : integer;
  begin
- do_check_active('ValueToStr()');
+ do_check_active;
  rec.value := v;
  rb_protect(@try_valuetostr,VALUE(@rec),@res);
- do_check_conversion('ValueToStr()',res);
+ do_check_conversion(res);
  result := utf8string(rec.pchar) + '';
  end;
 
@@ -456,10 +447,10 @@ function IntToValue (v : ptrint) : VALUE;
    rec : TRecInt;
    res : integer;
  begin
- do_check_active('IntToValue()');
+ do_check_active;
  rec.ptrint := v;
  rb_protect(@try_inttovalue,VALUE(@rec),@res);
- do_check_conversion('IntToValue()',res);
+ do_check_conversion(res);
  result := rec.value;
  end;
 
@@ -474,10 +465,10 @@ function UIntToValue (v : ptruint) : VALUE;
    rec : TRecUInt;
    res : integer;
  begin
- do_check_active('UIntToValue()');
+ do_check_active;
  rec.ptruint := v;
  rb_protect(@try_uinttovalue,VALUE(@rec),@res);
- do_check_conversion('UIntToValue()',res);
+ do_check_conversion(res);
  result := rec.value;
  end;
 
@@ -492,10 +483,10 @@ function DoubleToValue (const v : double) : VALUE;
    rec : TRecDouble;
    res : integer;
  begin
- do_check_active('DoubleToValue()');
+ do_check_active;
  rec.double := v;
  rb_protect(@try_doubletovalue,VALUE(@rec),@res);
- do_check_conversion('DoubleToValue()',res);
+ do_check_conversion(res);
  result := rec.value;
  end;
 
@@ -517,10 +508,10 @@ function StrToValue (const v : utf8string) : VALUE;
    rec : TRecStr;
    res : integer;
  begin
- do_check_active('StrToValue()');
+ do_check_active;
  rec.pchar := pchar(v);
  rb_protect(@try_strtovalue,VALUE(@rec),@res);
- do_check_conversion('StrToValue()',res);
+ do_check_conversion(res);
  result := rec.value;
  end;
 
@@ -655,10 +646,10 @@ function ValueToId (v : VALUE) : ID;
    rec : TRecId;
    res : integer;
  begin
- do_check_active('ValueToId()');
+ do_check_active;
  rec.value := v;
  rb_protect(@try_valuetoid,VALUE(@rec),@res);
- do_check_conversion('ValueToId()',res);
+ do_check_conversion(res);
  result := rec.id;
  end;
 
@@ -685,10 +676,10 @@ function IdToStr (id : ID) : utf8string;
    rec : TRecIStr;
    res : integer;
  begin
- do_check_active('IdToStr()');
+ do_check_active;
  rec.id := id;
  rb_protect(@try_idtostr,VALUE(@rec),@res);
- do_check_conversion('IdToStr()',res);
+ do_check_conversion(res);
  result := utf8string(rec.pchar);
  end;
 
@@ -703,10 +694,10 @@ function StrToId (const v : utf8string) : ID;
    rec : TRecIStr;
    res : integer;
  begin
- do_check_active('StrToId()');
+ do_check_active;
  rec.pchar := pchar(v);
  rb_protect(@try_strtoid,VALUE(@rec),@res);
- do_check_conversion('StrToId()',res);
+ do_check_conversion(res);
  result := rec.id;
  end;
 
@@ -714,20 +705,20 @@ function ValueToClass (v : VALUE) : TClass;
  var
    idx : ptrint;
  begin
- do_check_active('ValueToClass()');
+ do_check_active;
  if not (rb_type(v) = T_CLASS)
-    then raise ERubyConversion.CreateFmt(msgRubyNotClass,[do_inspect(v), 'ValueToClass()']);
+    then raise ERubyConversion.CreateFmt(msgRubyNotClass,[do_inspect(v)]);
  for idx := 0 to high(clsCache) do
      if clsCache[idx].rb_class = v
         then exit(clsCache[idx].pp_class);
- raise ERubyConversion.CreateFmt(msgRubyNotPascalClass,[do_inspect(v), 'ValueToClass()']);
+ raise ERubyConversion.CreateFmt(msgRubyNotPascalClass,[do_inspect(v)]);
  end;
 
 function ValueToObject (v : VALUE) : TObject;
  begin
- do_check_active('ValueToObject()');
+ do_check_active;
  if not (rb_type(v) = T_DATA)
-    then raise ERubyConversion.CreateFmt(msgRubyNotPascalObject,[do_inspect(v), 'ValueToObject()']);
+    then raise ERubyConversion.CreateFmt(msgRubyNotPascalObject,[do_inspect(v)]);
  result := TObject(PRData(v)^.data);
  end;
 
@@ -834,6 +825,50 @@ function do_property_set(obj : TObject; const name : shortstring; const val : VA
       end;
  end;
 
+// TODO: Альтернатива: элементы как свойства.
+
+type
+  PRecProp = ^TRecProp;
+  TRecProp = record
+    obj, name, value : VALUE;
+  end;
+
+function try_alt_property_get (v : VALUE) : VALUE; cdecl;
+ begin
+ PRecProp(v)^.value := rb_funcall2(PRecProp(v)^.obj, rb_intern('[]'), 1, @PRecProp(v)^.name);
+ result := Qnil;
+ end;
+
+function alt_property_get (obj : VALUE; id : VALUE; out return : VALUE) : boolean;
+ var
+   rec : TRecProp;
+   res : integer;
+ begin
+ rec.obj := obj;
+ rec.name := id;
+ rb_protect(@try_alt_property_get, VALUE(@rec), @res);
+ return := rec.value;
+ result := (res = 0);
+ end;
+
+function try_alt_property_set (v : VALUE) : VALUE; cdecl;
+ begin
+ rb_funcall2(PRecProp(v)^.obj, rb_intern('[]='), 2, @PRecProp(v)^.name);
+ result := Qnil;
+ end;
+
+function alt_property_set(obj : VALUE; id : VALUE; v : VALUE) : boolean;
+ var
+   rec : TRecProp;
+   res : integer;
+ begin
+ rec.obj := obj;
+ rec.name := id;
+ rec.value := v;
+ rb_protect(@try_alt_property_set, VALUE(@rec), @res);
+ result := (res = 0)
+ end;
+
 function do_method_missing (argc : integer; argv : PVALUE; slf : VALUE) : VALUE; cdecl;
  var
    obj : TObject;
@@ -842,17 +877,23 @@ function do_method_missing (argc : integer; argv : PVALUE; slf : VALUE) : VALUE;
  obj := ValueToObject(slf);
  msg.Msg := IdToStr(ValueToId(argv[0]));
  msg.Return := Qundef;
- if (argc = 1) and do_property_get(obj, msg.Msg, result)
-    then exit;
+ if (argc = 1)
+    then if do_property_get(obj, msg.Msg, result)
+            then exit
+            else if alt_property_get(slf, argv[0], result)
+                    then exit;
  result := argv[1];
- if (argc = 2) and (msg.Msg[length(msg.Msg)] <> '=') or do_property_set(obj, Copy(msg.Msg, 1, length(msg.Msg) - 1), argv[1])
-    then exit;
+ if (argc = 2) and (msg.Msg[length(msg.Msg)] = '=')
+    then if do_property_set(obj, Copy(msg.Msg, 1, length(msg.Msg) - 1), argv[1])
+            then exit
+            else if alt_property_set(slf, argv[0], argv[1])
+                    then exit;
  msg.Args := do_args(argc - 1, @(argv[1]));
  obj.DispatchStr(msg);
  setLength(msg.Args, 0);
  result := msg.Return;
  if result = Qundef
-    then rb_notimplement();
+    then rb_raise(rb_eNoMethodError, 'no method ''%s'' for %s', pchar(ansistring(msg.Msg)), pchar(do_inspect(slf)));
  end;
 
 function do_unitname (slf : VALUE) : VALUE; cdecl;
@@ -870,8 +911,8 @@ function ClassToValue (cls : TClass) : VALUE;
    idx, clsidx, hookidx : ptrint;
  begin
  if cls = nil
-    then raise ERubyConversion.CreateFmt(msgRubyNilClass,['ClassToValue()']);
- do_check_active('ValueToObject()');
+    then raise ERubyConversion.Create(msgRubyNilClass);
+ do_check_active;
  for idx := 0 to high(clsCache) do
      if clsCache[idx].pp_class = cls
         then exit(clsCache[idx].rb_class);

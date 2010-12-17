@@ -97,7 +97,7 @@ procedure TRuby18Script.Execute;
  self.Active := true;
  rb_eval_string_protect(pchar(fldSource.Text),@res);
  if res <> 0
-    then raise ERuby.CreateFmt(msgRubyError, [res, 'TRuby18Script.Execute()', ErrorInfo]);
+    then raise ERubyError.Create(msgRubyError);
 // rb_eval_string(pchar(fldSource.Text));
  self.Active := oldActive;
  end;

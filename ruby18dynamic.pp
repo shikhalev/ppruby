@@ -135,6 +135,9 @@ var
   rb_eval_string_protect : function (str : pchar; state : PInteger) : VALUE; cdecl;
   rb_define_global_function : procedure (name : pchar; func : Pmethod; argc : integer); cdecl;
   rb_notimplement : procedure (); cdecl;
+  rb_raise : procedure (exc : VALUE; fmt : pchar); varargs; cdecl;
+  rb_funcall : function (recv : VALUE; mid : ID; n : integer) : VALUE; varargs; cdecl;
+  rb_funcall2 : function (recv : VALUE; mid : ID; argc : integer; argv : PVALUE) : VALUE; cdecl;
 
 var
   rb_cObject : VALUE;
@@ -144,15 +147,26 @@ var
   rb_cTrueClass : VALUE;
   rb_cSymbol : VALUE;
 
+  rb_eNoMethodError : VALUE;
+
   rb_mEnumerable : VALUE;
 
   p_ruby_errinfo : PVALUE;
 
 type
-  ERubyError = class(Exception)end;
+
+  { ERubyError }
+
+  ERubyError = class(Exception)
+  public
+    constructor Create (const msg : ansistring);
+    constructor CreateFmt (const msg : ansistring; const args : array of const);
+  end;
   ERubyLibError = class(Exception)end;
 
 resourcestring
+  msgRubyError =
+    'The Ruby Error.';
   msgRubyLoadError =
     'Error while load the Ruby library.';
   msgRubyUnloadError =
@@ -162,12 +176,14 @@ resourcestring
   msgRubyIsNotLoaded =
     'The Ruby library is not loaded.';
   msgRubyLibError =
-    'The Ruby library error #%d.';
+    'The Ruby library error.';
 
 function isRubyLoaded : boolean; inline;
 
 procedure LoadRuby;
 procedure UnloadRuby;
+
+function RubyErrorString : utf8string;
 
 function rb_class_of (obj : VALUE) : VALUE; inline;
 function rb_type (obj : VALUE) : integer; inline;
@@ -200,6 +216,8 @@ procedure load_functions; inline;
   pointer(rb_define_singleton_method) := GetProcedureAddress(hLib, 'rb_define_singleton_method');
   pointer(rb_eval_string_protect)     := GetProcedureAddress(hLib, 'rb_eval_string_protect');
   pointer(rb_float_new)               := GetProcedureAddress(hLib, 'rb_float_new');
+  pointer(rb_funcall)                 := GetProcedureAddress(hLib, 'rb_funcall');
+  pointer(rb_funcall2)                := GetProcedureAddress(hLib, 'rb_funcall2');
   pointer(rb_id2name)                 := GetProcedureAddress(hLib, 'rb_id2name');
   pointer(rb_include_module)          := GetProcedureAddress(hLib, 'rb_include_module');
   pointer(rb_inspect)                 := GetProcedureAddress(hLib, 'rb_inspect');
@@ -210,6 +228,7 @@ procedure load_functions; inline;
   pointer(rb_num2long)                := GetProcedureAddress(hLib, 'rb_num2long');
   pointer(rb_num2ulong)               := GetProcedureAddress(hLib, 'rb_num2ulong');
   pointer(rb_protect)                 := GetProcedureAddress(hLib, 'rb_protect');
+  pointer(rb_raise)                   := GetProcedureAddress(hLib, 'rb_raise');
   pointer(rb_string_value_cstr)       := GetProcedureAddress(hLib, 'rb_string_value_cstr');
   pointer(rb_str_new2)                := GetProcedureAddress(hLib, 'rb_str_new2');
   pointer(rb_to_id)                   := GetProcedureAddress(hLib, 'rb_to_id');
@@ -218,25 +237,16 @@ procedure load_functions; inline;
  end;
 
 procedure load_variables; inline;
- var
-   res : integer;
  begin
   p_ruby_errinfo := GetProcedureAddress(hLib, 'ruby_errinfo');
-  rb_cFalseClass := rb_eval_string_protect('FalseClass', @res);
-  if res = 0
-     then rb_cFixnum := rb_eval_string_protect('Fixnum', @res);
-  if res = 0
-     then rb_cNilClass := rb_eval_string_protect('NilClass', @res);
-  if res = 0
-     then rb_cObject := rb_eval_string_protect('Object', @res);
-  if res = 0
-     then rb_cSymbol := rb_eval_string_protect('Symbol', @res);
-  if res = 0
-     then rb_cTrueClass := rb_eval_string_protect('TrueClass', @res);
-  if res = 0
-     then rb_mEnumerable := rb_eval_string_protect('Enumerable', @res);
-  if not (res = 0)
-     then raise ERubyLibError.CreateFmt(msgRubyLibError, [res]);
+  rb_cFalseClass := PVALUE(GetProcedureAddress(hLib, 'rb_cFalseClass'))^;
+  rb_cFixnum     := PVALUE(GetProcedureAddress(hLib, 'rb_cFixnum'))^;
+  rb_cNilClass   := PVALUE(GetProcedureAddress(hLib, 'rb_cNilClass'))^;
+  rb_cObject     := PVALUE(GetProcedureAddress(hLib, 'rb_cObject'))^;
+  rb_cSymbol     := PVALUE(GetProcedureAddress(hLib, 'rb_cSymbol'))^;
+  rb_cTrueClass  := PVALUE(GetProcedureAddress(hLib, 'rb_cTrueClass'))^;
+  rb_eNoMethodError := PVALUE(GetProcedureAddress(hLib, 'rb_eNoMethodError'))^;
+  rb_mEnumerable := PVALUE(GetProcedureAddress(hLib, 'rb_mEnumerable'))^;
  end;
 
 procedure LoadRuby;
@@ -255,7 +265,7 @@ procedure LoadRuby;
   load_variables();
   rb_eval_string_protect('$-K = "UTF8"', @res);
   if not (res = 0)
-     then raise ERubyLibError.CreateFmt(msgRubyLibError, [res]);
+     then raise ERubyLibError.Create(msgRubyLibError);
  end;
 
 procedure UnloadRuby;
@@ -266,6 +276,13 @@ procedure UnloadRuby;
   if not UnloadLibrary(hLib)
      then raise ERubyLibError.Create(msgRubyUnloadError);
   hLib := 0;
+ end;
+
+function RubyErrorString : utf8string;
+ begin
+  if not isRubyLoaded
+     then result := '<inactive>'
+     else result := UTF8String(rb_string_value_cstr(rb_inspect(ruby_errinfo)))
  end;
 
 function rb_class_of (obj : VALUE) : VALUE; inline;
@@ -319,6 +336,23 @@ operator = (a, b : VALUE) : boolean; inline;
 operator = (a, b : ID) : boolean; inline;
  begin
   result := (a.data = b.data)
+ end;
+
+{ ERubyError }
+
+constructor ERubyError.Create(const msg : ansistring);
+ begin
+  inherited Create (msg);
+  if (hLib <> 0) and (p_ruby_errinfo^ <> Qnil)
+     then self.Message := self.Message + LineEnding + LineEnding + RubyErrorString;
+ end;
+
+constructor ERubyError.CreateFmt(const msg : ansistring;
+  const args : array of const);
+ begin
+  inherited CreateFmt (msg, args);
+  if (hLib <> 0) and (p_ruby_errinfo^ <> Qnil)
+     then self.Message := self.Message + LineEnding + LineEnding + RubyErrorString;
  end;
 
 end.

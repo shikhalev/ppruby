@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs, ComCtrls,
-  StdCtrls, ExtCtrls, Buttons, rb18Script;
+  StdCtrls, ExtCtrls, Buttons, rb18Script, ruby18dynamic, rb18System;
 
 type
 
