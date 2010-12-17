@@ -41,7 +41,7 @@ function do_component_initialize (slf : VALUE; owner : VALUE) : VALUE; cdecl;
     then obj := TComponentClass(ValueToClass(rb_class_of(slf))).Create(nil)
     else obj := TComponentClass(ValueToClass(rb_class_of(slf))).Create(ValueToObject(owner) as TComponent);
  PRData(slf)^.data := pointer(obj);
- RegObject(obj, slf);
+ RegisterObject(obj, slf);
  result := slf;
  end;
 

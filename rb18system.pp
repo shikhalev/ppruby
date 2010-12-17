@@ -55,21 +55,6 @@ function  ClassToValue (cls : TClass ) : VALUE;
 function ObjectToValue (obj : TObject) : VALUE;
 
 type
-  IRubyManaged = interface(IUnknown)
-  ['{0E1D73AB-D04A-45C8-ABED-3E28ABF36FBF}']
-    procedure rb_initialize (const args : array of VALUE);
-    procedure rb_mark;
-  end;
-
-  { TRubyManaged }
-
-  TRubyManaged = class(TInterfacedObject, IRubyManaged)
-  protected
-    procedure rb_initialize (const args : array of VALUE); virtual;
-    procedure rb_mark; virtual;
-  end;
-
-type
   TRubyArgs = array of VALUE;
   TRubyMsg = record
     Msg : shortstring;
@@ -130,7 +115,7 @@ operator := (v : VALUE) : TObject; inline;
 operator := (v : TClass) : VALUE; inline;
 operator := (v : TObject) : VALUE; inline;
 
-procedure RegObject (obj : TObject; v : VALUE);
+procedure RegisterObject (obj : TObject; v : VALUE);
 
 type
   TRubyClassHook = procedure (rb_class : VALUE);
@@ -737,40 +722,6 @@ function ValueToObject (v : VALUE) : TObject;
  result := TObject(PRData(v)^.data);
  end;
 
-procedure do_mark (p : pointer); cdecl;
- begin
- (TObject(p) as IRubyManaged).rb_mark;
- end;
-
-procedure do_free (p : pointer); cdecl;
- begin
- (TObject(p) as IRubyManaged)._Release;
- end;
-
-function do_alloc (cls : VALUE) : VALUE; cdecl;
- var
-   pp_class : TClass;
-   obj : TObject;
- begin
- pp_class := ValueToClass(cls);
- obj := pp_class.Create;
- (obj as IRubyManaged)._AddRef; // Else we have AV :(
- result := rb_data_object_alloc(cls,pointer(obj),@do_mark,@do_free);
- RegObject(obj, result);
- end;
-
-function do_initialize (argc : integer; argv : PVALUE; slf : VALUE) : VALUE; cdecl;
- var
-   args : array of VALUE;
-   obj : TObject;
- begin
- obj := ValueToObject(slf);
- args := do_args(argc, argv);
- (obj as IRubyManaged).rb_initialize(args);
- setLength(args, 0);
- result := slf;
- end;
-
 {$hints off}
 function GetClassProp (obj : TObject; info : PPropInfo) : TClass; inline;
  begin
@@ -1039,7 +990,7 @@ operator := (v : TObject) : VALUE;
  result := ObjectToValue(v);
  end;
 
-procedure RegObject(obj : TObject; v : VALUE);
+procedure RegisterObject(obj : TObject; v : VALUE);
  var
    idx : ptrint;
  begin
@@ -1047,18 +998,6 @@ procedure RegObject(obj : TObject; v : VALUE);
     then objCache[idx].rb_object := v
     else do_insert_object(obj, v, idx);
  end;
-
-{ TRubyManaged }
-
-{$hints off}
-procedure TRubyManaged.rb_initialize(const args : array of VALUE);
- begin
- end;
-
-procedure TRubyManaged.rb_mark;
- begin
- end;
-{$hints on}
 
 procedure TObjectHook (cObject : VALUE);
  begin
