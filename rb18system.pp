@@ -844,7 +844,7 @@ function alt_property_get (obj : VALUE; id : VALUE; out return : VALUE) : boolea
  rec.name := id;
  rb_protect(@try_alt_property_get, VALUE(@rec), @res);
  return := rec.value;
- result := (res = 0);
+ result := (res = 0) and (return <> Qnil);
  end;
 
 function try_alt_property_set (v : VALUE) : VALUE; cdecl;

@@ -138,6 +138,8 @@ var
   rb_raise : procedure (exc : VALUE; fmt : pchar); varargs; cdecl;
   rb_funcall : function (recv : VALUE; mid : ID; n : integer) : VALUE; varargs; cdecl;
   rb_funcall2 : function (recv : VALUE; mid : ID; argc : integer; argv : PVALUE) : VALUE; cdecl;
+  rb_alias : procedure (klass : VALUE; name, def : ID); cdecl;
+  rb_define_alias : procedure (klass : VALUE; name1, name2 : pchar); cdecl;
 
 var
   rb_cObject : VALUE;
@@ -208,7 +210,9 @@ procedure load_functions; inline;
   pointer(ruby_init_loadpath)         := GetProcedureAddress(hLib, 'ruby_init_loadpath');
   pointer(ruby_script)                := GetProcedureAddress(hLib, 'ruby_script');
   pointer(ruby_cleanup)               := GetProcedureAddress(hLib, 'ruby_cleanup');
+  pointer(rb_alias)                   := GetProcedureAddress(hLib, 'rb_alias');
   pointer(rb_data_object_alloc)       := GetProcedureAddress(hLib, 'rb_data_object_alloc');
+  pointer(rb_define_alias)            := GetProcedureAddress(hLib, 'rb_define_alias');
   pointer(rb_define_alloc_func)       := GetProcedureAddress(hLib, 'rb_define_alloc_func');
   pointer(rb_define_class)            := GetProcedureAddress(hLib, 'rb_define_class');
   pointer(rb_define_global_function)  := GetProcedureAddress(hLib, 'rb_define_global_function');
