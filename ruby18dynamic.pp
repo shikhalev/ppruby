@@ -140,6 +140,10 @@ var
   rb_funcall2 : function (recv : VALUE; mid : ID; argc : integer; argv : PVALUE) : VALUE; cdecl;
   rb_alias : procedure (klass : VALUE; name, def : ID); cdecl;
   rb_define_alias : procedure (klass : VALUE; name1, name2 : pchar); cdecl;
+  rb_ll2inum : function (n : int64) : VALUE; cdecl;
+  rb_ull2inum : function (n : qword) : VALUE; cdecl;
+  rb_num2ll : function (val : VALUE) : int64; cdecl;
+  rb_num2ull : function (val : VALUE) : qword; cdecl;
 
 var
   rb_cObject : VALUE;
@@ -238,6 +242,10 @@ procedure load_functions; inline;
   pointer(rb_to_id)                   := GetProcedureAddress(hLib, 'rb_to_id');
   pointer(rb_uint2inum)               := GetProcedureAddress(hLib, 'rb_uint2inum');
   pointer(rb_yield)                   := GetProcedureAddress(hLib, 'rb_yield');
+  pointer(rb_ll2inum)                 := GetProcedureAddress(hLib, 'rb_ll2inum');
+  pointer(rb_ull2inum)                := GetProcedureAddress(hLib, 'rb_ull2inum');
+  pointer(rb_num2ll)                  := GetProcedureAddress(hLib, 'rb_num2ll');
+  pointer(rb_num2ull)                 := GetProcedureAddress(hLib, 'rb_num2ull');
  end;
 
 procedure load_variables; inline;
