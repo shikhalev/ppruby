@@ -774,8 +774,8 @@ function do_property_get(obj : TObject; const name : shortstring; out return : V
       tkBool :
         return := BoolToValue(GetOrdProp(obj, info) <> 0);
       tkClass :
-        return := ClassToValue(GetClassProp(obj, info));
-      tkObject :
+//        return := ClassToValue(GetClassProp(obj, info));
+//      tkObject :
         return := ObjectToValue(GetObjectProp(obj, info));
       else
         result := false
@@ -815,8 +815,8 @@ function do_property_set(obj : TObject; const name : shortstring; const val : VA
       tkBool :
         SetOrdProp(obj, info, ord(ValueToBool(val)));
       tkClass :
-        SetClassProp(obj, info, ValueToClass(val));
-      tkObject :
+//        SetClassProp(obj, info, ValueToClass(val));
+//      tkObject :
         SetObjectProp(obj, info, ValueToObject(val));
       else
         result := false;

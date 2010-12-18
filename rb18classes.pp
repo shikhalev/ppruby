@@ -405,4 +405,5 @@ initialization
  rb18System.AddClassHook(TComponent, @TComponentHook);
  rb18System.AddClassHook(TCollection, @TCollectionHook);
  rb18System.AddClassHook(TCollectionItem, @TCollectionItemHook);
+ rb18System.AddClassHook(TStrings, @TStringsHook);
 end.
