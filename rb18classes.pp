@@ -391,7 +391,7 @@ procedure TStringsHook (cStrings : VALUE);
   rb_define_method(cStrings, 'savetostream', Pmethod(@do_strings_savetostream), 1);
   rb_define_method(cStrings, 'count', Pmethod(@do_strings_count), 0);
   rb_define_method(cStrings, 'text', Pmethod(@do_strings_text), 0);
-  rb_define_method(cStrings, 'text=', Pmethod(@do_strings_settext), 0);
+  rb_define_method(cStrings, 'text=', Pmethod(@do_strings_settext), 1);
   rb_define_method(cStrings, '[]', Pmethod(@do_strings_item), 1);
   rb_define_method(cStrings, '[]=', Pmethod(@do_strings_setitem), 2);
   rb_include_module(cStrings, rb_mEnumerable);

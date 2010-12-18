@@ -24,7 +24,18 @@ object frmMain: TfrmMain
     Font.Name = 'Monospace'
     Font.Pitch = fpFixed
     Lines.Strings = (
-      'application[:frmMain][:stbMain].SimpleText = "Ololo — Lalala"'
+      'outControl = application.frmMain.memOutput'
+      'outControl.lines.clear'
+      ''
+      'a = outControl.class'
+      ''
+      'while a != nil do'
+      '  outControl.lines.add a.name'
+      '  outControl.lines.add "  ↓"'
+      '  a = a.superclass'
+      'end'
+      'outControl.lines.add " nil"'
+      ''
       ''
     )
     ParentFont = False
@@ -104,6 +115,7 @@ object frmMain: TfrmMain
       Font.Pitch = fpFixed
       Lines.Strings = (
         'memOutput'
+        ''
         ''
       )
       ParentFont = False

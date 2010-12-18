@@ -43,7 +43,7 @@
         <Filename Value="ppRuby18Sample.lpr"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="ppRuby18Sample"/>
-        <UsageCount Value="48"/>
+        <UsageCount Value="49"/>
       </Unit0>
       <Unit1>
         <Filename Value="mainform.pas"/>
@@ -55,7 +55,7 @@
         <WindowIndex Value="0"/>
         <TopLine Value="1"/>
         <CursorPos X="18" Y="18"/>
-        <UsageCount Value="48"/>
+        <UsageCount Value="49"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
       </Unit1>
@@ -82,7 +82,7 @@
         <UnitName Value="rb18System"/>
         <EditorIndex Value="2"/>
         <WindowIndex Value="0"/>
-        <TopLine Value="954"/>
+        <TopLine Value="906"/>
         <CursorPos X="1" Y="939"/>
         <UsageCount Value="24"/>
         <Loaded Value="True"/>
@@ -127,7 +127,7 @@
         <EditorIndex Value="6"/>
         <WindowIndex Value="0"/>
         <TopLine Value="384"/>
-        <CursorPos X="49" Y="408"/>
+        <CursorPos X="70" Y="394"/>
         <UsageCount Value="20"/>
         <Loaded Value="True"/>
       </Unit9>
