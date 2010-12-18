@@ -720,26 +720,6 @@ function ValueToObject (v : VALUE) : TObject;
  result := TObject(PRData(v)^.data);
  end;
 
-{$hints off}
-function GetClassProp (obj : TObject; info : PPropInfo) : TClass; inline;
- begin
- {$IFDEF CPU64}
- result := TClass(ptrint(GetInt64Prop(obj, info)));
- {$ELSE ~CPU64}
- result := TClass(ptrint(GetOrdProp(obj, info)));
- {$ENDIF CPU64}
- end;
-
-procedure SetClassProp (obj : TObject; info : PPropInfo; cls : TClass); inline;
- begin
- {$IFDEF CPU64}
- SetInt64Prop(obj, info, ptrint(cls));
- {$ELSE ~CPU64}
- SetOrdProp(obj, info, ptrint(cls));
- {$ENDIF CPU64}
- end;
-{$hints on}
-
 function do_property_get(obj : TObject; const name : shortstring; out return : VALUE) : boolean; inline;
  var
    info : PPropInfo;
