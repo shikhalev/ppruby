@@ -435,6 +435,8 @@ function do_basicaction_setactioncomponent (slf : VALUE; cmp : VALUE) : VALUE; c
   result := slf;
  end;
 
+// TODO: events
+
 procedure TBasicActionHook (cBasicAction : VALUE);
  begin
   rb_define_method(cBasicAction, 'execute', Pmethod(@do_basicaction_execute), 0);

@@ -43,7 +43,7 @@
         <Filename Value="ppRuby18Sample.lpr"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="ppRuby18Sample"/>
-        <UsageCount Value="52"/>
+        <UsageCount Value="55"/>
       </Unit0>
       <Unit1>
         <Filename Value="mainform.pas"/>
@@ -55,7 +55,7 @@
         <WindowIndex Value="0"/>
         <TopLine Value="1"/>
         <CursorPos X="34" Y="8"/>
-        <UsageCount Value="52"/>
+        <UsageCount Value="55"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
       </Unit1>
@@ -66,7 +66,7 @@
         <WindowIndex Value="0"/>
         <TopLine Value="153"/>
         <CursorPos X="35" Y="166"/>
-        <UsageCount Value="25"/>
+        <UsageCount Value="26"/>
         <Loaded Value="True"/>
       </Unit2>
       <Unit3>
@@ -82,19 +82,19 @@
         <UnitName Value="rb18System"/>
         <EditorIndex Value="2"/>
         <WindowIndex Value="0"/>
-        <TopLine Value="923"/>
-        <CursorPos X="25" Y="1036"/>
-        <UsageCount Value="25"/>
+        <TopLine Value="740"/>
+        <CursorPos X="35" Y="751"/>
+        <UsageCount Value="26"/>
         <Loaded Value="True"/>
       </Unit4>
       <Unit5>
         <Filename Value="../ruby18dynamic.pp"/>
         <UnitName Value="ruby18dynamic"/>
-        <EditorIndex Value="4"/>
+        <EditorIndex Value="6"/>
         <WindowIndex Value="0"/>
         <TopLine Value="1"/>
         <CursorPos X="39" Y="245"/>
-        <UsageCount Value="23"/>
+        <UsageCount Value="24"/>
         <Loaded Value="True"/>
       </Unit5>
       <Unit6>
@@ -124,11 +124,11 @@
         <Filename Value="../rb18classes.pp"/>
         <UnitName Value="rb18Classes"/>
         <IsVisibleTab Value="True"/>
-        <EditorIndex Value="5"/>
+        <EditorIndex Value="7"/>
         <WindowIndex Value="0"/>
-        <TopLine Value="431"/>
-        <CursorPos X="1" Y="444"/>
-        <UsageCount Value="21"/>
+        <TopLine Value="426"/>
+        <CursorPos X="16" Y="438"/>
+        <UsageCount Value="22"/>
         <Loaded Value="True"/>
       </Unit9>
       <Unit10>
@@ -166,11 +166,11 @@
       <Unit14>
         <Filename Value="../static/ruby18.pp"/>
         <UnitName Value="ruby18"/>
-        <EditorIndex Value="3"/>
+        <EditorIndex Value="5"/>
         <WindowIndex Value="0"/>
         <TopLine Value="97"/>
         <CursorPos X="1" Y="118"/>
-        <UsageCount Value="20"/>
+        <UsageCount Value="21"/>
         <Loaded Value="True"/>
       </Unit14>
       <Unit15>
@@ -189,10 +189,12 @@
       </Unit16>
       <Unit17>
         <Filename Value="../../../../opt/src/freepascal/rtl/inc/objpash.inc"/>
+        <EditorIndex Value="4"/>
         <WindowIndex Value="0"/>
-        <TopLine Value="180"/>
-        <CursorPos X="26" Y="192"/>
-        <UsageCount Value="10"/>
+        <TopLine Value="171"/>
+        <CursorPos X="8" Y="183"/>
+        <UsageCount Value="11"/>
+        <Loaded Value="True"/>
       </Unit17>
       <Unit18>
         <Filename Value="../../../../opt/src/freepascal/rtl/unix/classes.pp"/>
@@ -205,10 +207,12 @@
       <Unit19>
         <Filename Value="../../../../opt/src/freepascal/rtl/objpas/typinfo.pp"/>
         <UnitName Value="typinfo"/>
+        <EditorIndex Value="3"/>
         <WindowIndex Value="0"/>
-        <TopLine Value="32"/>
-        <CursorPos X="25" Y="44"/>
-        <UsageCount Value="12"/>
+        <TopLine Value="248"/>
+        <CursorPos X="21" Y="323"/>
+        <UsageCount Value="13"/>
+        <Loaded Value="True"/>
       </Unit19>
       <Unit20>
         <Filename Value="../../../../opt/src/lazarus/lcl/stdctrls.pp"/>
@@ -266,7 +270,7 @@
         <UsageCount Value="10"/>
       </Unit26>
     </Units>
-    <JumpHistory Count="22" HistoryIndex="21">
+    <JumpHistory Count="26" HistoryIndex="25">
       <Position1>
         <Filename Value="../rb18classes.pp"/>
         <Caret Line="366" Column="17" TopLine="344"/>
@@ -355,6 +359,22 @@
         <Filename Value="../rb18script.pp"/>
         <Caret Line="166" Column="35" TopLine="153"/>
       </Position22>
+      <Position23>
+        <Filename Value="../rb18system.pp"/>
+        <Caret Line="752" Column="14" TopLine="740"/>
+      </Position23>
+      <Position24>
+        <Filename Value="../../../../opt/src/freepascal/rtl/objpas/typinfo.pp"/>
+        <Caret Line="45" Column="46" TopLine="33"/>
+      </Position24>
+      <Position25>
+        <Filename Value="../rb18system.pp"/>
+        <Caret Line="751" Column="35" TopLine="740"/>
+      </Position25>
+      <Position26>
+        <Filename Value="../../../../opt/src/freepascal/rtl/objpas/typinfo.pp"/>
+        <Caret Line="323" Column="84" TopLine="305"/>
+      </Position26>
     </JumpHistory>
   </ProjectOptions>
   <CompilerOptions>
