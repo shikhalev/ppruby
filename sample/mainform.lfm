@@ -37,6 +37,7 @@ object frmMain: TfrmMain
       'outControl.lines.add " nil"'
       ''
       ''
+      ''
     )
     ParentFont = False
     ScrollBars = ssAutoBoth
@@ -115,6 +116,7 @@ object frmMain: TfrmMain
       Font.Pitch = fpFixed
       Lines.Strings = (
         'memOutput'
+        ''
         ''
         ''
       )

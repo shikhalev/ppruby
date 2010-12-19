@@ -17,52 +17,50 @@ uses
 
 implementation
 
-// TODO: Коллекции
-
 function do_persistent_assign (slf : VALUE; src : VALUE) : VALUE; cdecl;
  begin
  (ValueToObject(slf) as TPersistent).Assign(ValueToObject(src) as TPersistent);
- result := slf;
+  result := slf;
  end;
 
 function do_persistent_getnamepath (slf : VALUE) : VALUE; cdecl;
  begin
- result := StrToValue((ValueToObject(slf) as TPersistent).GetNamePath);
+  result := StrToValue((ValueToObject(slf) as TPersistent).GetNamePath);
  end;
 
 procedure TPersistentHook (cPersistent : VALUE);
  begin
- rb_define_method(cPersistent,'assign',Pmethod(@do_persistent_assign),1);
- rb_define_method(cPersistent,'namepath',Pmethod(@do_persistent_getnamepath),0);
+  rb_define_method(cPersistent,'assign',Pmethod(@do_persistent_assign),1);
+  rb_define_method(cPersistent,'namepath',Pmethod(@do_persistent_getnamepath),0);
  end;
 
 function do_prealloc (cls : VALUE) : VALUE; cdecl;
  begin
- result := rb_data_object_alloc(cls, nil, nil, nil);
+  result := rb_data_object_alloc(cls, nil, nil, nil);
  end;
 
 function do_component_initialize (slf : VALUE; owner : VALUE) : VALUE; cdecl;
  var
    obj : TComponent;
  begin
- if owner = Qnil
-    then obj := TComponentClass(ValueToClass(rb_class_of(slf))).Create(nil)
-    else obj := TComponentClass(ValueToClass(rb_class_of(slf))).Create(ValueToObject(owner) as TComponent);
- PRData(slf)^.data := pointer(obj);
- RegisterObject(obj, slf);
- result := slf;
+  if owner = Qnil
+     then obj := TComponentClass(ValueToClass(rb_class_of(slf))).Create(nil)
+     else obj := TComponentClass(ValueToClass(rb_class_of(slf))).Create(ValueToObject(owner) as TComponent);
+  PRData(slf)^.data := pointer(obj);
+  RegisterObject(obj, slf);
+  result := slf;
  end;
 
 function do_component_child (slf : VALUE; name : VALUE) : VALUE; cdecl;
  begin
- case rb_type(name) of
-      T_FIXNUM :
-        result := ObjectToValue((ValueToObject(slf) as TComponent).Components[ValueToInt(name)]);
-      T_SYMBOL :
-        result := ObjectToValue((ValueToObject(slf) as TComponent).FindComponent(IdToStr(ValueToId(name))));
-      else
-        result := ObjectToValue((ValueToObject(slf) as TComponent).FindComponent(ValueToStr(name)));
-      end;
+  case rb_type(name) of
+       T_FIXNUM :
+         result := ObjectToValue((ValueToObject(slf) as TComponent).Components[ValueToInt(name)]);
+       T_SYMBOL :
+         result := ObjectToValue((ValueToObject(slf) as TComponent).FindComponent(IdToStr(ValueToId(name))));
+       else
+         result := ObjectToValue((ValueToObject(slf) as TComponent).FindComponent(ValueToStr(name)));
+       end;
  end;
 
 function do_component_each (slf : VALUE) : VALUE; cdecl;
@@ -70,61 +68,67 @@ function do_component_each (slf : VALUE) : VALUE; cdecl;
    obj : TComponent;
    item : TObject;
  begin
- obj := ValueToObject(slf) as TComponent;
- for item in obj do
-     result := rb_yield(ObjectToValue(item));
+  obj := ValueToObject(slf) as TComponent;
+  for item in obj do
+      result := rb_yield(ObjectToValue(item));
  end;
 
 function do_component_owner (slf : VALUE) : VALUE; cdecl;
  begin
- result := ObjectToValue((ValueToObject(slf) as TComponent).Owner);
+  result := ObjectToValue((ValueToObject(slf) as TComponent).Owner);
  end;
 
 function do_component_parent (slf : VALUE) : VALUE; cdecl;
  begin
- result := ObjectToValue((ValueToObject(slf) as TComponent).GetParentComponent);
+  result := ObjectToValue((ValueToObject(slf) as TComponent).GetParentComponent);
  end;
 
 function do_component_name (slf : VALUE) : VALUE; cdecl;
  begin
- result := IdToValue(StrToId((ValueToObject(slf) as TComponent).Name));
+  result := IdToValue(StrToId((ValueToObject(slf) as TComponent).Name));
  end;
 
 function do_component_setname (slf : VALUE; name : VALUE) : VALUE; cdecl;
  begin
- case rb_type(name) of
-      T_SYMBOL :
-        (ValueToObject(slf) as TComponent).Name := IdToStr(ValueToId(name));
-      else
-        (ValueToObject(slf) as TComponent).Name := ValueToStr(name);
-      end;
- result := slf;
+  case rb_type(name) of
+       T_SYMBOL :
+         (ValueToObject(slf) as TComponent).Name := IdToStr(ValueToId(name));
+       else
+         (ValueToObject(slf) as TComponent).Name := ValueToStr(name);
+       end;
+  result := slf;
  end;
 
 function do_component_tag (slf : VALUE) : VALUE; cdecl;
  begin
- result := ValueToInt((ValueToObject(slf) as TComponent).Tag);
+  result := ValueToInt((ValueToObject(slf) as TComponent).Tag);
  end;
 
 function do_component_settag (slf : VALUE; tag : VALUE) : VALUE; cdecl;
  begin
- (ValueToObject(slf) as TComponent).Tag := ValueToInt(tag);
- result := slf;
+  (ValueToObject(slf) as TComponent).Tag := ValueToInt(tag);
+  result := slf;
+ end;
+
+function do_component_executeaction (slf : VALUE; act : VALUE) : VALUE; cdecl;
+ begin
+  result := BoolToValue((ValueToObject(slf) as TComponent).ExecuteAction(ValueToObject(act) as TBasicAction));
  end;
 
 procedure TComponentHook (cComponent : VALUE);
  begin
- rb_define_alloc_func(cComponent,@do_prealloc);
- rb_define_method(cComponent,'initialize',Pmethod(@do_component_initialize),1);
- rb_define_method(cComponent,'[]',Pmethod(@do_component_child),1);
- rb_include_module(cComponent, rb_mEnumerable);
- rb_define_method(cComponent,'each',Pmethod(@do_component_each),0);
- rb_define_method(cComponent,'owner',Pmethod(@do_component_owner),0);
- rb_define_method(cComponent,'parent',Pmethod(@do_component_parent),0);
- rb_define_method(cComponent,'name',Pmethod(@do_component_name),0);
- rb_define_method(cComponent,'name=',Pmethod(@do_component_setname),1);
- rb_define_method(cComponent,'tag',Pmethod(@do_component_tag),0);
- rb_define_method(cComponent,'tag=',Pmethod(@do_component_settag),1);
+  rb_define_alloc_func(cComponent,@do_prealloc);
+  rb_define_method(cComponent,'initialize',Pmethod(@do_component_initialize),1);
+  rb_define_method(cComponent, 'executeaction', Pmethod(@do_component_executeaction), 1);
+  rb_define_method(cComponent,'[]',Pmethod(@do_component_child),1);
+  rb_include_module(cComponent, rb_mEnumerable);
+  rb_define_method(cComponent,'each',Pmethod(@do_component_each),0);
+  rb_define_method(cComponent,'owner',Pmethod(@do_component_owner),0);
+  rb_define_method(cComponent,'parent',Pmethod(@do_component_parent),0);
+  rb_define_method(cComponent,'name',Pmethod(@do_component_name),0);
+  rb_define_method(cComponent,'name=',Pmethod(@do_component_setname),1);
+  rb_define_method(cComponent,'tag',Pmethod(@do_component_tag),0);
+  rb_define_method(cComponent,'tag=',Pmethod(@do_component_settag),1);
  end;
 
 function do_collection_owner (slf : VALUE) : VALUE; cdecl;
@@ -284,11 +288,6 @@ function do_strings_delete (slf : VALUE; idx : VALUE) : VALUE; cdecl;
   result := slf;
  end;
 
-function do_strings_equals (slf : VALUE; obj : VALUE) : VALUE; cdecl;
- begin
-  result := (ValueToObject(slf).Equals(ValueToObject(obj)));
- end;
-
 function do_strings_insert (slf : VALUE; idx : VALUE; str : VALUE) : VALUE; cdecl;
  begin
   (ValueToObject(slf) as TStrings).Insert(ValueToInt(idx), ValueToStr(str));
@@ -383,7 +382,6 @@ procedure TStringsHook (cStrings : VALUE);
   rb_define_method(cStrings, 'append', Pmethod(@do_strings_append), 1);
   rb_define_method(cStrings, 'clear', Pmethod(@do_strings_clear), 0);
   rb_define_method(cStrings, 'delete', Pmethod(@do_strings_delete), 1);
-  rb_define_method(cStrings, 'equals', Pmethod(@do_strings_equals), 1);
   rb_define_method(cStrings, 'insert', Pmethod(@do_strings_insert), 2);
   rb_define_method(cStrings, 'loadfromfile', Pmethod(@do_strings_loadfromfile), 1);
   rb_define_method(cStrings, 'loadfromstream', Pmethod(@do_strings_loadfromstream), 1);
@@ -397,7 +395,55 @@ procedure TStringsHook (cStrings : VALUE);
   rb_include_module(cStrings, rb_mEnumerable);
   rb_define_method(cStrings, 'each', Pmethod(@do_strings_each), 0);
   rb_define_alias(cStrings, '<<', 'append');
-  rb_define_alias(cStrings, '===', 'equals');
+ end;
+
+function do_basicaction_execute (slf : VALUE) : VALUE; cdecl;
+ begin
+  result := BoolToValue((ValueToObject(slf) as TBasicAction).Execute);
+ end;
+
+function do_basicaction_executetarget (slf : VALUE; tgt : VALUE) : VALUE; cdecl;
+ begin
+  (ValueToObject(slf) as TBasicAction).ExecuteTarget(ValueToObject(tgt));
+  result := slf;
+ end;
+
+function do_basicaction_handlestarget (slf : VALUE; tgt : VALUE) : VALUE; cdecl;
+ begin
+  result := BoolToValue((ValueToObject(slf) as TBasicAction).HandlesTarget(ValueToObject(tgt)));
+ end;
+
+function do_basicaction_updatetarget (slf : VALUE; tgt : VALUE) : VALUE; cdecl;
+ begin
+  (ValueToObject(slf) as TBasicAction).UpdateTarget(ValueToObject(tgt));
+  result := slf;
+ end;
+
+function do_basicaction_update (slf : VALUE) : VALUE; cdecl;
+ begin
+  result := BoolToValue((ValueToObject(slf) as TBasicAction).Update);
+ end;
+
+function do_basicaction_actioncomponent (slf : VALUE) : VALUE; cdecl;
+ begin
+  result := ObjectToValue((ValueToObject(slf) as TBasicAction).ActionComponent);
+ end;
+
+function do_basicaction_setactioncomponent (slf : VALUE; cmp : VALUE) : VALUE; cdecl;
+ begin
+  (ValueToObject(slf) as TBasicAction).ActionComponent := ValueToObject(cmp) as TComponent;
+  result := slf;
+ end;
+
+procedure TBasicActionHook (cBasicAction : VALUE);
+ begin
+  rb_define_method(cBasicAction, 'execute', Pmethod(@do_basicaction_execute), 0);
+  rb_define_method(cBasicAction, 'executetarget', Pmethod(@do_basicaction_executetarget), 1);
+  rb_define_method(cBasicAction, 'handlestarget', Pmethod(@do_basicaction_handlestarget), 1);
+  rb_define_method(cBasicAction, 'updatetarger', Pmethod(@do_basicaction_updatetarget), 1);
+  rb_define_method(cBasicAction, 'update', Pmethod(@do_basicaction_update), 0);
+  rb_define_method(cBasicAction, 'actioncomponent', Pmethod(@do_basicaction_actioncomponent), 0);
+  rb_define_method(cBasicAction, 'actioncomponent=', Pmethod(@do_basicaction_setactioncomponent), 1);
  end;
 
 initialization
@@ -406,4 +452,5 @@ initialization
  rb18System.AddClassHook(TCollection, @TCollectionHook);
  rb18System.AddClassHook(TCollectionItem, @TCollectionItemHook);
  rb18System.AddClassHook(TStrings, @TStringsHook);
+ rb18System.AddClassHook(TBasicAction, @TBasicActionHook)
 end.

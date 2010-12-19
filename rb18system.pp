@@ -754,8 +754,6 @@ function do_property_get(obj : TObject; const name : shortstring; out return : V
       tkBool :
         return := BoolToValue(GetOrdProp(obj, info) <> 0);
       tkClass :
-//        return := ClassToValue(GetClassProp(obj, info));
-//      tkObject :
         return := ObjectToValue(GetObjectProp(obj, info));
       else
         result := false
@@ -795,8 +793,6 @@ function do_property_set(obj : TObject; const name : shortstring; const val : VA
       tkBool :
         SetOrdProp(obj, info, ord(ValueToBool(val)));
       tkClass :
-//        SetClassProp(obj, info, ValueToClass(val));
-//      tkObject :
         SetObjectProp(obj, info, ValueToObject(val));
       else
         result := false;
@@ -1027,10 +1023,17 @@ procedure RegisterObject(obj : TObject; v : VALUE);
     else do_insert_object(obj, v, idx);
  end;
 
+function do_object_equals (slf : VALUE; obj : VALUE) : VALUE; cdecl;
+ begin
+  result := (ValueToObject(slf).Equals(ValueToObject(obj)));
+ end;
+
 procedure TObjectHook (cObject : VALUE);
  begin
  rb_define_singleton_method(cObject,'unitname',Pmethod(@do_unitname),0);
  rb_define_method(cObject,'to_s',Pmethod(@do_to_s),0);
+ rb_define_method(cObject,'equals',Pmethod(@do_object_equals), 1);
+ rb_define_alias(cObject, '===', 'equals');
  (* Здесь должна была быть реализация each для классов, поддерживающих
     IEnumerable, но как это сделать — непонятно. *)
  end;
