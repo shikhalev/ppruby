@@ -442,7 +442,7 @@ procedure TBasicActionHook (cBasicAction : VALUE);
   rb_define_method(cBasicAction, 'execute', Pmethod(@do_basicaction_execute), 0);
   rb_define_method(cBasicAction, 'executetarget', Pmethod(@do_basicaction_executetarget), 1);
   rb_define_method(cBasicAction, 'handlestarget', Pmethod(@do_basicaction_handlestarget), 1);
-  rb_define_method(cBasicAction, 'updatetarger', Pmethod(@do_basicaction_updatetarget), 1);
+  rb_define_method(cBasicAction, 'updatetarget', Pmethod(@do_basicaction_updatetarget), 1);
   rb_define_method(cBasicAction, 'update', Pmethod(@do_basicaction_update), 0);
   rb_define_method(cBasicAction, 'actioncomponent', Pmethod(@do_basicaction_actioncomponent), 0);
   rb_define_method(cBasicAction, 'actioncomponent=', Pmethod(@do_basicaction_setactioncomponent), 1);
