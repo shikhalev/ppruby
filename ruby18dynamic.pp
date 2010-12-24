@@ -105,7 +105,7 @@ const
 
 type
   Pfunc = function (arg : VALUE) : VALUE; cdecl;
-  Pmethod = pointer;
+  Pmethod = type pointer;
 
 var
   ruby_init : procedure (); cdecl;
