@@ -524,8 +524,8 @@ procedure rb_define_variable (name : pchar; v : PVALUE);
     cdecl; external 'ruby18';
 
 type
-    Pgetter = function (args : array of const) : VALUE; cdecl;
-    Psetter = procedure (args : array of const); cdecl;
+    Pgetter = function (id : ID; v : PVALUE) : VALUE; cdecl;
+    Psetter = procedure (value : VALUE; id : ID; v : PVALUE); cdecl;
 procedure rb_define_virtual_variable (
     name    : pchar;
     getter  : Pgetter;

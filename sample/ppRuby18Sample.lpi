@@ -90,10 +90,11 @@
       <Unit5>
         <Filename Value="../ruby18dynamic.pp"/>
         <UnitName Value="ruby18dynamic"/>
+        <IsVisibleTab Value="True"/>
         <EditorIndex Value="6"/>
         <WindowIndex Value="0"/>
-        <TopLine Value="1"/>
-        <CursorPos X="39" Y="245"/>
+        <TopLine Value="135"/>
+        <CursorPos X="12" Y="151"/>
         <UsageCount Value="31"/>
         <Loaded Value="True"/>
       </Unit5>
@@ -123,10 +124,9 @@
       <Unit9>
         <Filename Value="../rb18classes.pp"/>
         <UnitName Value="rb18Classes"/>
-        <IsVisibleTab Value="True"/>
         <EditorIndex Value="7"/>
         <WindowIndex Value="0"/>
-        <TopLine Value="426"/>
+        <TopLine Value="1"/>
         <CursorPos X="1" Y="438"/>
         <UsageCount Value="29"/>
         <Loaded Value="True"/>
@@ -270,7 +270,7 @@
         <UsageCount Value="9"/>
       </Unit26>
     </Units>
-    <JumpHistory Count="28" HistoryIndex="27">
+    <JumpHistory Count="29" HistoryIndex="28">
       <Position1>
         <Filename Value="../rb18classes.pp"/>
         <Caret Line="366" Column="17" TopLine="344"/>
@@ -383,6 +383,10 @@
         <Filename Value="../static/ruby18.pp"/>
         <Caret Line="118" Column="1" TopLine="97"/>
       </Position28>
+      <Position29>
+        <Filename Value="../ruby18dynamic.pp"/>
+        <Caret Line="245" Column="39" TopLine="124"/>
+      </Position29>
     </JumpHistory>
   </ProjectOptions>
   <CompilerOptions>
