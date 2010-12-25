@@ -7,8 +7,7 @@ uses
   cthreads,
   {$ENDIF}{$ENDIF}
   Interfaces, // this includes the LCL widgetset
-  Forms, MainForm, ruby18lazlcl
-  { you can add units after this };
+  Forms, MainForm, ruby18lazlcl;
 
 {$R *.res}
 
