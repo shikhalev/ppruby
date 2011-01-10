@@ -25,6 +25,16 @@ type
     data : PtrUInt;
   end;
 
+operator = (x, y : VALUE) : Boolean; inline;
+
+function Qnil : VALUE; inline;
+function Qfalse : VALUE; inline;
+function Qtrue : VALUE; inline;
+function Qundef : VALUE; inline;
+
+operator explicit (v : VALUE) : UTF8String;
+operator explicit (v : VALUE) : ansistring;
+
 type
   TRubyVersion = (
     rvNone,
@@ -72,6 +82,26 @@ procedure DefineMethod (cls : VALUE; method : TRubyMethod16);
 procedure DefineMethod (cls : VALUE; method : TRubyMethod17);
 procedure DefineMethod (cls : VALUE; method : TRubyMethodArr);
 
+procedure DefineSingletonMethod (cls : VALUE; method : TRubyMethod0);
+procedure DefineSingletonMethod (cls : VALUE; method : TRubyMethod1);
+procedure DefineSingletonMethod (cls : VALUE; method : TRubyMethod2);
+procedure DefineSingletonMethod (cls : VALUE; method : TRubyMethod3);
+procedure DefineSingletonMethod (cls : VALUE; method : TRubyMethod4);
+procedure DefineSingletonMethod (cls : VALUE; method : TRubyMethod5);
+procedure DefineSingletonMethod (cls : VALUE; method : TRubyMethod6);
+procedure DefineSingletonMethod (cls : VALUE; method : TRubyMethod7);
+procedure DefineSingletonMethod (cls : VALUE; method : TRubyMethod8);
+procedure DefineSingletonMethod (cls : VALUE; method : TRubyMethod9);
+procedure DefineSingletonMethod (cls : VALUE; method : TRubyMethod10);
+procedure DefineSingletonMethod (cls : VALUE; method : TRubyMethod11);
+procedure DefineSingletonMethod (cls : VALUE; method : TRubyMethod12);
+procedure DefineSingletonMethod (cls : VALUE; method : TRubyMethod13);
+procedure DefineSingletonMethod (cls : VALUE; method : TRubyMethod14);
+procedure DefineSingletonMethod (cls : VALUE; method : TRubyMethod15);
+procedure DefineSingletonMethod (cls : VALUE; method : TRubyMethod16);
+procedure DefineSingletonMethod (cls : VALUE; method : TRubyMethod17);
+procedure DefineSingletonMethod (cls : VALUE; method : TRubyMethodArr);
+
 function Version : TRubyVersion; inline;
 
 function Load (ver : TRubyVersion) : Boolean;
@@ -82,12 +112,51 @@ function getActive : Boolean;
 procedure setActive (val : Boolean);
 property Active : Boolean read getActive write setActive;
 
+function ErrorInfo : VALUE;
+function Inspect (v : VALUE) : VALUE;
+
+type
+  ERubyError = class(Exception)
+  private
+    fldErrInfo: VALUE;
+  public
+    property ErrInfo : VALUE read fldErrInfo write fldErrInfo;
+  public
+    constructor Create (const msg : UTF8String);
+    constructor CreateFmt (const msg : UTF8String; const args : array of const);
+  end;
+
+  ELibraryError = class(ERubyError);
+    EUnknownLibrary = class(ELibraryError);
+  ERubyInactive = class(ERubyError);
+  ERubyAlreadyLoaded = class(ERubyError);
+
+resourcestring
+  msgActivateError =
+    'Error while activation.';
+  msgRubyInactive =
+    'Ruby is inactive.';
+  msgUnknownLibrary =
+    'Unknown library version.';
+  msgAlreadyLoaded =
+    'Ruby library is already loaded.';
+
 implementation
+
+procedure errInactive; inline;
+ begin
+  raise ERubyInactive.Create(msgRubyInactive);
+ end;
+
+procedure errUnknown; inline;
+ begin
+  raise EUnknownLibrary.Create(msgUnknownLibrary);
+ end;
 
 var
   verRuby : TRubyVersion = rvNone;
+  libRuby : TLibHandle = 0;
 
-procedure init_18_19; forward;
 const
 {$IFDEF UNIX}
   LIB18 = 'libruby18.so';
@@ -102,134 +171,309 @@ const
  {$ENDIF WINDOWS}
 {$ENDIF UNIX}
 
+procedure init_18_19; forward;
+procedure done_18_19; forward;
+
 const
   LIBRARIES : array [succ(rvNone)..high(TRubyVersion)] of record
     name : ansistring;
     init : procedure;
+    done : procedure;
   end = (
-    (name : LIB18; init : @init_18_19),
-    (name : LIB19; init : @init_18_19)
+    (name : LIB18; init : @init_18_19; done : @done_18_19),
+    (name : LIB19; init : @init_18_19; done : @done_18_19)
   );
 
+var
+  p_ruby_errinfo : PVALUE;
+
+  f_rb_inspect : function (v : VALUE) : VALUE; cdecl;
+
 procedure init_18_19;
+ begin
+  // init p_ vars
+  p_ruby_errinfo := GetProcedureAddress(libRuby, 'ruby_errinfo');
+  // init funcs
+  Pointer(f_rb_inspect) := GetProcedureAddress(libRuby, 'rb_inspect');
+ end;
+
+procedure done_18_19;
  begin
 
  end;
 
-procedure DefineMethod(cls: VALUE; method: TRubyMethod0);
-begin
+const
+  _Qfalse = 0;
+  _Qtrue  = 2;
+  _Qnil   = 4;
+  _Qundef = 6;
 
-end;
+operator = (x, y : VALUE) : Boolean;
+ begin
+  Result := (x.data = y.data);
+ end;
+
+function Qnil : VALUE; inline;
+ begin
+  Result.data := _Qnil;
+ end;
+
+function Qfalse : VALUE; inline;
+ begin
+  Result.data := _Qfalse;
+ end;
+
+function Qtrue : VALUE; inline;
+ begin
+  Result.data := _Qtrue;
+ end;
+
+function Qundef : VALUE; inline;
+ begin
+  Result.data := _Qundef;
+ end;
+
+operator explicit (v : VALUE) : UTF8String;
+ begin
+
+ end;
+
+operator explicit (v : VALUE) : ansistring;
+ begin
+  Result := UTF8String(v);
+ end;
+
+procedure DefineMethod(cls: VALUE; method: TRubyMethod0);
+ begin
+
+ end;
 
 procedure DefineMethod(cls: VALUE; method: TRubyMethod1);
-begin
+ begin
 
-end;
+ end;
 
 procedure DefineMethod(cls: VALUE; method: TRubyMethod2);
-begin
+ begin
 
-end;
+ end;
 
 procedure DefineMethod(cls: VALUE; method: TRubyMethod3);
-begin
+ begin
 
-end;
+ end;
 
 procedure DefineMethod(cls: VALUE; method: TRubyMethod4);
-begin
+ begin
 
-end;
+ end;
 
 procedure DefineMethod(cls: VALUE; method: TRubyMethod5);
-begin
+ begin
 
-end;
+ end;
 
 procedure DefineMethod(cls: VALUE; method: TRubyMethod6);
-begin
+ begin
 
-end;
+ end;
 
 procedure DefineMethod(cls: VALUE; method: TRubyMethod7);
-begin
+ begin
 
-end;
+ end;
 
 procedure DefineMethod(cls: VALUE; method: TRubyMethod8);
-begin
+ begin
 
-end;
+ end;
 
 procedure DefineMethod(cls: VALUE; method: TRubyMethod9);
-begin
+ begin
 
-end;
+ end;
 
 procedure DefineMethod(cls: VALUE; method: TRubyMethod10);
-begin
+ begin
 
-end;
+ end;
 
 procedure DefineMethod(cls: VALUE; method: TRubyMethod11);
-begin
+ begin
 
-end;
+ end;
 
 procedure DefineMethod(cls: VALUE; method: TRubyMethod12);
-begin
+ begin
 
-end;
+ end;
 
 procedure DefineMethod(cls: VALUE; method: TRubyMethod13);
-begin
+ begin
 
-end;
+ end;
 
 procedure DefineMethod(cls: VALUE; method: TRubyMethod14);
-begin
+ begin
 
-end;
+ end;
 
 procedure DefineMethod(cls: VALUE; method: TRubyMethod15);
-begin
+ begin
 
-end;
+ end;
 
 procedure DefineMethod(cls: VALUE; method: TRubyMethod16);
-begin
+ begin
 
-end;
+ end;
 
 procedure DefineMethod(cls: VALUE; method: TRubyMethod17);
-begin
+ begin
 
-end;
+ end;
 
 procedure DefineMethod(cls: VALUE; method: TRubyMethodArr);
+ begin
+
+ end;
+
+procedure DefineSingletonMethod(cls : VALUE; method : TRubyMethod0);
 begin
 
 end;
+
+procedure DefineSingletonMethod(cls : VALUE; method : TRubyMethod1);
+begin
+
+end;
+
+procedure DefineSingletonMethod(cls : VALUE; method : TRubyMethod2);
+begin
+
+end;
+
+procedure DefineSingletonMethod(cls : VALUE; method : TRubyMethod3);
+begin
+
+end;
+
+procedure DefineSingletonMethod(cls : VALUE; method : TRubyMethod4);
+begin
+
+end;
+
+procedure DefineSingletonMethod(cls : VALUE; method : TRubyMethod5);
+begin
+
+end;
+
+procedure DefineSingletonMethod(cls : VALUE; method : TRubyMethod6);
+begin
+
+end;
+
+procedure DefineSingletonMethod(cls : VALUE; method : TRubyMethod7);
+begin
+
+end;
+
+procedure DefineSingletonMethod(cls : VALUE; method : TRubyMethod8);
+begin
+
+end;
+
+procedure DefineSingletonMethod(cls : VALUE; method : TRubyMethod9);
+begin
+
+end;
+
+procedure DefineSingletonMethod(cls : VALUE; method : TRubyMethod10);
+begin
+
+end;
+
+procedure DefineSingletonMethod(cls : VALUE; method : TRubyMethod11);
+begin
+
+end;
+
+procedure DefineSingletonMethod(cls : VALUE; method : TRubyMethod12);
+begin
+
+end;
+
+procedure DefineSingletonMethod(cls : VALUE; method : TRubyMethod13);
+begin
+
+end;
+
+procedure DefineSingletonMethod(cls : VALUE; method : TRubyMethod14);
+begin
+
+end;
+
+procedure DefineSingletonMethod(cls : VALUE; method : TRubyMethod15);
+begin
+
+end;
+
+procedure DefineSingletonMethod(cls : VALUE; method : TRubyMethod16);
+begin
+
+end;
+
+procedure DefineSingletonMethod(cls : VALUE; method : TRubyMethod17);
+begin
+
+end;
+
+procedure DefineSingletonMethod(cls : VALUE; method : TRubyMethodArr);
+ begin
+
+ end;
 
 function Version : TRubyVersion; inline;
  begin
   Result := verRuby;
  end;
 
-function Load(ver: TRubyVersion): Boolean;
-begin
+function Load (ver : TRubyVersion) : Boolean;
+ begin
+  if getActive
+     then raise ERubyAlreadyLoaded.Create(msgAlreadyLoaded);
+  if not (ver in [succ(rvNone)..high(TRubyVersion)])
+     then errUnknown;
+  libRuby := LoadLibrary(LIBRARIES[ver].name);
+  Result := (libRuby <> 0);
+  if Result
+     then begin
+           verRuby := ver;
+           LIBRARIES[ver].init();
+          end;
+ end;
 
-end;
-
-function Load: TRubyVersion;
-begin
-
-end;
+function Load : TRubyVersion;
+ var
+   ver : TRubyVersion;
+ begin
+  if getActive
+     then raise ERubyAlreadyLoaded.Create(msgAlreadyLoaded);
+  for ver := high(TRubyVersion) downto succ(rvNone) do
+      if Load(ver)
+         then break;
+  Result := verRuby;
+ end;
 
 procedure Unload;
-begin
-
-end;
+ begin
+  if not getActive
+     then errInactive;
+  LIBRARIES[verRuby].done();
+  UnloadLibrary(libRuby);
+  libRuby := 0;
+  verRuby := rvNone;
+ end;
 
 function getActive: Boolean;
  begin
@@ -238,11 +482,52 @@ function getActive: Boolean;
 
 procedure setActive (val : Boolean);
  begin
-  if val <> Version
+  if val <> getActive()
      then if val
-             then Load
+             then begin
+                   if Load = rvNone
+                      then raise ELibraryError.Create(msgActivateError);
+                  end
              else Unload
  end;
 
-end.
+function ErrorInfo : VALUE;
+ begin
+  case Version of
+       rvNone :
+         Result := Qnil;
+       rvRuby18, rvRuby19 :
+         Result := p_ruby_errinfo^;
+       else
+         Result := Qundef;
+  end;
+ end;
 
+function Inspect (v : VALUE) : VALUE;
+ begin
+  case Version of
+       rvNone :
+         errInactive;
+       rvRuby18, rvRuby19 :
+         result := f_rb_inspect(v);
+       else
+         errUnknown;
+  end;
+ end;
+
+{ ERubyError }
+
+constructor ERubyError.Create(const msg : UTF8String);
+ begin
+  fldErrInfo := ErrorInfo;
+  if (fldErrInfo = Qnil) or (fldErrInfo = Qundef)
+     then inherited Create(msg)
+     else inherited Create(msg + LineEnding + LineEnding + UTF8String(Inspect(fldErrInfo)));
+ end;
+
+constructor ERubyError.CreateFmt (const msg : UTF8String; const args : array of const);
+ begin
+  Create(Format(msg, args));
+ end;
+
+end.
