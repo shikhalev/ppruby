@@ -40,6 +40,27 @@ operator explicit (const s : UTF8String) : VALUE;
 operator explicit (const s : ansistring) : VALUE;
 operator explicit (const s : UnicodeString) : VALUE;
 
+operator explicit (v : VALUE) : PtrInt;
+operator explicit (v : VALUE) : PtrUInt;
+operator explicit (v : VALUE) : Double;
+operator explicit (v : VALUE) : Boolean;
+operator explicit (v : VALUE) : TObject;
+operator explicit (v : VALUE) : TClass;
+
+operator explicit (const v : PtrInt) : VALUE;
+operator explicit (const v : PtrUInt) : VALUE;
+operator explicit (const v : Double) : VALUE;
+operator explicit (const v : Boolean) : VALUE;
+operator explicit (const v : TObject) : VALUE;
+operator explicit (const v : TClass) : VALUE;
+
+{$IFDEF CPU32}
+operator explicit (v : VALUE) : Int64;
+operator explicit (v : VALUE) : QWord;
+operator explicit (const v : Int64) : VALUE;
+operator explicit (const v : QWord) : VALUE;
+{$ENDIF CPU32}
+
 type
   TRubyVersion = (
     rvNone,
@@ -224,6 +245,12 @@ var
   f_rb_define_method : procedure (module : VALUE; name : PChar; func : Pointer; argc : Integer); cdecl;
   f_rb_define_singleton_method : procedure (module : VALUE; name : PChar; func : Pointer; argc : Integer); cdecl;
   f_rb_str_new2 : function (ptr : PChar) : VALUE; cdecl;
+  f_rb_num2int : function (val : VALUE) : PtrInt; cdecl;
+  f_rb_num2uint : function (val : VALUE) : PtrUInt; cdecl;
+  f_rb_num2dbl : function (val : VALUE) : Double; cdecl;
+  f_rb_int2inum : function (n : PtrInt) : VALUE; cdecl;
+  f_rb_uint2inum : function (n : PtrUInt) : VALUE; cdecl;
+  f_rb_float_new : function (d : Double) : VALUE; cdecl;
 
 procedure init_18_19;
  begin
@@ -236,6 +263,12 @@ procedure init_18_19;
   Pointer(f_rb_define_method) := GetProcedureAddress(libRuby, 'rb_define_method');
   Pointer(f_rb_define_singleton_method) := GetProcedureAddress(libRuby, 'rb_define_singleton_method');
   Pointer(f_rb_str_new2) := GetProcedureAddress(libRuby, 'rb_str_new2');
+  Pointer(f_rb_num2int) := GetProcedureAddress(libRuby, 'rb_num2int');
+  Pointer(f_rb_num2uint) := GetProcedureAddress(libRuby, 'rb_num2uint');
+  Pointer(f_rb_num2dbl) := GetProcedureAddress(libRuby, 'rb_num2dbl');
+  Pointer(f_rb_int2inum) := GetProcedureAddress(libRuby, 'rb_int2inum');
+  Pointer(f_rb_uint2inum) := GetProcedureAddress(libRuby, 'rb_uint2inum');
+  Pointer(f_rb_float_new) := GetProcedureAddress(libRuby, 'rb_float_new');
  end;
 
 procedure done_18_19;
@@ -317,6 +350,220 @@ operator explicit (v : VALUE) : UnicodeString;
   Result := UTF8Decode(UTF8String(v));
  end;
 
+operator explicit (const s : UTF8String) : VALUE;
+ begin
+  case Version of
+       rvNone :
+         errInactive;
+       rvRuby18, rvRuby19 :
+         Result := f_rb_str_new2(PChar(s));
+       else
+         errUnknown;
+  end;
+ end;
+
+operator explicit (const s : ansistring) : VALUE;
+ begin
+  Result := VALUE(UTF8String(s));
+ end;
+
+operator explicit (const s : UnicodeString) : VALUE;
+ begin
+  Result := VALUE(UTF8Encode(s));
+ end;
+
+type
+  PIntRec = ^TIntRec;
+  TIntRec = record
+    int : PtrInt;
+    val : VALUE;
+  end;
+
+function try_val2int (v : VALUE) : VALUE; cdecl;
+ begin
+  PIntRec(v)^.int := f_rb_num2int(PIntRec(v)^.val);
+  Result := Qnil;
+ end;
+
+operator explicit (v : VALUE) : PtrInt;
+ var
+   rec : TIntRec;
+   res : Integer;
+ begin
+  case Version of
+       rvNone :
+         errInactive;
+       rvRuby18, rvRuby19 :
+         begin
+          rec.val := v;
+          f_rb_protect(@try_val2int, VALUE(@rec), @res);
+          chkConversion(res);
+          Result := rec.int;
+         end;
+       else
+         errUnknown;
+  end;
+ end;
+
+type
+  PUIntRec = ^TUIntRec;
+  TUIntRec = record
+    uint : PtrUInt;
+    val : VALUE;
+  end;
+
+function try_val2uint (v : VALUE) : VALUE; cdecl;
+ begin
+  PUIntRec(v)^.uint := f_rb_num2uint(PUIntRec(v)^.val);
+  Result := Qnil;
+ end;
+
+operator explicit (v : VALUE) : PtrUInt;
+ var
+   rec : TUIntRec;
+   res : Integer;
+ begin
+  case Version of
+       rvNone :
+         errInactive;
+       rvRuby18, rvRuby19 :
+         begin
+          rec.val := v;
+          f_rb_protect(@try_val2uint, VALUE(@rec), @res);
+          chkConversion(res);
+          Result := rec.uint;
+         end;
+  end;
+ end;
+
+type
+  PDblRec = ^TDblRec;
+  TDblRec = record
+    dbl : Double;
+    val : VALUE;
+  end;
+
+function try_val2dbl (v : VALUE) : VALUE; cdecl;
+ begin
+  PDblRec(v)^.dbl := f_rb_num2dbl(PDblRec(v)^.val);
+  Result := Qnil;
+ end;
+
+operator explicit (v : VALUE) : Double;
+ var
+   rec : TDblRec;
+   res : Integer;
+ begin
+  case Version of
+       rvNone :
+         errInactive;
+       rvRuby18, rvRuby19 :
+         begin
+          rec.val := v;
+          f_rb_protect(@try_val2dbl, VALUE(@rec), @res);
+          chkConversion(res);
+          Result := rec.dbl;
+         end;
+       else
+         errUnknown;
+  end;
+ end;
+
+operator explicit (v : VALUE) : Boolean;
+ begin
+  case Version of
+       rvNone :
+         errInactive;
+       rvRuby18, rvRuby19 :
+         Result := not ((v = Qnil) or (v = Qfalse));
+       else
+         errUnknown;
+  end;
+ end;
+
+operator explicit (v : VALUE) : TObject;
+ begin
+
+ end;
+
+operator explicit (v : VALUE) : TClass;
+ begin
+
+ end;
+
+operator explicit (const v : PtrInt) : VALUE;
+ begin
+  case Version of
+       rvNone :
+         errInactive;
+       rvRuby18, rvRuby19 :
+         Result := f_rb_int2inum(v);
+       else
+         errUnknown;
+  end;
+ end;
+
+operator explicit (const v : PtrUInt) : VALUE;
+ begin
+  case Version of
+       rvNone :
+         errInactive;
+       rvRuby18, rvRuby19 :
+         Result := f_rb_uint2inum(v);
+       else
+         errUnknown;
+  end;
+ end;
+
+operator explicit (const v : Double) : VALUE;
+ begin
+  case Version of
+       rvNone :
+         errInactive;
+       rvRuby18, rvRuby19 :
+         Result := f_rb_float_new(v);
+       else
+         errUnknown;
+  end;
+ end;
+
+operator explicit (const v : Boolean) : VALUE;
+ begin
+  if v
+     then Result := Qtrue
+     else Result := Qfalse;
+ end;
+
+operator explicit (const v : TObject) : VALUE;
+ begin
+
+ end;
+
+operator explicit (const v : TClass) : VALUE;
+ begin
+
+ end;
+
+{$IFDEF CPU32}
+operator explicit (v : VALUE) : Int64;
+ begin
+ end;
+
+operator explicit (v : VALUE) : QWord;
+ begin
+ end;
+
+operator explicit(const v : Int64) : VALUE;
+ begin
+
+ end;
+
+operator explicit(const v : QWord) : VALUE;
+ begin
+
+ end;
+{$ENDIF CPU32}
+
 type
   PMethodRec = ^TMethodRec;
   TMethodRec = record
@@ -353,28 +600,6 @@ procedure protected_define_method (module : VALUE; name : PChar; method : Pointe
        else
          errUnknown;
   end;
- end;
-
-operator explicit (const s : UTF8String) : VALUE;
- begin
-  case Version of
-       rvNone :
-         errInactive;
-       rvRuby18, rvRuby19 :
-         Result := f_rb_str_new2(PChar(s));
-       else
-         errUnknown;
-  end;
- end;
-
-operator explicit (const s : ansistring) : VALUE;
- begin
-  Result := VALUE(UTF8String(s));
- end;
-
-operator explicit (const s : UnicodeString) : VALUE;
- begin
-  Result := VALUE(UTF8Encode(s));
  end;
 
 procedure DefineMethod (module : VALUE; const name : ansistring; method : TRubyMethod0);
