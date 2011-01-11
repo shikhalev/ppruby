@@ -130,6 +130,7 @@ type
     EUnknownLibrary = class(ELibraryError);
   ERubyInactive = class(ERubyError);
   ERubyAlreadyLoaded = class(ERubyError);
+  ERubyConversion = class(ERubyError);
 
 resourcestring
   msgActivateError =
@@ -140,6 +141,8 @@ resourcestring
     'Unknown library version.';
   msgAlreadyLoaded =
     'Ruby library is already loaded.';
+  msgConversionError =
+    'Illegal value conversion.';
 
 implementation
 
@@ -151,6 +154,12 @@ procedure errInactive; inline;
 procedure errUnknown; inline;
  begin
   raise EUnknownLibrary.Create(msgUnknownLibrary);
+ end;
+
+procedure chkConversion (res : Integer); inline;
+ begin
+  if res <> 0
+     then raise ERubyConversion.Create(msgConversionError);
  end;
 
 var
@@ -192,6 +201,7 @@ var
 
   f_rb_inspect : function (v : VALUE) : VALUE; cdecl;
   f_rb_protect : function (func : Pfunc; data : VALUE; state : PInteger) : VALUE; cdecl;
+  f_rb_string_value_cstr : function (constref str : VALUE) : pchar; cdecl;
 
 procedure init_18_19;
  begin
@@ -200,6 +210,7 @@ procedure init_18_19;
   // init funcs
   Pointer(f_rb_inspect) := GetProcedureAddress(libRuby, 'rb_inspect');
   Pointer(f_rb_protect) := GetProcedureAddress(libRuby, 'rb_protect');
+  Pointer(f_rb_string_value_cstr) := GetProcedureAddress(libRuby, 'rb_string_value_cstr');
  end;
 
 procedure done_18_19;
@@ -238,9 +249,36 @@ function Qundef : VALUE; inline;
   Result.data := _Qundef;
  end;
 
-operator explicit (v : VALUE) : UTF8String;
- begin
+type
+  PStrRec = ^TStrRec;
+  TStrRec = record
+    str : pchar;
+    val : VALUE;
+  end;
 
+function try_val2str (v : VALUE) : VALUE; cdecl;
+ begin
+  PStrRec(v)^.str := f_rb_string_value_cstr(PStrRec(v)^.val);
+  result := Qnil;
+ end;
+
+operator explicit (v : VALUE) : UTF8String;
+ var
+   rec : TStrRec;
+   res : Integer;
+ begin
+  case Version of
+       rvNone :
+         errInactive;
+       rvRuby18, rvRuby19 :
+         begin
+          rec.val := v;
+          f_rb_protect(@try_val2str, VALUE(@rec), @res);
+          chkConversion(res);
+         end;
+       else
+         errUnknown;
+  end;
  end;
 
 operator explicit (v : VALUE) : ansistring;
