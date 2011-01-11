@@ -36,6 +36,10 @@ operator explicit (v : VALUE) : UTF8String;
 operator explicit (v : VALUE) : ansistring;
 operator explicit (v : VALUE) : UnicodeString;
 
+operator explicit (const s : UTF8String) : VALUE;
+operator explicit (const s : ansistring) : VALUE;
+operator explicit (const s : UnicodeString) : VALUE;
+
 type
   TRubyVersion = (
     rvNone,
@@ -219,6 +223,7 @@ var
   f_rb_string_value_cstr : function (constref str : VALUE) : pchar; cdecl;
   f_rb_define_method : procedure (module : VALUE; name : PChar; func : Pointer; argc : Integer); cdecl;
   f_rb_define_singleton_method : procedure (module : VALUE; name : PChar; func : Pointer; argc : Integer); cdecl;
+  f_rb_str_new2 : function (ptr : PChar) : VALUE; cdecl;
 
 procedure init_18_19;
  begin
@@ -230,6 +235,7 @@ procedure init_18_19;
   Pointer(f_rb_string_value_cstr) := GetProcedureAddress(libRuby, 'rb_string_value_cstr');
   Pointer(f_rb_define_method) := GetProcedureAddress(libRuby, 'rb_define_method');
   Pointer(f_rb_define_singleton_method) := GetProcedureAddress(libRuby, 'rb_define_singleton_method');
+  Pointer(f_rb_str_new2) := GetProcedureAddress(libRuby, 'rb_str_new2');
  end;
 
 procedure done_18_19;
@@ -347,6 +353,28 @@ procedure protected_define_method (module : VALUE; name : PChar; method : Pointe
        else
          errUnknown;
   end;
+ end;
+
+operator explicit (const s : UTF8String) : VALUE;
+ begin
+  case Version of
+       rvNone :
+         errInactive;
+       rvRuby18, rvRuby19 :
+         Result := f_rb_str_new2(PChar(s));
+       else
+         errUnknown;
+  end;
+ end;
+
+operator explicit (const s : ansistring) : VALUE;
+ begin
+  Result := VALUE(UTF8String(s));
+ end;
+
+operator explicit (const s : UnicodeString) : VALUE;
+ begin
+  Result := VALUE(UTF8Encode(s));
  end;
 
 procedure DefineMethod (module : VALUE; const name : ansistring; method : TRubyMethod0);

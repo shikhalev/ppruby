@@ -42,7 +42,7 @@
         <WindowIndex Value="0"/>
         <TopLine Value="1"/>
         <CursorPos X="1" Y="1"/>
-        <UsageCount Value="76"/>
+        <UsageCount Value="77"/>
       </Unit0>
       <Unit1>
         <Filename Value="mainform.pp"/>
@@ -54,7 +54,7 @@
         <WindowIndex Value="0"/>
         <TopLine Value="1"/>
         <CursorPos X="1" Y="1"/>
-        <UsageCount Value="76"/>
+        <UsageCount Value="77"/>
         <Loaded Value="True"/>
       </Unit1>
       <Unit2>
@@ -63,11 +63,11 @@
         <IsVisibleTab Value="True"/>
         <EditorIndex Value="1"/>
         <WindowIndex Value="0"/>
-        <TopLine Value="622"/>
-        <CursorPos X="11" Y="632"/>
+        <TopLine Value="346"/>
+        <CursorPos X="34" Y="360"/>
         <UsageCount Value="38"/>
         <Bookmarks Count="1">
-          <Item0 X="6" Y="210" ID="0"/>
+          <Item0 X="6" Y="214" ID="0"/>
         </Bookmarks>
         <Loaded Value="True"/>
       </Unit2>
@@ -84,132 +84,132 @@
         <UnitName Value="ruby18"/>
         <EditorIndex Value="2"/>
         <WindowIndex Value="0"/>
-        <TopLine Value="902"/>
-        <CursorPos X="25" Y="919"/>
+        <TopLine Value="1509"/>
+        <CursorPos X="1" Y="1528"/>
         <UsageCount Value="16"/>
         <Loaded Value="True"/>
       </Unit4>
     </Units>
     <JumpHistory Count="30" HistoryIndex="29">
       <Position1>
-        <Filename Value="../static/ruby18.pp"/>
-        <Caret Line="91" Column="1" TopLine="87"/>
+        <Filename Value="../ppruby.pp"/>
+        <Caret Line="1" Column="1" TopLine="1"/>
       </Position1>
       <Position2>
         <Filename Value="../ppruby.pp"/>
-        <Caret Line="301" Column="30" TopLine="296"/>
+        <Caret Line="409" Column="69" TopLine="332"/>
       </Position2>
       <Position3>
         <Filename Value="../ppruby.pp"/>
-        <Caret Line="303" Column="30" TopLine="292"/>
+        <Caret Line="85" Column="1" TopLine="85"/>
       </Position3>
       <Position4>
         <Filename Value="../ppruby.pp"/>
-        <Caret Line="1" Column="1" TopLine="1"/>
+        <Caret Line="413" Column="16" TopLine="399"/>
       </Position4>
       <Position5>
         <Filename Value="../ppruby.pp"/>
-        <Caret Line="314" Column="32" TopLine="301"/>
+        <Caret Line="411" Column="23" TopLine="399"/>
       </Position5>
       <Position6>
         <Filename Value="../ppruby.pp"/>
-        <Caret Line="1" Column="1" TopLine="1"/>
+        <Caret Line="422" Column="11" TopLine="409"/>
       </Position6>
       <Position7>
         <Filename Value="../ppruby.pp"/>
-        <Caret Line="409" Column="69" TopLine="332"/>
+        <Caret Line="1" Column="1" TopLine="1"/>
       </Position7>
       <Position8>
         <Filename Value="../ppruby.pp"/>
-        <Caret Line="85" Column="1" TopLine="85"/>
+        <Caret Line="424" Column="3" TopLine="402"/>
       </Position8>
       <Position9>
         <Filename Value="../ppruby.pp"/>
-        <Caret Line="413" Column="16" TopLine="399"/>
+        <Caret Line="1" Column="1" TopLine="1"/>
       </Position9>
       <Position10>
         <Filename Value="../ppruby.pp"/>
-        <Caret Line="411" Column="23" TopLine="399"/>
+        <Caret Line="297" Column="7" TopLine="290"/>
       </Position10>
       <Position11>
         <Filename Value="../ppruby.pp"/>
-        <Caret Line="422" Column="11" TopLine="409"/>
+        <Caret Line="298" Column="6" TopLine="285"/>
       </Position11>
       <Position12>
         <Filename Value="../ppruby.pp"/>
-        <Caret Line="1" Column="1" TopLine="1"/>
+        <Caret Line="299" Column="6" TopLine="286"/>
       </Position12>
       <Position13>
         <Filename Value="../ppruby.pp"/>
-        <Caret Line="424" Column="3" TopLine="402"/>
+        <Caret Line="208" Column="81" TopLine="185"/>
       </Position13>
       <Position14>
         <Filename Value="../ppruby.pp"/>
-        <Caret Line="1" Column="1" TopLine="1"/>
+        <Caret Line="85" Column="1" TopLine="82"/>
       </Position14>
       <Position15>
         <Filename Value="../ppruby.pp"/>
-        <Caret Line="297" Column="7" TopLine="290"/>
+        <Caret Line="518" Column="51" TopLine="510"/>
       </Position15>
       <Position16>
         <Filename Value="../ppruby.pp"/>
-        <Caret Line="298" Column="6" TopLine="285"/>
+        <Caret Line="45" Column="9" TopLine="43"/>
       </Position16>
       <Position17>
         <Filename Value="../ppruby.pp"/>
-        <Caret Line="299" Column="6" TopLine="286"/>
+        <Caret Line="1" Column="1" TopLine="1"/>
       </Position17>
       <Position18>
         <Filename Value="../ppruby.pp"/>
-        <Caret Line="208" Column="81" TopLine="185"/>
+        <Caret Line="438" Column="17" TopLine="414"/>
       </Position18>
       <Position19>
         <Filename Value="../ppruby.pp"/>
-        <Caret Line="85" Column="1" TopLine="82"/>
+        <Caret Line="297" Column="8" TopLine="285"/>
       </Position19>
       <Position20>
-        <Filename Value="../ppruby.pp"/>
-        <Caret Line="518" Column="51" TopLine="510"/>
+        <Filename Value="../static/ruby18.pp"/>
+        <Caret Line="1" Column="1" TopLine="1"/>
       </Position20>
       <Position21>
         <Filename Value="../ppruby.pp"/>
-        <Caret Line="45" Column="9" TopLine="43"/>
+        <Caret Line="578" Column="48" TopLine="564"/>
       </Position21>
       <Position22>
         <Filename Value="../ppruby.pp"/>
-        <Caret Line="1" Column="1" TopLine="1"/>
+        <Caret Line="123" Column="1" TopLine="109"/>
       </Position22>
       <Position23>
         <Filename Value="../ppruby.pp"/>
-        <Caret Line="438" Column="17" TopLine="414"/>
+        <Caret Line="182" Column="44" TopLine="175"/>
       </Position23>
       <Position24>
         <Filename Value="../ppruby.pp"/>
-        <Caret Line="297" Column="8" TopLine="285"/>
+        <Caret Line="121" Column="27" TopLine="109"/>
       </Position24>
       <Position25>
-        <Filename Value="../static/ruby18.pp"/>
-        <Caret Line="1" Column="1" TopLine="1"/>
+        <Filename Value="../ppruby.pp"/>
+        <Caret Line="181" Column="3" TopLine="169"/>
       </Position25>
       <Position26>
         <Filename Value="../ppruby.pp"/>
-        <Caret Line="578" Column="48" TopLine="564"/>
+        <Caret Line="40" Column="50" TopLine="24"/>
       </Position26>
       <Position27>
-        <Filename Value="../ppruby.pp"/>
-        <Caret Line="123" Column="1" TopLine="109"/>
+        <Filename Value="../static/ruby18.pp"/>
+        <Caret Line="919" Column="25" TopLine="902"/>
       </Position27>
       <Position28>
-        <Filename Value="../ppruby.pp"/>
-        <Caret Line="182" Column="44" TopLine="175"/>
+        <Filename Value="../static/ruby18.pp"/>
+        <Caret Line="1" Column="1" TopLine="1"/>
       </Position28>
       <Position29>
         <Filename Value="../ppruby.pp"/>
-        <Caret Line="121" Column="27" TopLine="109"/>
+        <Caret Line="238" Column="1" TopLine="217"/>
       </Position29>
       <Position30>
         <Filename Value="../ppruby.pp"/>
-        <Caret Line="181" Column="3" TopLine="169"/>
+        <Caret Line="758" Column="5" TopLine="734"/>
       </Position30>
     </JumpHistory>
   </ProjectOptions>
