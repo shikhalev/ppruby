@@ -184,10 +184,14 @@ const
     (name : LIB19; init : @init_18_19; done : @done_18_19)
   );
 
+type
+  Pfunc = function (v : VALUE) : VALUE; cdecl;
+
 var
   p_ruby_errinfo : PVALUE;
 
   f_rb_inspect : function (v : VALUE) : VALUE; cdecl;
+  f_rb_protect : function (func : Pfunc; data : VALUE; state : PInteger) : VALUE; cdecl;
 
 procedure init_18_19;
  begin
@@ -195,6 +199,7 @@ procedure init_18_19;
   p_ruby_errinfo := GetProcedureAddress(libRuby, 'ruby_errinfo');
   // init funcs
   Pointer(f_rb_inspect) := GetProcedureAddress(libRuby, 'rb_inspect');
+  Pointer(f_rb_protect) := GetProcedureAddress(libRuby, 'rb_protect');
  end;
 
 procedure done_18_19;
