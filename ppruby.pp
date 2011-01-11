@@ -42,25 +42,25 @@ type
     (* , future versions ... *)
   );
 
-  TRubyMethod0   = function (slf : VALUE) : VALUE; cdecl;
-  TRubyMethod1   = function (slf : VALUE; a : VALUE) : VALUE; cdecl;
-  TRubyMethod2   = function (slf : VALUE; a, b : VALUE) : VALUE; cdecl;
-  TRubyMethod3   = function (slf : VALUE; a, b, c : VALUE) : VALUE; cdecl;
-  TRubyMethod4   = function (slf : VALUE; a, b, c, d : VALUE) : VALUE; cdecl;
-  TRubyMethod5   = function (slf : VALUE; a, b, c, d, e : VALUE) : VALUE; cdecl;
-  TRubyMethod6   = function (slf : VALUE; a, b, c, d, e, f : VALUE) : VALUE; cdecl;
-  TRubyMethod7   = function (slf : VALUE; a, b, c, d, e, f, g : VALUE) : VALUE; cdecl;
-  TRubyMethod8   = function (slf : VALUE; a, b, c, d, e, f, g, h : VALUE) : VALUE; cdecl;
-  TRubyMethod9   = function (slf : VALUE; a, b, c, d, e, f, g, h, i : VALUE) : VALUE; cdecl;
-  TRubyMethod10  = function (slf : VALUE; a, b, c, d, e, f, g, h, i, j : VALUE) : VALUE; cdecl;
-  TRubyMethod11  = function (slf : VALUE; a, b, c, d, e, f, g, h, i, j, k : VALUE) : VALUE; cdecl;
-  TRubyMethod12  = function (slf : VALUE; a, b, c, d, e, f, g, h, i, j, k, l : VALUE) : VALUE; cdecl;
-  TRubyMethod13  = function (slf : VALUE; a, b, c, d, e, f, g, h, i, j, k, l, m : VALUE) : VALUE; cdecl;
-  TRubyMethod14  = function (slf : VALUE; a, b, c, d, e, f, g, h, i, j, k, l, m, n : VALUE) : VALUE; cdecl;
-  TRubyMethod15  = function (slf : VALUE; a, b, c, d, e, f, g, h, i, j, k, l, m, n, o : VALUE) : VALUE; cdecl;
-  TRubyMethod16  = function (slf : VALUE; a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p : VALUE) : VALUE; cdecl;
-  TRubyMethod17  = function (slf : VALUE; a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q : VALUE) : VALUE; cdecl;
-  TRubyMethodArr = function (argc : LongInt; argv : PVALUE; slf : VALUE) : VALUE; cdecl;
+  TRubyMethod0   = function (instance : VALUE) : VALUE; cdecl;
+  TRubyMethod1   = function (instance : VALUE; a : VALUE) : VALUE; cdecl;
+  TRubyMethod2   = function (instance : VALUE; a, b : VALUE) : VALUE; cdecl;
+  TRubyMethod3   = function (instance : VALUE; a, b, c : VALUE) : VALUE; cdecl;
+  TRubyMethod4   = function (instance : VALUE; a, b, c, d : VALUE) : VALUE; cdecl;
+  TRubyMethod5   = function (instance : VALUE; a, b, c, d, e : VALUE) : VALUE; cdecl;
+  TRubyMethod6   = function (instance : VALUE; a, b, c, d, e, f : VALUE) : VALUE; cdecl;
+  TRubyMethod7   = function (instance : VALUE; a, b, c, d, e, f, g : VALUE) : VALUE; cdecl;
+  TRubyMethod8   = function (instance : VALUE; a, b, c, d, e, f, g, h : VALUE) : VALUE; cdecl;
+  TRubyMethod9   = function (instance : VALUE; a, b, c, d, e, f, g, h, i : VALUE) : VALUE; cdecl;
+  TRubyMethod10  = function (instance : VALUE; a, b, c, d, e, f, g, h, i, j : VALUE) : VALUE; cdecl;
+  TRubyMethod11  = function (instance : VALUE; a, b, c, d, e, f, g, h, i, j, k : VALUE) : VALUE; cdecl;
+  TRubyMethod12  = function (instance : VALUE; a, b, c, d, e, f, g, h, i, j, k, l : VALUE) : VALUE; cdecl;
+  TRubyMethod13  = function (instance : VALUE; a, b, c, d, e, f, g, h, i, j, k, l, m : VALUE) : VALUE; cdecl;
+  TRubyMethod14  = function (instance : VALUE; a, b, c, d, e, f, g, h, i, j, k, l, m, n : VALUE) : VALUE; cdecl;
+  TRubyMethod15  = function (instance : VALUE; a, b, c, d, e, f, g, h, i, j, k, l, m, n, o : VALUE) : VALUE; cdecl;
+  TRubyMethod16  = function (instance : VALUE; a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p : VALUE) : VALUE; cdecl;
+  TRubyMethod17  = function (instance : VALUE; a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q : VALUE) : VALUE; cdecl;
+  TRubyMethodArr = function (argc : LongInt; argv : PVALUE; instance : VALUE) : VALUE; cdecl;
 
 procedure DefineMethod (module : VALUE; const name : ansistring; method : TRubyMethod0);
 procedure DefineMethod (module : VALUE; const name : ansistring; method : TRubyMethod1);
@@ -82,25 +82,25 @@ procedure DefineMethod (module : VALUE; const name : ansistring; method : TRubyM
 procedure DefineMethod (module : VALUE; const name : ansistring; method : TRubyMethod17);
 procedure DefineMethod (module : VALUE; const name : ansistring; method : TRubyMethodArr);
 
-procedure DefineSingletonMethod (cls : VALUE; const name : ansistring; method : TRubyMethod0);
-procedure DefineSingletonMethod (cls : VALUE; const name : ansistring; method : TRubyMethod1);
-procedure DefineSingletonMethod (cls : VALUE; const name : ansistring; method : TRubyMethod2);
-procedure DefineSingletonMethod (cls : VALUE; const name : ansistring; method : TRubyMethod3);
-procedure DefineSingletonMethod (cls : VALUE; const name : ansistring; method : TRubyMethod4);
-procedure DefineSingletonMethod (cls : VALUE; const name : ansistring; method : TRubyMethod5);
-procedure DefineSingletonMethod (cls : VALUE; const name : ansistring; method : TRubyMethod6);
-procedure DefineSingletonMethod (cls : VALUE; const name : ansistring; method : TRubyMethod7);
-procedure DefineSingletonMethod (cls : VALUE; const name : ansistring; method : TRubyMethod8);
-procedure DefineSingletonMethod (cls : VALUE; const name : ansistring; method : TRubyMethod9);
-procedure DefineSingletonMethod (cls : VALUE; const name : ansistring; method : TRubyMethod10);
-procedure DefineSingletonMethod (cls : VALUE; const name : ansistring; method : TRubyMethod11);
-procedure DefineSingletonMethod (cls : VALUE; const name : ansistring; method : TRubyMethod12);
-procedure DefineSingletonMethod (cls : VALUE; const name : ansistring; method : TRubyMethod13);
-procedure DefineSingletonMethod (cls : VALUE; const name : ansistring; method : TRubyMethod14);
-procedure DefineSingletonMethod (cls : VALUE; const name : ansistring; method : TRubyMethod15);
-procedure DefineSingletonMethod (cls : VALUE; const name : ansistring; method : TRubyMethod16);
-procedure DefineSingletonMethod (cls : VALUE; const name : ansistring; method : TRubyMethod17);
-procedure DefineSingletonMethod (cls : VALUE; const name : ansistring; method : TRubyMethodArr);
+procedure DefineSingletonMethod (instance : VALUE; const name : ansistring; method : TRubyMethod0);
+procedure DefineSingletonMethod (instance : VALUE; const name : ansistring; method : TRubyMethod1);
+procedure DefineSingletonMethod (instance : VALUE; const name : ansistring; method : TRubyMethod2);
+procedure DefineSingletonMethod (instance : VALUE; const name : ansistring; method : TRubyMethod3);
+procedure DefineSingletonMethod (instance : VALUE; const name : ansistring; method : TRubyMethod4);
+procedure DefineSingletonMethod (instance : VALUE; const name : ansistring; method : TRubyMethod5);
+procedure DefineSingletonMethod (instance : VALUE; const name : ansistring; method : TRubyMethod6);
+procedure DefineSingletonMethod (instance : VALUE; const name : ansistring; method : TRubyMethod7);
+procedure DefineSingletonMethod (instance : VALUE; const name : ansistring; method : TRubyMethod8);
+procedure DefineSingletonMethod (instance : VALUE; const name : ansistring; method : TRubyMethod9);
+procedure DefineSingletonMethod (instance : VALUE; const name : ansistring; method : TRubyMethod10);
+procedure DefineSingletonMethod (instance : VALUE; const name : ansistring; method : TRubyMethod11);
+procedure DefineSingletonMethod (instance : VALUE; const name : ansistring; method : TRubyMethod12);
+procedure DefineSingletonMethod (instance : VALUE; const name : ansistring; method : TRubyMethod13);
+procedure DefineSingletonMethod (instance : VALUE; const name : ansistring; method : TRubyMethod14);
+procedure DefineSingletonMethod (instance : VALUE; const name : ansistring; method : TRubyMethod15);
+procedure DefineSingletonMethod (instance : VALUE; const name : ansistring; method : TRubyMethod16);
+procedure DefineSingletonMethod (instance : VALUE; const name : ansistring; method : TRubyMethod17);
+procedure DefineSingletonMethod (instance : VALUE; const name : ansistring; method : TRubyMethodArr);
 
 function Version : TRubyVersion; inline;
 
@@ -205,7 +205,8 @@ var
   f_rb_inspect : function (v : VALUE) : VALUE; cdecl;
   f_rb_protect : function (func : Pfunc; data : VALUE; state : PInteger) : VALUE; cdecl;
   f_rb_string_value_cstr : function (constref str : VALUE) : pchar; cdecl;
-  f_rb_define_method : procedure (cls : VALUE; name : pchar; func : Pointer; argc : Integer); cdecl;
+  f_rb_define_method : procedure (module : VALUE; name : PChar; func : Pointer; argc : Integer); cdecl;
+  f_rb_define_singleton_method : procedure (module : VALUE; name : PChar; func : Pointer; argc : Integer); cdecl;
 
 procedure init_18_19;
  begin
@@ -216,6 +217,7 @@ procedure init_18_19;
   Pointer(f_rb_protect) := GetProcedureAddress(libRuby, 'rb_protect');
   Pointer(f_rb_string_value_cstr) := GetProcedureAddress(libRuby, 'rb_string_value_cstr');
   Pointer(f_rb_define_method) := GetProcedureAddress(libRuby, 'rb_define_method');
+  Pointer(f_rb_define_singleton_method) := GetProcedureAddress(libRuby, 'rb_define_singleton_method');
  end;
 
 procedure done_18_19;
@@ -280,6 +282,7 @@ operator explicit (v : VALUE) : UTF8String;
           rec.val := v;
           f_rb_protect(@try_val2str, VALUE(@rec), @res);
           chkConversion(res);
+          Result := UTF8String(rec.str);
          end;
        else
          errUnknown;
@@ -294,7 +297,7 @@ operator explicit (v : VALUE) : ansistring;
 type
   PMethodRec = ^TMethodRec;
   TMethodRec = record
-    module : VALUE;
+    value  : VALUE;
     name   : PChar;
     method : Pointer;
     argc   : Integer;
@@ -302,7 +305,7 @@ type
 
 function try_define_method (v : VALUE) : VALUE; cdecl;
  begin
-  f_rb_define_method(PMethodRec(v)^.module, PMethodRec(v)^.name, PMethodRec(v)^.method, PMethodRec(v)^.argc);
+  f_rb_define_method(PMethodRec(v)^.value, PMethodRec(v)^.name, PMethodRec(v)^.method, PMethodRec(v)^.argc);
   Result := Qnil;
  end;
 
@@ -316,7 +319,7 @@ procedure protected_define_method (module : VALUE; name : PChar; method : Pointe
          errInactive;
        rvRuby18, rvRuby19 :
          begin
-          rec.module := module;
+          rec.value := module;
           rec.name := name;
           rec.method := method;
           rec.argc := argc;
@@ -425,99 +428,128 @@ procedure DefineMethod (module : VALUE; const name : ansistring; method: TRubyMe
   // TODO: check for 1.9 — may be wrong!
  end;
 
-procedure DefineSingletonMethod (cls : VALUE; const name : ansistring; method : TRubyMethod0);
-begin
-
-end;
-
-procedure DefineSingletonMethod (cls : VALUE; const name : ansistring; method : TRubyMethod1);
-begin
-
-end;
-
-procedure DefineSingletonMethod (cls : VALUE; const name : ansistring; method : TRubyMethod2);
-begin
-
-end;
-
-procedure DefineSingletonMethod (cls : VALUE; const name : ansistring; method : TRubyMethod3);
-begin
-
-end;
-
-procedure DefineSingletonMethod (cls : VALUE; const name : ansistring; method : TRubyMethod4);
-begin
-
-end;
-
-procedure DefineSingletonMethod (cls : VALUE; const name : ansistring; method : TRubyMethod5);
-begin
-
-end;
-
-procedure DefineSingletonMethod (cls : VALUE; const name : ansistring; method : TRubyMethod6);
-begin
-
-end;
-
-procedure DefineSingletonMethod (cls : VALUE; const name : ansistring; method : TRubyMethod7);
-begin
-
-end;
-
-procedure DefineSingletonMethod (cls : VALUE; const name : ansistring; method : TRubyMethod8);
-begin
-
-end;
-
-procedure DefineSingletonMethod (cls : VALUE; const name : ansistring; method : TRubyMethod9);
-begin
-
-end;
-
-procedure DefineSingletonMethod (cls : VALUE; const name : ansistring; method : TRubyMethod10);
-begin
-
-end;
-
-procedure DefineSingletonMethod (cls : VALUE; const name : ansistring; method : TRubyMethod11);
-begin
-
-end;
-
-procedure DefineSingletonMethod (cls : VALUE; const name : ansistring; method : TRubyMethod12);
-begin
-
-end;
-
-procedure DefineSingletonMethod (cls : VALUE; const name : ansistring; method : TRubyMethod13);
-begin
-
-end;
-
-procedure DefineSingletonMethod (cls : VALUE; const name : ansistring; method : TRubyMethod14);
-begin
-
-end;
-
-procedure DefineSingletonMethod (cls : VALUE; const name : ansistring; method : TRubyMethod15);
-begin
-
-end;
-
-procedure DefineSingletonMethod (cls : VALUE; const name : ansistring; method : TRubyMethod16);
-begin
-
-end;
-
-procedure DefineSingletonMethod (cls : VALUE; const name : ansistring; method : TRubyMethod17);
-begin
-
-end;
-
-procedure DefineSingletonMethod (cls : VALUE; const name : ansistring; method : TRubyMethodArr);
+function try_define_singleton_method (v : VALUE) : VALUE; cdecl;
  begin
+  f_rb_define_singleton_method(PMethodRec(v)^.value, PMethodRec(v)^.name, PMethodRec(v)^.method, PMethodRec(v)^.argc);
+  Result := Qnil;
+ end;
 
+procedure protected_define_singleton_method (instance : VALUE; name : PChar; method : Pointer; argc : Integer);
+ var
+   rec : TMethodRec;
+   res : Integer;
+ begin
+  case Version of
+       rvNone :
+         errInactive;
+       rvRuby18, rvRuby19 :
+         begin
+          rec.value := instance;
+          rec.name := name;
+          rec.method := method;
+          rec.argc := argc;
+          f_rb_protect(@try_define_singleton_method, VALUE(@rec), @res);
+          if res <> 0
+             then raise ERubyDefinition.Create(msgDefineError);
+         end;
+       else
+         errUnknown;
+  end;
+ end;
+
+procedure DefineSingletonMethod (instance : VALUE; const name : ansistring; method : TRubyMethod0);
+ begin
+  protected_define_singleton_method(instance, PChar(name), Pointer(method), 0);
+ end;
+
+procedure DefineSingletonMethod (instance : VALUE; const name : ansistring; method : TRubyMethod1);
+ begin
+  protected_define_singleton_method(instance, PChar(name), Pointer(method), 1);
+ end;
+
+procedure DefineSingletonMethod (instance : VALUE; const name : ansistring; method : TRubyMethod2);
+ begin
+  protected_define_singleton_method(instance, PChar(name), Pointer(method), 2);
+ end;
+
+procedure DefineSingletonMethod (instance : VALUE; const name : ansistring; method : TRubyMethod3);
+ begin
+  protected_define_singleton_method(instance, PChar(name), Pointer(method), 3);
+ end;
+
+procedure DefineSingletonMethod (instance : VALUE; const name : ansistring; method : TRubyMethod4);
+ begin
+  protected_define_singleton_method(instance, PChar(name), Pointer(method), 4);
+ end;
+
+procedure DefineSingletonMethod (instance : VALUE; const name : ansistring; method : TRubyMethod5);
+ begin
+  protected_define_singleton_method(instance, PChar(name), Pointer(method), 5);
+ end;
+
+procedure DefineSingletonMethod (instance : VALUE; const name : ansistring; method : TRubyMethod6);
+ begin
+  protected_define_singleton_method(instance, PChar(name), Pointer(method), 6);
+ end;
+
+procedure DefineSingletonMethod (instance : VALUE; const name : ansistring; method : TRubyMethod7);
+ begin
+  protected_define_singleton_method(instance, PChar(name), Pointer(method), 7);
+ end;
+
+procedure DefineSingletonMethod (instance : VALUE; const name : ansistring; method : TRubyMethod8);
+ begin
+  protected_define_singleton_method(instance, PChar(name), Pointer(method), 8);
+ end;
+
+procedure DefineSingletonMethod (instance : VALUE; const name : ansistring; method : TRubyMethod9);
+ begin
+  protected_define_singleton_method(instance, PChar(name), Pointer(method), 9);
+ end;
+
+procedure DefineSingletonMethod (instance : VALUE; const name : ansistring; method : TRubyMethod10);
+ begin
+  protected_define_singleton_method(instance, PChar(name), Pointer(method), 10);
+ end;
+
+procedure DefineSingletonMethod (instance : VALUE; const name : ansistring; method : TRubyMethod11);
+ begin
+  protected_define_singleton_method(instance, PChar(name), Pointer(method), 11);
+ end;
+
+procedure DefineSingletonMethod (instance : VALUE; const name : ansistring; method : TRubyMethod12);
+ begin
+  protected_define_singleton_method(instance, PChar(name), Pointer(method), 12);
+ end;
+
+procedure DefineSingletonMethod (instance : VALUE; const name : ansistring; method : TRubyMethod13);
+ begin
+  protected_define_singleton_method(instance, PChar(name), Pointer(method), 13);
+ end;
+
+procedure DefineSingletonMethod (instance : VALUE; const name : ansistring; method : TRubyMethod14);
+ begin
+  protected_define_singleton_method(instance, PChar(name), Pointer(method), 14);
+ end;
+
+procedure DefineSingletonMethod (instance : VALUE; const name : ansistring; method : TRubyMethod15);
+ begin
+  protected_define_singleton_method(instance, PChar(name), Pointer(method), 15);
+ end;
+
+procedure DefineSingletonMethod (instance : VALUE; const name : ansistring; method : TRubyMethod16);
+ begin
+  protected_define_singleton_method(instance, PChar(name), Pointer(method), 16);
+ end;
+
+procedure DefineSingletonMethod (instance : VALUE; const name : ansistring; method : TRubyMethod17);
+ begin
+  protected_define_singleton_method(instance, PChar(name), Pointer(method), 17);
+ end;
+
+procedure DefineSingletonMethod (instance : VALUE; const name : ansistring; method : TRubyMethodArr);
+ begin
+  protected_define_singleton_method(instance, PChar(name), Pointer(method), -1);
  end;
 
 function Version : TRubyVersion; inline;
