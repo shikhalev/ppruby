@@ -34,6 +34,7 @@ function Qundef : VALUE; inline;
 
 operator explicit (v : VALUE) : UTF8String;
 operator explicit (v : VALUE) : ansistring;
+operator explicit (v : VALUE) : UnicodeString;
 
 type
   TRubyVersion = (
@@ -112,6 +113,15 @@ function getActive : Boolean;
 procedure setActive (val : Boolean);
 property Active : Boolean read getActive write setActive;
 
+type
+  TLoadHook = procedure;
+  TUnloadHook = procedure;
+
+procedure AddLoadHook (hook : TLoadHook);
+procedure RemoveLoadHook (hook : TLoadHook);
+procedure AddUnloadHook (hook : TUnloadHook);
+procedure RemoveUnloadHook (hook : TUnloadHook);
+
 function ErrorInfo : VALUE;
 function Inspect (v : VALUE) : VALUE;
 
@@ -168,6 +178,8 @@ procedure chkConversion (res : Integer); inline;
 var
   verRuby : TRubyVersion = rvNone;
   libRuby : TLibHandle = 0;
+  hooksLoad : array of TLoadHook = nil;
+  hooksUnload : array of TUnloadHook = nil;
 
 const
 {$IFDEF UNIX}
@@ -292,6 +304,11 @@ operator explicit (v : VALUE) : UTF8String;
 operator explicit (v : VALUE) : ansistring;
  begin
   Result := UTF8String(v);
+ end;
+
+operator explicit (v : VALUE) : UnicodeString;
+ begin
+  Result := UTF8Decode(UTF8String(v));
  end;
 
 type
@@ -558,6 +575,8 @@ function Version : TRubyVersion; inline;
  end;
 
 function Load (ver : TRubyVersion) : Boolean;
+ var
+   idx : PtrInt;
  begin
   if getActive
      then raise ERubyAlreadyLoaded.Create(msgAlreadyLoaded);
@@ -569,6 +588,8 @@ function Load (ver : TRubyVersion) : Boolean;
      then begin
            verRuby := ver;
            LIBRARIES[ver].init();
+           for idx := 0 to High(hooksLoad) do
+               hooksLoad[idx]();
           end;
  end;
 
@@ -585,9 +606,13 @@ function Load : TRubyVersion;
  end;
 
 procedure Unload;
+ var
+   idx : PtrInt;
  begin
   if not getActive
      then errInactive;
+  for idx := 0 to High(hooksUnload) do
+      hooksUnload[idx]();
   LIBRARIES[verRuby].done();
   UnloadLibrary(libRuby);
   libRuby := 0;
@@ -608,6 +633,66 @@ procedure setActive (val : Boolean);
                       then raise ELibraryError.Create(msgActivateError);
                   end
              else Unload
+ end;
+
+procedure AddLoadHook (hook : TLoadHook);
+ var
+   len : PtrInt;
+ begin
+  if hook <> nil
+     then begin
+           len := Length(hooksLoad);
+           SetLength(hooksLoad, len + 1);
+           hooksLoad[len] := hook;
+          end;
+ end;
+
+procedure RemoveLoadHook (hook : TLoadHook);
+ var
+   h, idx, delidx : PtrInt;
+ begin
+  if hook <> nil
+     then begin
+           h := High(hooksLoad);
+           for idx := 0 to h do
+               if hooksLoad[idx] = hook
+                  then begin
+                        for delidx := idx to h - 1 do
+                            hooksLoad[delidx] := hooksLoad[delidx + 1];
+                        SetLength(hooksLoad, h);
+                        exit;
+                       end;
+          end;
+ end;
+
+procedure AddUnloadHook(hook : TUnloadHook);
+ var
+   len : PtrInt;
+ begin
+  if hook <> nil
+     then begin
+           len := Length(hooksUnload);
+           SetLength(hooksUnload, len + 1);
+           hooksUnload[len] := hook;
+          end;
+ end;
+
+procedure RemoveUnloadHook(hook : TUnloadHook);
+ var
+   h, idx, delidx : PtrInt;
+ begin
+  if hook <> nil
+     then begin
+           h := High(hooksUnload);
+           for idx := 0 to h do
+               if hooksUnload[idx] = hook
+                  then begin
+                        for delidx := idx to h - 1 do
+                            hooksUnload[delidx] := hooksUnload[delidx + 1];
+                        SetLength(hooksUnload, h);
+                        exit;
+                       end;
+          end;
  end;
 
 function ErrorInfo : VALUE;
