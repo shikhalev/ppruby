@@ -166,6 +166,8 @@ type
   ERubyInactive = class(ERubyError);
   ERubyAlreadyLoaded = class(ERubyError);
   ERubyConversion = class(ERubyError);
+    ERubyNotObject = class(ERubyConversion);
+    ERubyNotClass = class(ERubyConversion);
   ERubyDefinition = class(ERubyError);
 
 resourcestring
@@ -181,6 +183,10 @@ resourcestring
     'Illegal value conversion.';
   msgDefineError =
     'Error in definition.';
+  msgNotObject =
+    'Value is not a pascal object.';
+  msgNotClass =
+    'Value is not a pascal class.';
 
 implementation
 
@@ -205,6 +211,56 @@ var
   libRuby : TLibHandle = 0;
   hooksLoad : array of TLoadHook = nil;
   hooksUnload : array of TUnloadHook = nil;
+  cacheObjects : array of record
+    obj : TObject;
+    val : VALUE;
+  end = nil;
+  cacheClasses : array of record
+    cls : TClass;
+    val : VALUE;
+  end = nil;
+
+function find_object (obj : TObject; out idx : PtrInt) : Boolean;
+ var
+   min, max : PtrInt;
+ begin
+  idx := Length(cacheObjects);
+  if idx = 0
+     then Exit(false);
+  if Pointer(obj) > Pointer(cacheObjects[idx - 1].obj)
+     then Exit(false);
+  max := idx - 1;
+  idx := 0;
+  if Pointer(obj) < Pointer(cacheObjects[0].obj)
+     then Exit(false);
+  min := 0;
+  repeat
+   if Pointer(obj) = Pointer(cacheObjects[min].obj)
+      then idx := min
+      else if Pointer(obj) = Pointer(cacheObjects[max].obj)
+              then idx := max
+              else idx := (max + min) div 2;
+   if Pointer(obj) = Pointer(cacheObjects[idx].obj)
+      then exit(true)
+      else if Pointer(obj) < Pointer(cacheObjects[idx].obj)
+              then max := idx
+              else min := idx;
+  until max - min <= 1;
+  idx := min + 1;
+  Result := false;
+ end;
+
+procedure insert_object(obj : TObject; val : VALUE; idx : PtrInt);
+ var
+   len, ins : PtrInt;
+ begin
+  len := Length(cacheObjects);
+  SetLength(cacheObjects, len + 1);
+  for ins := len downto idx + 1 do
+      cacheObjects[ins] := cacheObjects[ins - 1];
+  cacheObjects[idx].obj := obj;
+  cacheObjects[idx].val := val;
+ end;
 
 const
 {$IFDEF UNIX}
@@ -235,6 +291,7 @@ const
 
 type
   Pfunc = function (v : VALUE) : VALUE; cdecl;
+  Pdatafunc = procedure (p : Pointer); cdecl;
 
 var
   p_ruby_errinfo : PVALUE;
@@ -251,6 +308,10 @@ var
   f_rb_int2inum : function (n : PtrInt) : VALUE; cdecl;
   f_rb_uint2inum : function (n : PtrUInt) : VALUE; cdecl;
   f_rb_float_new : function (d : Double) : VALUE; cdecl;
+  f_rb_data_object_alloc : function (cls : VALUE; ptr : pointer; dmark, dfree : Pdatafunc) : VALUE; cdecl;
+  f_rb_define_class : function (name : pchar; super : VALUE) : VALUE; cdecl;
+
+  v_rb_cObject : VALUE;
 
 procedure init_18_19;
  begin
@@ -269,6 +330,11 @@ procedure init_18_19;
   Pointer(f_rb_int2inum) := GetProcedureAddress(libRuby, 'rb_int2inum');
   Pointer(f_rb_uint2inum) := GetProcedureAddress(libRuby, 'rb_uint2inum');
   Pointer(f_rb_float_new) := GetProcedureAddress(libRuby, 'rb_float_new');
+  Pointer(f_rb_data_object_alloc) := GetProcedureAddress(libRuby, 'rb_data_object_alloc');
+  Pointer(f_rb_define_class) := GetProcedureAddress(libRuby, 'rb_define_class');
+  // init library
+  // init v_ vars
+  v_rb_cObject := PVALUE(GetProcedureAddress(libRuby, 'rb_cObject'))^;
  end;
 
 procedure done_18_19;
@@ -305,6 +371,77 @@ function Qtrue : VALUE; inline;
 function Qundef : VALUE; inline;
  begin
   Result.data := _Qundef;
+ end;
+
+const
+//  IMMEDIATE_MASK = $03;
+
+  FIXNUM_FLAG = $01;
+  SYMBOL_FLAG = $0E;
+
+//  T_NONE      = $00;
+
+  T_NIL       = $01;
+//  T_OBJECT    = $02;
+  T_CLASS     = $03;
+//  T_ICLASS    = $04;
+//  T_MODULE    = $05;
+//  T_FLOAT     = $06;
+//  T_STRING    = $07;
+//  T_REGEXP    = $08;
+//  T_ARRAY     = $09;
+  T_FIXNUM    = $0A;
+//  T_HASH      = $0B;
+//  T_STRUCT    = $0C;
+//  T_BIGNUM    = $0D;
+//  T_FILE      = $0E;
+
+  T_TRUE      = $20;
+  T_FALSE     = $21;
+  T_DATA      = $22;
+//  T_MATCH     = $23;
+  T_SYMBOL    = $24;
+
+//  T_BLKTAG    = $3B;
+  T_UNDEF     = $3C;
+//  T_VARMAP    = $3D;
+//  T_SCOPE     = $3E;
+//  T_NODE      = $3F;
+
+  T_MASK      = $3F;
+
+type
+  PRBasic = ^RBasic;
+  RBasic = record
+    flags : PtrUInt;
+    klass : VALUE;
+  end;
+
+  PRData = ^RData;
+  RData = record
+    basic : RBasic;
+    dmark, dfree : Pdatafunc;
+    data : Pointer;
+  end;
+
+function rb_type (obj : VALUE) : Integer; inline;
+ begin
+  if (obj.data and FIXNUM_FLAG) <> 0
+     then result := T_FIXNUM
+     else case obj.data of
+               _Qnil :
+                 result := T_NIL;
+               _Qfalse :
+                 result := T_FALSE;
+               _Qtrue :
+                 result := T_TRUE;
+               _Qundef :
+                 result := T_UNDEF;
+               else
+                 if (obj.data and $FF) = SYMBOL_FLAG
+                    then result := T_SYMBOL
+                    else result := (PRBasic(obj)^.flags and T_MASK)
+          end;
  end;
 
 type
@@ -482,13 +619,46 @@ operator explicit (v : VALUE) : Boolean;
  end;
 
 operator explicit (v : VALUE) : TObject;
+ var
+   idx : PtrInt;
  begin
-
+  case Version of
+       rvNone :
+         errInactive;
+       rvRuby18, rvRuby19 :
+         begin
+          if v = Qnil
+             then exit(nil);
+          if (rb_type(v) <> T_DATA) or not find_object(TObject(PRData(v)^.data), idx)
+             then raise ERubyNotObject.Create(msgNotObject);
+          if cacheObjects[idx].val <> v
+             then raise ERubyNotObject.Create(msgNotObject);
+          Result := cacheObjects[idx].obj;
+         end;
+       else
+         errUnknown;
+  end;
  end;
 
 operator explicit (v : VALUE) : TClass;
+ var
+   idx : PtrInt;
  begin
-
+  case Version of
+       rvNone :
+         errInactive;
+       rvRuby18, rvRuby19 :
+         if rb_type(v) = T_CLASS
+            then begin
+                  for idx := 0 to High(cacheClasses) do
+                      if cacheClasses[idx].val = v
+                         then exit(cacheClasses[idx].cls);
+                  raise ERubyNotClass.Create(msgNotClass);
+                 end
+            else raise ERubyNotClass.Create(msgNotClass);
+       else
+         errUnknown;
+  end;
  end;
 
 operator explicit (const v : PtrInt) : VALUE;
@@ -535,13 +705,49 @@ operator explicit (const v : Boolean) : VALUE;
  end;
 
 operator explicit (const v : TObject) : VALUE;
+ var
+   idx : PtrInt;
  begin
-
+  case Version of
+       rvNone :
+         errInactive;
+       rvRuby18, rvRuby19 :
+         if v = nil
+            then Result := Qnil
+            else if find_object(v, idx)
+                    then Result := cacheObjects[idx].val
+                    else begin
+                          Result := f_rb_data_object_alloc(VALUE(v.ClassType), Pointer(v), nil, nil);
+                          insert_object(v, Result, idx);
+                         end;
+       else
+         errUnknown;
+  end;
  end;
 
 operator explicit (const v : TClass) : VALUE;
+ var
+   idx : PtrInt;
  begin
-
+  case Version of
+       rvNone :
+         errInactive;
+       rvRuby18, rvRuby19 :
+         begin
+          if v = nil
+             then exit(v_rb_cObject);
+          for idx := 0 to High(cacheClasses) do
+              if cacheClasses[idx].cls = v
+                 then exit(cacheClasses[idx].val);
+          Result := f_rb_define_class(PChar(ansistring(v.ClassName)), VALUE(v.ClassParent));
+          idx := Length(cacheClasses);
+          SetLength(cacheClasses, idx + 1);
+          cacheClasses[idx].cls := v;
+          cacheClasses[idx].val := Result;
+         end;
+       else
+         errUnknown;
+  end;
  end;
 
 {$IFDEF CPU32}
