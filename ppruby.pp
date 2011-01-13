@@ -61,6 +61,11 @@ operator explicit (const v : Int64) : VALUE;
 operator explicit (const v : QWord) : VALUE;
 {$ENDIF CPU32}
 
+operator explicit (v : VALUE) : ID;
+operator explicit (v : ID) : VALUE;
+operator explicit (v : ID) : ansistring;
+operator explicit (const v : ansistring) : ID;
+
 type
   TRubyVersion = (
     rvNone,
@@ -188,6 +193,14 @@ resourcestring
   msgNotClass =
     'Value is not a pascal class.';
 
+type
+  TRubyMsg = record
+    msg : shortstring;
+    argc : Integer;
+    argv : PVALUE;
+    result : PVALUE;
+  end;
+
 implementation
 
 procedure errInactive; inline;
@@ -310,6 +323,9 @@ var
   f_rb_float_new : function (d : Double) : VALUE; cdecl;
   f_rb_data_object_alloc : function (cls : VALUE; ptr : pointer; dmark, dfree : Pdatafunc) : VALUE; cdecl;
   f_rb_define_class : function (name : pchar; super : VALUE) : VALUE; cdecl;
+  f_rb_to_id : function (name : VALUE) : ID; cdecl;
+  f_rb_intern : function (name : PChar) : ID; cdecl;
+  f_rb_id2name : function (id : ID) : PChar; cdecl;
 
   v_rb_cObject : VALUE;
 
@@ -332,6 +348,9 @@ procedure init_18_19;
   Pointer(f_rb_float_new) := GetProcedureAddress(libRuby, 'rb_float_new');
   Pointer(f_rb_data_object_alloc) := GetProcedureAddress(libRuby, 'rb_data_object_alloc');
   Pointer(f_rb_define_class) := GetProcedureAddress(libRuby, 'rb_define_class');
+  Pointer(f_rb_to_id) := GetProcedureAddress(libRuby, 'rb_to_id');
+  Pointer(f_rb_intern) := GetProcedureAddress(libRuby, 'rb_intern');
+  Pointer(f_rb_id2name) := GetProcedureAddress(libRuby, 'rb_id2name');
   // init library
   // init v_ vars
   v_rb_cObject := PVALUE(GetProcedureAddress(libRuby, 'rb_cObject'))^;
@@ -725,6 +744,37 @@ operator explicit (const v : TObject) : VALUE;
   end;
  end;
 
+procedure do_property_get (obj : TObject; const name : ansistring; var res : VALUE);
+ begin
+
+ end;
+
+procedure do_property_set (obj : TObject; const name : ansistring; val : VALUE; var res : VALUE);
+ begin
+
+ end;
+
+function do_method_missing (argc : Integer; argv : PVALUE; instance : VALUE) : VALUE; cdecl;
+ var
+   msg : TRubyMsg;
+   obj : TObject;
+ begin
+  Result := Qundef;
+  obj := TObject(instance);
+  msg.msg := ansistring(ID(argv[0]));
+  msg.argc := argc - 1;
+  msg.argv := @argv[1];
+  msg.result := @Result;
+  obj.DispatchStr(msg);
+  if Result = Qundef
+     then if argc = 1   // may be property get
+             then do_property_get(obj, msg.msg, Result)
+             else if (argc = 2) and (msg.msg[Length(msg.msg)] = '=') // may be property set
+                     then do_property_set(obj, Copy(msg.msg, 1, Length(msg.msg) - 1), argv[1], Result);
+  if Result = Qundef
+     then ;
+ end;
+
 operator explicit (const v : TClass) : VALUE;
  var
    idx : PtrInt;
@@ -744,6 +794,7 @@ operator explicit (const v : TClass) : VALUE;
           SetLength(cacheClasses, idx + 1);
           cacheClasses[idx].cls := v;
           cacheClasses[idx].val := Result;
+          DefineMethod(Result, 'method_missing', @do_method_missing);
          end;
        else
          errUnknown;
@@ -769,6 +820,75 @@ operator explicit(const v : QWord) : VALUE;
 
  end;
 {$ENDIF CPU32}
+
+type
+  PIDRec = ^TIDRec;
+  TIDRec = record
+    id : ID;
+    val : VALUE;
+  end;
+
+function try_val2id (v : VALUE) : VALUE; cdecl;
+ begin
+  PIDRec(v)^.id := f_rb_to_id(PIDRec(v)^.val);
+  Result := Qnil;
+ end;
+
+operator explicit (v : VALUE) : ID;
+ var
+   rec : TIDRec;
+   res : Integer;
+ begin
+  case Version of
+       rvNone :
+         errInactive;
+       rvRuby18, rvRuby19 :
+         begin
+          rec.val := v;
+          f_rb_protect(@try_val2id, VALUE(@rec), @res);
+          chkConversion(res);
+          Result := rec.id;
+         end
+       else
+         errUnknown;
+  end;
+ end;
+
+operator explicit (v : ID) : VALUE;
+ begin
+  case Version of
+       rvNone :
+         errInactive;
+       rvRuby18, rvRuby19 :
+         Result.data := (v.data shl 8) or SYMBOL_FLAG;
+       else
+         errUnknown;
+  end;
+ end;
+
+operator explicit (v : ID) : ansistring;
+ begin
+  case Version of
+       rvNone :
+         errInactive;
+       rvRuby18, rvRuby19 :
+         Result := ansistring(f_rb_id2name(v));
+       else
+         errUnknown;
+  end;
+ end;
+
+operator explicit (const v : ansistring) : ID;
+ begin
+  case Version of
+       rvNone :
+         errInactive;
+       rvRuby18, rvRuby19 :
+         Result := f_rb_intern(PChar(v));
+       else
+         errUnknown;
+  end;
+ end;
 
 type
   PMethodRec = ^TMethodRec;
