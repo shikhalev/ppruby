@@ -12,7 +12,7 @@ unit ppRuby;
 interface
 
 uses
-  Classes, SysUtils, DynLibs;
+  Classes, SysUtils, DynLibs, TypInfo;
 
 type
   PVALUE = ^VALUE;
@@ -326,8 +326,11 @@ var
   f_rb_to_id : function (name : VALUE) : ID; cdecl;
   f_rb_intern : function (name : PChar) : ID; cdecl;
   f_rb_id2name : function (id : ID) : PChar; cdecl;
+  f_rb_funcall2 : function (receiver : VALUE; mid : ID; argc : Integer; argv : PVALUE) : VALUE; cdecl;
+  f_rb_raise : procedure (exc : VALUE; fmt : pchar); varargs; cdecl;
 
   v_rb_cObject : VALUE;
+  v_rb_eNoMethodError : VALUE;
 
 procedure init_18_19;
  begin
@@ -351,9 +354,12 @@ procedure init_18_19;
   Pointer(f_rb_to_id) := GetProcedureAddress(libRuby, 'rb_to_id');
   Pointer(f_rb_intern) := GetProcedureAddress(libRuby, 'rb_intern');
   Pointer(f_rb_id2name) := GetProcedureAddress(libRuby, 'rb_id2name');
+  Pointer(f_rb_funcall2) := GetProcedureAddress(libRuby, 'rb_funcall2');
+  Pointer(f_rb_raise) := GetProcedureAddress(libRuby, 'rb_raise');
   // init library
   // init v_ vars
   v_rb_cObject := PVALUE(GetProcedureAddress(libRuby, 'rb_cObject'))^;
+  v_rb_eNoMethodError := PVALUE(GetProcedureAddress(libRuby, 'rb_eNoMethodError'))^;
  end;
 
 procedure done_18_19;
@@ -744,14 +750,87 @@ operator explicit (const v : TObject) : VALUE;
   end;
  end;
 
-procedure do_property_get (obj : TObject; const name : ansistring; var res : VALUE);
- begin
+type
+  PPropRec = ^TPropRec;
+  TPropRec = record
+    instance, id, result : VALUE;
+  end;
 
+function try_get_subcomponent(v : VALUE) : VALUE; cdecl;
+ begin
+  PPropRec(v)^.result := f_rb_funcall2(PPropRec(v)^.instance, ID('[]'), 1, @PPropRec(v)^.id);
+  Result := Qnil;
  end;
 
-procedure do_property_set (obj : TObject; const name : ansistring; val : VALUE; var res : VALUE);
+procedure do_property_get (instance : VALUE; mid : VALUE; obj : TObject; const name : ansistring; var return : VALUE);
+ var
+   info : PPropInfo;
+   rec : TPropRec;
+   res : Integer;
  begin
+  info := GetPropInfo(obj, name);
+  if info <> nil
+     then case info^.PropType^.Kind of
+               tkInteger :
+                 return := VALUE(GetOrdProp(obj, info));
+               tkInt64 :
+                 return := VALUE(GetInt64Prop(obj, info));
+               tkQWord :
+                 return := VALUE(QWord(GetInt64Prop(obj, info)));
+               tkEnumeration :
+                 return := VALUE(ID(GetEnumProp(obj, info)));
+               tkFloat :
+                 return := VALUE(GetFloatProp(obj, info));
+               tkSString, tkLString, tkAString :
+                 return := VALUE(GetStrProp(obj, info));
+               tkWString, tkUString :
+                 return := VALUE(GetUnicodeStrProp(obj, info));
+               tkBool :
+                 return := VALUE(GetOrdProp(obj, info) <> 0);
+               tkClass :
+                 return := VALUE(GetObjectProp(obj, info));
+          end;
+  if return = Qundef   // try get subcomponent
+     then begin
+           rec.instance := instance;
+           rec.id := mid;
+           f_rb_protect(@try_get_subcomponent, VALUE(@rec), @res);
+           if res = 0
+              then return := rec.result;
+          end;
+ end;
 
+procedure do_property_set (obj : TObject; const name : ansistring; val : VALUE; var return : VALUE);
+ var
+   info : PPropInfo;
+ begin
+  info := GetPropInfo(obj, name);
+  if info <> nil
+     then begin
+           return := val;
+           case info^.PropType^.Kind of
+                tkInteger :
+                  SetOrdProp(obj, info, PtrInt(val));
+                tkInt64 :
+                  SetInt64Prop(obj, info, Int64(val));
+                tkQWord :
+                  SetInt64Prop(obj, info, Int64(QWord(val)));
+                tkEnumeration :
+                  SetEnumProp(obj, info, ansistring(ID(val)));
+                tkFloat :
+                  SetFloatProp(obj, info, Double(val));
+                tkSString, tkLString, tkAString :
+                  SetStrProp(obj, info, ansistring(val));
+                tkWString, tkUString :
+                  SetUnicodeStrProp(obj, info, UnicodeString(val));
+                tkBool :
+                  SetOrdProp(obj, info, Ord(Boolean(val)));
+                tkClass :
+                  SetObjectProp(obj, info, TObject(val));
+                else
+                  return := Qundef;
+           end;
+          end;
  end;
 
 function do_method_missing (argc : Integer; argv : PVALUE; instance : VALUE) : VALUE; cdecl;
@@ -768,11 +847,11 @@ function do_method_missing (argc : Integer; argv : PVALUE; instance : VALUE) : V
   obj.DispatchStr(msg);
   if Result = Qundef
      then if argc = 1   // may be property get
-             then do_property_get(obj, msg.msg, Result)
+             then do_property_get(instance, argv[0], obj, msg.msg, Result)
              else if (argc = 2) and (msg.msg[Length(msg.msg)] = '=') // may be property set
                      then do_property_set(obj, Copy(msg.msg, 1, Length(msg.msg) - 1), argv[1], Result);
   if Result = Qundef
-     then ;
+     then f_rb_raise(v_rb_eNoMethodError, 'No method ''%s'' for %s.', PChar(ansistring(msg.msg)), PChar(ansistring(f_rb_inspect(instance))));
  end;
 
 operator explicit (const v : TClass) : VALUE;
