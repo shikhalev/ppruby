@@ -338,6 +338,12 @@ var
   f_rb_id2name : function (id : ID) : PChar; cdecl;
   f_rb_funcall2 : function (receiver : VALUE; mid : ID; argc : Integer; argv : PVALUE) : VALUE; cdecl;
   f_rb_raise : procedure (exc : VALUE; fmt : pchar); varargs; cdecl;
+{$IFDEF CPU32}
+  f_rb_ll2inum : function (n : Int64) : VALUE; cdecl;
+  f_rb_ull2inum : function (n : QWord) : VALUE; cdecl;
+  f_rb_num2ll : function (v : VALUE) : Int64; cdecl;
+  f_rb_num2ull : function (v : VALUE) : QWord; cdecl;
+{$ENDIF CPU32}
 
   v_rb_cObject : VALUE;
   v_rb_eNoMethodError : VALUE;
@@ -366,6 +372,12 @@ procedure init_18_19;
   Pointer(f_rb_id2name) := GetProcedureAddress(libRuby, 'rb_id2name');
   Pointer(f_rb_funcall2) := GetProcedureAddress(libRuby, 'rb_funcall2');
   Pointer(f_rb_raise) := GetProcedureAddress(libRuby, 'rb_raise');
+{$IFDEF CPU32}
+  Pointer(f_rb_ll2inum) := GetProcedureAddress(libRuby, 'rb_ll2inum');
+  Pointer(f_rb_ull2inum) := GetProcedureAddress(libRuby, 'rb_ull2inum');
+  Pointer(f_rb_num2ll) := GetProcedureAddress(libRuby, 'rb_num2ll');
+  Pointer(f_rb_num2ull) := GetProcedureAddress(libRuby, 'rb_num2ull');
+{$ENDIF CPU32}
   // init library
   // init v_ vars
   v_rb_cObject := PVALUE(GetProcedureAddress(libRuby, 'rb_cObject'))^;
@@ -898,22 +910,91 @@ operator explicit (const v : TClass) : VALUE;
  end;
 
 {$IFDEF CPU32}
-operator explicit (v : VALUE) : Int64;
+
+type
+  PI64Rec = ^TI64Rec;
+  TI64Rec = record
+    i64 : Int64;
+    val : VALUE;
+  end;
+
+function try_val2i64 (v : VALUE) : VALUE; cdecl;
  begin
+  PI64Rec(v)^.i64 := f_rb_num2ll(PI64Rec(v)^.val);
+  Result := Qnil;
+ end;
+
+operator explicit (v : VALUE) : Int64;
+ var
+   rec : TI64Rec;
+   res : Integer;
+ begin
+  case Version of
+       rvNone :
+         errInactive;
+       rvRuby18, rvRuby19 :
+         begin
+          rec.val := v;
+          f_rb_protect(@try_val2i64, VALUE(@rec), @res);
+          chkConversion(res);
+          Result := v.i64;
+         end;
+  end;
+ end;
+
+type
+  PW64Rec = ^TW64Rec;
+  TW64Rec = record
+    w64 : QWord;
+    val : VALUE;
+  end;
+
+function try_val2w64 (v : VALUE) : VALUE; cdecl;
+ begin
+  PW64Rec(v)^.w64 := f_rb_num2ll(PW64Rec(v)^.val);
+  Result := Qnil;
  end;
 
 operator explicit (v : VALUE) : QWord;
+ var
+   rec : TW64Rec;
+   res : Integer;
  begin
+  case Version of
+       rvNone :
+         errInactive;
+       rvRuby18, rvRuby19 :
+         begin
+          rec.val := v;
+          f_rb_protect(@try_val2w64, VALUE(@rec), @res);
+          chkConversion(res);
+          Result := v.w64;
+         end;
+  end;
  end;
 
 operator explicit(const v : Int64) : VALUE;
  begin
-
+  case Version of
+       rvNone :
+         errInactive;
+       rvRuby18, rvRuby19 :
+         Result := f_rb_ll2inum(v);
+       else
+         errUnknown;
+  end;
  end;
 
 operator explicit(const v : QWord) : VALUE;
  begin
-
+  case Version of
+       rvNone :
+         errInactive;
+       rvRuby18, rvRuby19 :
+         Result := f_rb_ll2inum(v);
+       else
+         errUnknown;
+  end;
  end;
 {$ENDIF CPU32}
 
