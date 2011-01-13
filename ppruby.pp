@@ -152,6 +152,12 @@ procedure RemoveLoadHook (hook : TLoadHook);
 procedure AddUnloadHook (hook : TUnloadHook);
 procedure RemoveUnloadHook (hook : TUnloadHook);
 
+type
+  TClassHook = procedure(cls : VALUE);
+
+procedure AddClassHook (cls : TClass; hook : TClassHook);
+procedure RemoveClassHook (cls : TClass; hook : TClassHook);
+
 function ErrorInfo : VALUE;
 function Inspect (v : VALUE) : VALUE;
 
@@ -224,6 +230,10 @@ var
   libRuby : TLibHandle = 0;
   hooksLoad : array of TLoadHook = nil;
   hooksUnload : array of TUnloadHook = nil;
+  hooksClasses : array of record
+    cls : TClass;
+    hooks : array of TClassHook;
+  end = nil;
   cacheObjects : array of record
     obj : TObject;
     val : VALUE;
@@ -856,7 +866,7 @@ function do_method_missing (argc : Integer; argv : PVALUE; instance : VALUE) : V
 
 operator explicit (const v : TClass) : VALUE;
  var
-   idx : PtrInt;
+   idx, cidx, hidx : PtrInt;
  begin
   case Version of
        rvNone :
@@ -874,6 +884,13 @@ operator explicit (const v : TClass) : VALUE;
           cacheClasses[idx].cls := v;
           cacheClasses[idx].val := Result;
           DefineMethod(Result, 'method_missing', @do_method_missing);
+          for cidx := 0 to High(hooksClasses) do
+              if hooksClasses[cidx].cls = v
+                 then begin
+                       for hidx := 0 to High(hooksClasses[cidx].hooks) do
+                           hooksClasses[cidx].hooks[hidx](Result);
+                       break;
+                      end;
          end;
        else
          errUnknown;
@@ -1312,7 +1329,7 @@ procedure RemoveLoadHook (hook : TLoadHook);
   if hook <> nil
      then begin
            h := High(hooksLoad);
-           for idx := 0 to h do
+           for idx := h downto 0 do
                if hooksLoad[idx] = hook
                   then begin
                         for delidx := idx to h - 1 do
@@ -1342,7 +1359,7 @@ procedure RemoveUnloadHook(hook : TUnloadHook);
   if hook <> nil
      then begin
            h := High(hooksUnload);
-           for idx := 0 to h do
+           for idx := h downto 0 do
                if hooksUnload[idx] = hook
                   then begin
                         for delidx := idx to h - 1 do
@@ -1351,6 +1368,44 @@ procedure RemoveUnloadHook(hook : TUnloadHook);
                         exit;
                        end;
           end;
+ end;
+
+procedure AddClassHook(cls : TClass; hook : TClassHook);
+ var
+   len, idx : PtrInt;
+ begin
+  len := Length(hooksClasses);
+  for idx := 0 to len - 1 do
+      if hooksClasses[idx].cls = cls
+         then begin
+               len := Length(hooksClasses[idx].hooks);
+               SetLength(hooksClasses[idx].hooks, len + 1);
+               hooksClasses[idx].hooks[len] := hook;
+               exit;
+              end;
+  SetLength(hooksClasses, len + 1);
+  hooksClasses[len].cls := cls;
+  SetLength(hooksClasses[len].hooks, 1);
+  hooksClasses[len].hooks[0] := hook;
+ end;
+
+procedure RemoveClassHook(cls : TClass; hook : TClassHook);
+ var
+   h, clsidx, idx, delidx : PtrInt;
+ begin
+  for clsidx := 0 to High(hooksClasses) do
+      if hooksClasses[clsidx].cls = cls
+         then begin
+               h := High(hooksClasses[clsidx].hooks);
+               for idx := h downto 0 do
+                   if hooksClasses[clsidx].hooks[idx] = hook
+                      then begin
+                            for delidx := idx to h - 1 do
+                                hooksClasses[clsidx].hooks[delidx] := hooksClasses[clsidx].hooks[delidx + 1];
+                            SetLength(hooksClasses[clsidx].hooks, h);
+                            exit;
+                           end;
+              end;
  end;
 
 function ErrorInfo : VALUE;
