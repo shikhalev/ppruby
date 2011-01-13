@@ -1369,6 +1369,8 @@ procedure Unload;
      then errInactive;
   for idx := 0 to High(hooksUnload) do
       hooksUnload[idx]();
+  SetLength(cacheClasses, 0);
+  SetLength(cacheObjects, 0);
   LIBRARIES[verRuby].done();
   UnloadLibrary(libRuby);
   libRuby := 0;
