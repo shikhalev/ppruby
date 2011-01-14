@@ -344,11 +344,18 @@ var
   f_rb_num2ll : function (v : VALUE) : Int64; cdecl;
   f_rb_num2ull : function (v : VALUE) : QWord; cdecl;
 {$ENDIF CPU32}
+  f_ruby_init : procedure (); cdecl;
+  f_ruby_init_loadpath : procedure (); cdecl;
+  f_ruby_script : procedure (name : PChar); cdecl;
+  f_ruby_finalize : procedure (); cdecl;
+  f_rb_eval_string_protect : function (str : pchar; state : PInteger) : VALUE; cdecl;
 
   v_rb_cObject : VALUE;
   v_rb_eNoMethodError : VALUE;
 
 procedure init_18_19;
+ var
+   res : Integer;
  begin
   // init p_ vars
   p_ruby_errinfo := GetProcedureAddress(libRuby, 'ruby_errinfo');
@@ -378,7 +385,18 @@ procedure init_18_19;
   Pointer(f_rb_num2ll) := GetProcedureAddress(libRuby, 'rb_num2ll');
   Pointer(f_rb_num2ull) := GetProcedureAddress(libRuby, 'rb_num2ull');
 {$ENDIF CPU32}
+  Pointer(f_ruby_init) := GetProcedureAddress(libRuby, 'ruby_init');
+  Pointer(f_ruby_init_loadpath) := GetProcedureAddress(libRuby, 'ruby_init_loadpath');
+  Pointer(f_ruby_script) := GetProcedureAddress(libRuby, 'ruby_script');
+  Pointer(f_ruby_finalize) := GetProcedureAddress(libRuby, 'ruby_finalize');
+  Pointer(f_rb_eval_string_protect) := GetProcedureAddress(libRuby, 'rb_eval_string_protect');
   // init library
+  f_ruby_init();
+  f_ruby_init_loadpath();
+  f_ruby_script(PChar(ParamStr(0)));
+  f_rb_eval_string_protect('$-K = "UTF8"', @res); // TODO: check for 1.9
+  if res <> 0
+     then raise ELibraryError.Create(msgActivateError);
   // init v_ vars
   v_rb_cObject := PVALUE(GetProcedureAddress(libRuby, 'rb_cObject'))^;
   v_rb_eNoMethodError := PVALUE(GetProcedureAddress(libRuby, 'rb_eNoMethodError'))^;
@@ -386,7 +404,7 @@ procedure init_18_19;
 
 procedure done_18_19;
  begin
-
+ f_ruby_finalize();
  end;
 
 const
@@ -395,29 +413,57 @@ const
   _Qnil   = 4;
   _Qundef = 6;
 
-operator = (x, y : VALUE) : Boolean;
+operator = (x, y : VALUE) : Boolean; inline;
  begin
   Result := (x.data = y.data);
  end;
 
 function Qnil : VALUE; inline;
  begin
-  Result.data := _Qnil;
+  case Version of
+       rvNone :
+         errInactive;
+       rvRuby18, rvRuby19 :
+         Result.data := _Qnil;
+       else
+         errUnknown;
+  end;
  end;
 
 function Qfalse : VALUE; inline;
  begin
-  Result.data := _Qfalse;
+  case Version of
+       rvNone :
+         errInactive;
+       rvRuby18, rvRuby19 :
+         Result.data := _Qfalse;
+       else
+         errUnknown;
+  end;
  end;
 
 function Qtrue : VALUE; inline;
  begin
-  Result.data := _Qtrue;
+  case Version of
+       rvNone :
+         errInactive;
+       rvRuby18, rvRuby19 :
+         Result.data := _Qtrue;
+       else
+         errUnknown;
+  end;
  end;
 
 function Qundef : VALUE; inline;
  begin
-  Result.data := _Qundef;
+  case Version of
+       rvNone :
+         errInactive;
+       rvRuby18, rvRuby19 :
+         Result.data := _Qundef;
+       else
+         errUnknown;
+  end;
  end;
 
 const
@@ -501,7 +547,7 @@ type
 function try_val2str (v : VALUE) : VALUE; cdecl;
  begin
   PStrRec(v)^.str := f_rb_string_value_cstr(PStrRec(v)^.val);
-  result := Qnil;
+  result.data := _Qnil;
  end;
 
 operator explicit (v : VALUE) : UTF8String;
@@ -566,7 +612,7 @@ type
 function try_val2int (v : VALUE) : VALUE; cdecl;
  begin
   PIntRec(v)^.int := f_rb_num2int(PIntRec(v)^.val);
-  Result := Qnil;
+  Result.data := _Qnil;
  end;
 
 operator explicit (v : VALUE) : PtrInt;
@@ -599,7 +645,7 @@ type
 function try_val2uint (v : VALUE) : VALUE; cdecl;
  begin
   PUIntRec(v)^.uint := f_rb_num2uint(PUIntRec(v)^.val);
-  Result := Qnil;
+  Result.data := _Qnil;
  end;
 
 operator explicit (v : VALUE) : PtrUInt;
@@ -630,7 +676,7 @@ type
 function try_val2dbl (v : VALUE) : VALUE; cdecl;
  begin
   PDblRec(v)^.dbl := f_rb_num2dbl(PDblRec(v)^.val);
-  Result := Qnil;
+  Result.data := _Qnil;
  end;
 
 operator explicit (v : VALUE) : Double;
@@ -659,7 +705,7 @@ operator explicit (v : VALUE) : Boolean;
        rvNone :
          errInactive;
        rvRuby18, rvRuby19 :
-         Result := not ((v = Qnil) or (v = Qfalse));
+         Result := not ((v.data = _Qnil) or (v.data = _Qfalse));
        else
          errUnknown;
   end;
@@ -674,7 +720,7 @@ operator explicit (v : VALUE) : TObject;
          errInactive;
        rvRuby18, rvRuby19 :
          begin
-          if v = Qnil
+          if v.data = _Qnil
              then exit(nil);
           if (rb_type(v) <> T_DATA) or not find_object(TObject(PRData(v)^.data), idx)
              then raise ERubyNotObject.Create(msgNotObject);
@@ -746,9 +792,16 @@ operator explicit (const v : Double) : VALUE;
 
 operator explicit (const v : Boolean) : VALUE;
  begin
-  if v
-     then Result := Qtrue
-     else Result := Qfalse;
+  case Version of
+       rvNone :
+         errInactive;
+       rvRuby18, rvRuby19 :
+         if v
+            then Result.data := _Qtrue
+            else Result.data := _Qfalse;
+       else
+         errUnknown;
+  end;
  end;
 
 operator explicit (const v : TObject) : VALUE;
@@ -760,7 +813,7 @@ operator explicit (const v : TObject) : VALUE;
          errInactive;
        rvRuby18, rvRuby19 :
          if v = nil
-            then Result := Qnil
+            then Result.data := _Qnil
             else if find_object(v, idx)
                     then Result := cacheObjects[idx].val
                     else begin
@@ -781,7 +834,7 @@ type
 function try_get_subcomponent(v : VALUE) : VALUE; cdecl;
  begin
   PPropRec(v)^.result := f_rb_funcall2(PPropRec(v)^.instance, ID('[]'), 1, @PPropRec(v)^.id);
-  Result := Qnil;
+  Result.data := _Qnil;
  end;
 
 procedure do_property_get (instance : VALUE; mid : VALUE; obj : TObject; const name : ansistring; var return : VALUE);
@@ -812,7 +865,7 @@ procedure do_property_get (instance : VALUE; mid : VALUE; obj : TObject; const n
                tkClass :
                  return := VALUE(GetObjectProp(obj, info));
           end;
-  if return = Qundef   // try get subcomponent
+  if return.data = _Qundef   // try get subcomponent
      then begin
            rec.instance := instance;
            rec.id := mid;
@@ -850,7 +903,7 @@ procedure do_property_set (obj : TObject; const name : ansistring; val : VALUE; 
                 tkClass :
                   SetObjectProp(obj, info, TObject(val));
                 else
-                  return := Qundef;
+                  return.data := _Qundef;
            end;
           end;
  end;
@@ -860,19 +913,19 @@ function do_method_missing (argc : Integer; argv : PVALUE; instance : VALUE) : V
    msg : TRubyMsg;
    obj : TObject;
  begin
-  Result := Qundef;
+  Result.data := _Qundef;
   obj := TObject(instance);
   msg.msg := ansistring(ID(argv[0]));
   msg.argc := argc - 1;
   msg.argv := @argv[1];
   msg.result := @Result;
   obj.DispatchStr(msg);
-  if Result = Qundef
+  if Result.data = _Qundef
      then if argc = 1   // may be property get
              then do_property_get(instance, argv[0], obj, msg.msg, Result)
              else if (argc = 2) and (msg.msg[Length(msg.msg)] = '=') // may be property set
                      then do_property_set(obj, Copy(msg.msg, 1, Length(msg.msg) - 1), argv[1], Result);
-  if Result = Qundef
+  if Result.data = _Qundef
      then f_rb_raise(v_rb_eNoMethodError, 'No method ''%s'' for %s.', PChar(ansistring(msg.msg)), PChar(ansistring(f_rb_inspect(instance))));
  end;
 
@@ -1008,7 +1061,7 @@ type
 function try_val2id (v : VALUE) : VALUE; cdecl;
  begin
   PIDRec(v)^.id := f_rb_to_id(PIDRec(v)^.val);
-  Result := Qnil;
+  Result.data := _Qnil;
  end;
 
 operator explicit (v : VALUE) : ID;
@@ -1079,7 +1132,7 @@ type
 function try_define_method (v : VALUE) : VALUE; cdecl;
  begin
   f_rb_define_method(PMethodRec(v)^.value, PMethodRec(v)^.name, PMethodRec(v)^.method, PMethodRec(v)^.argc);
-  Result := Qnil;
+  Result.data := _Qnil;
  end;
 
 procedure protected_define_method (module : VALUE; name : PChar; method : Pointer; argc : Integer);
@@ -1204,7 +1257,7 @@ procedure DefineMethod (module : VALUE; const name : ansistring; method: TRubyMe
 function try_define_singleton_method (v : VALUE) : VALUE; cdecl;
  begin
   f_rb_define_singleton_method(PMethodRec(v)^.value, PMethodRec(v)^.name, PMethodRec(v)^.method, PMethodRec(v)^.argc);
-  Result := Qnil;
+  Result.data := _Qnil;
  end;
 
 procedure protected_define_singleton_method (instance : VALUE; name : PChar; method : Pointer; argc : Integer);
@@ -1494,12 +1547,10 @@ procedure RemoveClassHook(cls : TClass; hook : TClassHook);
 function ErrorInfo : VALUE;
  begin
   case Version of
-       rvNone :
-         Result := Qnil;
        rvRuby18, rvRuby19 :
          Result := p_ruby_errinfo^;
        else
-         Result := Qundef;
+         Result.data := 0;
   end;
  end;
 
@@ -1519,10 +1570,17 @@ function Inspect (v : VALUE) : VALUE;
 
 constructor ERubyError.Create(const msg : UTF8String);
  begin
-  fldErrInfo := ErrorInfo;
-  if (fldErrInfo = Qnil) or (fldErrInfo = Qundef)
-     then inherited Create(msg)
-     else inherited Create(msg + LineEnding + LineEnding + UTF8String(Inspect(fldErrInfo)));
+  case Version of
+       rvRuby18, rvRuby19 :
+         begin
+          fldErrInfo := ErrorInfo;
+          if (fldErrInfo.data = _Qnil) or (fldErrInfo.data = _Qundef)
+             then inherited Create(msg)
+             else inherited Create(msg + LineEnding + LineEnding + UTF8String(Inspect(fldErrInfo)));
+         end;
+       else
+         inherited Create(msg);
+  end;
  end;
 
 constructor ERubyError.CreateFmt (const msg : UTF8String; const args : array of const);
