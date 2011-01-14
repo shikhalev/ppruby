@@ -135,6 +135,12 @@ procedure DefineSingletonMethod (instance : VALUE; const name : ansistring; meth
 procedure DefineSingletonMethod (instance : VALUE; const name : ansistring; method : TRubyMethod17);
 procedure DefineSingletonMethod (instance : VALUE; const name : ansistring; method : TRubyMethodArr);
 
+procedure IncludeModule (cls : VALUE; module : VALUE);
+
+function ModComparable : VALUE;
+function ModEnumerable : VALUE;
+function ModPrecision : VALUE;
+
 function Version : TRubyVersion; inline;
 
 function Load (ver : TRubyVersion) : Boolean;
@@ -164,6 +170,8 @@ function ErrorInfo : VALUE;
 function Inspect (v : VALUE) : VALUE;
 function Yield (v : VALUE) : VALUE;
 
+procedure WrapObject (val : VALUE; obj : TObject);
+
 type
   TRubyValueType = (
     rtNone, rtNil, rtObject, rtClass, rtModule, rtFloat, rtString, rtRegExp,
@@ -172,6 +180,7 @@ type
   );
 
 function ValType (v : VALUE) : TRubyValueType;
+function ValClass (v : VALUE) : VALUE;
 
 type
   ERubyError = class(Exception)
@@ -192,6 +201,7 @@ type
     ERubyNotObject = class(ERubyConversion);
     ERubyNotClass = class(ERubyConversion);
   ERubyDefinition = class(ERubyError);
+  EIncompatibleType = class(ERubyError);
 
 resourcestring
   msgActivateError =
@@ -210,6 +220,8 @@ resourcestring
     'Value is not a pascal object.';
   msgNotClass =
     'Value is not a pascal class.';
+  msgIncompatible =
+    'Incompatible type of value.';
 
 type
   TRubyMsg = record
@@ -363,8 +375,17 @@ var
   f_rb_eval_string_protect : function (str : pchar; state : PInteger) : VALUE; cdecl;
   f_rb_define_alloc_func : procedure (klass : VALUE; func : Pfunc); cdecl;
   f_rb_yield : function (val : VALUE) : VALUE; cdecl;
+  f_rb_include_module : procedure (klass : VALUE; module : VALUE); cdecl;
 
   v_rb_cObject : VALUE;
+  v_rb_cFixnum : VALUE;
+  v_rb_cNilClass : VALUE;
+  v_rb_cFalseClass : VALUE;
+  v_rb_cTrueClass : VALUE;
+  v_rb_cSymbol : VALUE;
+  v_rb_mComparable : VALUE;
+  v_rb_mEnumerable : VALUE;
+  v_rb_mPrecision : VALUE;
   v_rb_eNoMethodError : VALUE;
 
 procedure init_18_19;
@@ -406,6 +427,7 @@ procedure init_18_19;
   Pointer(f_rb_eval_string_protect) := GetProcedureAddress(libRuby, 'rb_eval_string_protect');
   Pointer(f_rb_define_alloc_func) := GetProcedureAddress(libRuby, 'rb_define_alloc_func');
   Pointer(f_rb_yield) := GetProcedureAddress(libRuby, 'rb_yield');
+  Pointer(f_rb_include_module) := GetProcedureAddress(libRuby, 'rb_include_module');
   // init library
   f_ruby_init();
   f_ruby_init_loadpath();
@@ -415,6 +437,14 @@ procedure init_18_19;
      then raise ELibraryError.Create(msgActivateError);
   // init v_ vars
   v_rb_cObject := PVALUE(GetProcedureAddress(libRuby, 'rb_cObject'))^;
+  v_rb_cFixnum := PVALUE(GetProcedureAddress(libRuby, 'rb_cFixnum'))^;
+  v_rb_cNilClass := PVALUE(GetProcedureAddress(libRuby, 'rb_cNilClass'))^;
+  v_rb_cFalseClass := PVALUE(GetProcedureAddress(libRuby, 'rb_cFalseClass'))^;
+  v_rb_cTrueClass := PVALUE(GetProcedureAddress(libRuby, 'rb_cTrueClass'))^;
+  v_rb_cSymbol := PVALUE(GetProcedureAddress(libRuby, 'rb_cSymbol'))^;
+  v_rb_mComparable := PVALUE(GetProcedureAddress(libRuby, 'rb_mComparable'))^;
+  v_rb_mEnumerable := PVALUE(GetProcedureAddress(libRuby, 'rb_mEnumerable'))^;
+  v_rb_mPrecision := PVALUE(GetProcedureAddress(libRuby, 'rb_mPrecision'))^;
   v_rb_eNoMethodError := PVALUE(GetProcedureAddress(libRuby, 'rb_eNoMethodError'))^;
  end;
 
@@ -1400,6 +1430,54 @@ procedure DefineSingletonMethod (instance : VALUE; const name : ansistring; meth
   protected_define_singleton_method(instance, PChar(name), Pointer(method), -1);
  end;
 
+procedure IncludeModule(cls : VALUE; module : VALUE);
+ begin
+  case Version of
+       rvNone :
+         errInactive;
+       rvRuby18, rvRuby19 :
+         f_rb_include_module(cls, module);
+       else
+         errUnknown;
+  end;
+ end;
+
+function ModComparable : VALUE;
+ begin
+  case Version of
+       rvNone :
+         errInactive;
+       rvRuby18, rvRuby19 :
+         Result := v_rb_mComparable;
+       else
+         errUnknown;
+  end;
+ end;
+
+function ModEnumerable : VALUE;
+ begin
+  case Version of
+       rvNone :
+         errInactive;
+       rvRuby18, rvRuby19 :
+         Result := v_rb_mEnumerable;
+       else
+         errUnknown;
+  end;
+ end;
+
+function ModPrecision : VALUE;
+ begin
+  case Version of
+       rvNone :
+         errInactive;
+       rvRuby18, rvRuby19 :
+         Result := v_rb_mPrecision;
+       else
+         errUnknown;
+  end;
+ end;
+
 function Version : TRubyVersion; inline;
  begin
   Result := verRuby;
@@ -1600,6 +1678,25 @@ function Yield (v : VALUE) : VALUE;
   end;
  end;
 
+procedure WrapObject (val : VALUE; obj : TObject);
+ var
+   idx : PtrInt;
+ begin
+  case Version of
+       rvNone :
+         errInactive;
+       rvRuby18, rvRuby19 :
+         begin
+          if rb_type(val) <> T_DATA
+             then raise EIncompatibleType.Create(msgIncompatible);
+          PRData(val)^.data := Pointer(obj);
+          if find_object(obj, idx)
+             then cacheObjects[idx].val := val
+             else insert_object(obj, val, idx);
+         end;
+  end;
+ end;
+
 function ValType (v : VALUE) : TRubyValueType;
  begin
   case Version of
@@ -1646,6 +1743,36 @@ function ValType (v : VALUE) : TRubyValueType;
               else
                 Result := rtUndef;
          end;
+       else
+         errUnknown;
+  end;
+ end;
+
+function rb_class_of (obj : VALUE) : VALUE; inline;
+ begin
+  if (obj.data and FIXNUM_FLAG) <> 0
+     then result := v_rb_cFixnum
+     else case obj.data of
+               _Qnil :
+                 result := v_rb_cNilClass;
+               _Qfalse :
+                 result := v_rb_cFalseClass;
+               _Qtrue :
+                 result := v_rb_cTrueClass
+               else
+                 if (obj.data and $FF) = $0E
+                    then result := v_rb_cSymbol
+                    else result := PRBasic(obj)^.klass
+        end;
+    end;
+
+function ValClass(v : VALUE) : VALUE;
+ begin
+  case Version of
+       rvNone :
+         errInactive;
+       rvRuby18, rvRuby19 :
+         Result := rb_class_of(v);
        else
          errUnknown;
   end;
