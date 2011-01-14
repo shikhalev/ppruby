@@ -171,6 +171,7 @@ function Inspect (v : VALUE) : VALUE;
 function Yield (v : VALUE) : VALUE;
 
 procedure WrapObject (val : VALUE; obj : TObject);
+function MakeArray (const vals : array of VALUE) : VALUE;
 
 type
   TRubyValueType = (
@@ -376,6 +377,7 @@ var
   f_rb_define_alloc_func : procedure (klass : VALUE; func : Pfunc); cdecl;
   f_rb_yield : function (val : VALUE) : VALUE; cdecl;
   f_rb_include_module : procedure (klass : VALUE; module : VALUE); cdecl;
+  f_rb_ary_new4 : function (n : ptrint; elts : PVALUE) : VALUE; cdecl;
 
   v_rb_cObject : VALUE;
   v_rb_cFixnum : VALUE;
@@ -428,6 +430,7 @@ procedure init_18_19;
   Pointer(f_rb_define_alloc_func) := GetProcedureAddress(libRuby, 'rb_define_alloc_func');
   Pointer(f_rb_yield) := GetProcedureAddress(libRuby, 'rb_yield');
   Pointer(f_rb_include_module) := GetProcedureAddress(libRuby, 'rb_include_module');
+  Pointer(f_rb_ary_new4) := GetProcedureAddress(libRuby, 'rb_ary_new4');
   // init library
   f_ruby_init();
   f_ruby_init_loadpath();
@@ -1694,6 +1697,18 @@ procedure WrapObject (val : VALUE; obj : TObject);
              then cacheObjects[idx].val := val
              else insert_object(obj, val, idx);
          end;
+  end;
+ end;
+
+function MakeArray (const vals : array of VALUE) : VALUE;
+ begin
+  case Version of
+       rvNone :
+         errInactive;
+       rvRuby18, rvRuby19 :
+         Result := f_rb_ary_new4(Length(vals), @vals[0]);
+       else
+         errUnknown;
   end;
  end;
 

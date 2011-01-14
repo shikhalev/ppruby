@@ -10,6 +10,7 @@ uses
 procedure TObjectClassHook (cObject : VALUE);
 procedure TPersistentClassHook (cPersistent : VALUE);
 procedure TComponentClassHook (cComponent : VALUE);
+procedure TStringsClassHook (cStrings : VALUE);
 
 implementation
 
@@ -157,6 +158,27 @@ function m_tcomponent_remove (instance : VALUE; component : VALUE) : VALUE; cdec
   Result := instance;
  end;
 
+function m_tcomponent_components (instance : VALUE) : VALUE; cdecl;
+ var
+   arr : array of VALUE;
+   obj : TComponent;
+   idx : Integer;
+ begin
+  obj := TObject(instance) as TComponent;
+  SetLength(arr, obj.ComponentCount);
+  for idx := 0 to obj.ComponentCount - 1 do
+      arr[idx] := VALUE(obj.Components[idx]);
+  Result := MakeArray(arr);
+ end;
+
+function m_tcomponent_to_s (instance : VALUE) : VALUE; cdecl;
+ var
+   obj : TComponent;
+ begin
+  obj := TObject(instance) as TComponent;
+  Result := VALUE('<' + obj.Name + ' : ' + obj.ClassName + '>');
+ end;
+
 procedure TComponentClassHook (cComponent : VALUE);
  begin
   DefineMethod(cComponent, 'name', @m_tcomponent_name);
@@ -169,11 +191,134 @@ procedure TComponentClassHook (cComponent : VALUE);
   DefineMethod(cComponent, 'tag=', @m_tcomponent_tag_set);
   DefineMethod(cComponent, 'count', @m_tcomponent_count);
   DefineMethod(cComponent, '[]', @m_tcomponent_sub);
+  DefineMethod(cComponent, 'components', @m_tcomponent_components);
   DefineMethod(cComponent, 'insert', @m_tcomponent_insert);
   DefineMethod(cComponent, 'remove', @m_tcomponent_remove);
   IncludeModule(cComponent, ModEnumerable);
   DefineMethod(cComponent, 'each', @m_tcomponent_each);
-  DefineMethod(cComponent, 'initialize', @m_tcomponent_initialize)
+  DefineMethod(cComponent, 'initialize', @m_tcomponent_initialize);
+ end;
+
+function m_tstrings_add (instance : VALUE; str : VALUE) : VALUE; cdecl;
+ begin
+  Result := VALUE((TObject(instance) as TStrings).Add(ansistring(str)));
+ end;
+
+function m_tstrings_addobject (instance : VALUE; str : VALUE; obj : VALUE) : VALUE; cdecl;
+ begin
+  Result := VALUE((TObject(instance) as TStrings).AddObject(ansistring(str), TObject(obj)));
+ end;
+
+function m_tstrings_addstrings (instance : VALUE; strings : VALUE) : VALUE; cdecl;
+ begin
+  (TObject(instance) as TStrings).AddStrings(TObject(strings) as TStrings);
+  Result := instance;
+ end;
+
+function m_tstrings_clear (instance : VALUE) : VALUE; cdecl;
+ begin
+  (TObject(instance) as TStrings).Clear;
+  Result := instance;
+ end;
+
+function m_tstrings_delete (instance : VALUE; index : VALUE) : VALUE; cdecl;
+ begin
+  (TObject(instance) as TStrings).Delete(PtrInt(index));
+  Result := instance;
+ end;
+
+function m_tstrings_exchange (instance : VALUE; idx1, idx2 : VALUE) : VALUE; cdecl;
+ begin
+  (TObject(instance) as TStrings).Exchange(PtrInt(idx1), PtrInt(idx2));
+  Result := instance;
+ end;
+
+function m_tstrings_index_of (instance : VALUE; str : VALUE) : VALUE; cdecl;
+ begin
+  Result := VALUE((TObject(instance) as TStrings).IndexOf(ansistring(str)));
+ end;
+
+function m_tstrings_index_of_name (instance : VALUE; name : VALUE) : VALUE; cdecl;
+ begin
+  Result := VALUE((TObject(instance) as TStrings).IndexOfName(ansistring(name)));
+ end;
+
+function m_tstrings_index_of_object (instance : VALUE; obj : VALUE) : VALUE; cdecl;
+ begin
+  Result := VALUE((TObject(instance) as TStrings).IndexOfObject(TObject(obj)));
+ end;
+
+function m_tstrings_insert (instance : VALUE; index : VALUE; str : VALUE) : VALUE; cdecl;
+ begin
+  (TObject(instance) as TStrings).Insert(PtrInt(index), ansistring(str));
+  Result := instance;
+ end;
+
+function m_tstrings_insertobject (instance : VALUE; index : VALUE; str : VALUE; obj : VALUE) : VALUE; cdecl;
+ begin
+  (TObject(instance) as TStrings).InsertObject(PtrInt(index), ansistring(str), TObject(obj));
+  Result := instance;
+ end;
+
+function m_tstrings_loadfromfile (instance : VALUE; filename : VALUE) : VALUE; cdecl;
+ begin
+  (TObject(instance) as TStrings).LoadFromFile(ansistring(filename));
+  Result := instance;
+ end;
+
+function m_tstrings_loadfromstream (instance : VALUE; stream : VALUE) : VALUE; cdecl;
+ begin
+  (TObject(instance) as TStrings).LoadFromStream(TObject(stream) as TStream);
+  Result := instance;
+ end;
+
+function m_tstrings_move (instance : VALUE; idx1, idx2 : VALUE) : VALUE; cdecl;
+ begin
+  (TObject(instance) as TStrings).Move(PtrInt(idx1), PtrInt(idx2));
+  Result := instance;
+ end;
+
+function m_tstrings_savetofile (instance : VALUE; filename : VALUE) : VALUE; cdecl;
+ begin
+  (TObject(instance) as TStrings).SaveToFile(ansistring(filename));
+  Result := instance;
+ end;
+
+function m_tstrings_savetostream (instance : VALUE; stream : VALUE) : VALUE; cdecl;
+ begin
+  (TObject(instance) as TStrings).SaveToStream(TObject(stream) as TStream);
+  Result := instance;
+ end;
+
+function m_tstrings_extractname (instance : VALUE; str : VALUE) : VALUE; cdecl;
+ begin
+  Result := VALUE((TObject(instance) as TStrings).ExtractName(ansistring(str)));
+ end;
+
+function m_tstrings_delimiter (instance : VALUE) : VALUE; cdecl;
+ begin
+  Result := VALUE((TObject(instance) as TStrings).Delimiter+'');
+ end;
+
+procedure TStringsClassHook(cStrings : VALUE);
+ begin
+  DefineMethod(cStrings, 'add', @m_tstrings_add);
+  DefineMethod(cStrings, 'addobject', @m_tstrings_addobject);
+  DefineMethod(cStrings, 'addstrings', @m_tstrings_addstrings);
+  DefineMethod(cStrings, 'clear', @m_tstrings_clear);
+  DefineMethod(cStrings, 'delete', @m_tstrings_delete);
+  DefineMethod(cStrings, 'exchange', @m_tstrings_exchange);
+  DefineMethod(cStrings, 'index_of', @m_tstrings_index_of);
+  DefineMethod(cStrings, 'index_of_name', @m_tstrings_index_of_name);
+  DefineMethod(cStrings, 'index_of_object', @m_tstrings_index_of_object);
+  DefineMethod(cStrings, 'insert', @m_tstrings_insert);
+  DefineMethod(cStrings, 'insert_object', @m_tstrings_insertobject);
+  DefineMethod(cStrings, 'loadfromfile', @m_tstrings_loadfromfile);
+  DefineMethod(cStrings, 'loadfromstream', @m_tstrings_loadfromstream);
+  DefineMethod(cStrings, 'move', @m_tstrings_move);
+  DefineMethod(cStrings, 'savetofile', @m_tstrings_savetofile);
+  DefineMethod(cStrings, 'savetostream', @m_tstrings_savetostream);
+  DefineMethod(cStrings, 'extractname', @m_tstrings_extractname);
  end;
 
 end.
