@@ -1,6 +1,15 @@
+{$codepage utf8}
+{$smartlink on}
+{$mode objfpc}{$h+}
+
 unit ppRubyClasses;
 
-{$mode objfpc}{$H+}
+(*
+   Package : RubyFCL
+   File : pprubyclasses.pp
+   Desc : core unit of ruby binding
+   License : GNU GPL
+*)
 
 interface
 
@@ -54,6 +63,7 @@ function m_tpersistent_namepath (instance : VALUE) : VALUE; cdecl;
 procedure TPersistentClassHook(cPersistent : VALUE);
  begin
   DefineMethod(cPersistent, 'assign', @m_tpersistent_assign);
+  DefineMethod(cPersistent, 'namepath', @m_tpersistent_namepath);
  end;
 
 function m_tcomponent_name (instance : VALUE) : VALUE; cdecl;
@@ -124,7 +134,8 @@ function m_tcomponent_each (instance : VALUE) : VALUE; cdecl;
  begin
   obj := TObject(instance) as TComponent;
   for item in obj do
-      Result := Yield(VALUE(item));
+      Yield(VALUE(item));
+  Result := instance;
  end;
 
 function m_tcomponent_parent (instance : VALUE) : VALUE; cdecl;
@@ -169,6 +180,7 @@ function m_tcomponent_components (instance : VALUE) : VALUE; cdecl;
   for idx := 0 to obj.ComponentCount - 1 do
       arr[idx] := VALUE(obj.Components[idx]);
   Result := MakeArray(arr);
+  SetLength(arr, 0);
  end;
 
 function m_tcomponent_to_s (instance : VALUE) : VALUE; cdecl;
@@ -197,6 +209,11 @@ procedure TComponentClassHook (cComponent : VALUE);
   IncludeModule(cComponent, ModEnumerable);
   DefineMethod(cComponent, 'each', @m_tcomponent_each);
   DefineMethod(cComponent, 'initialize', @m_tcomponent_initialize);
+  DefineMethod(cComponent, 'to_s', @m_tcomponent_to_s);
+  DefineAlias(cComponent, '<<', 'insert');
+  DefineAlias(cComponent, 'to_a', 'components');
+  DefineAlias(cComponent, 'to_ary', 'components');
+  DefineAlias(cComponent, 'to_str', 'to_s');
  end;
 
 function m_tstrings_add (instance : VALUE; str : VALUE) : VALUE; cdecl;
@@ -212,6 +229,12 @@ function m_tstrings_addobject (instance : VALUE; str : VALUE; obj : VALUE) : VAL
 function m_tstrings_addstrings (instance : VALUE; strings : VALUE) : VALUE; cdecl;
  begin
   (TObject(instance) as TStrings).AddStrings(TObject(strings) as TStrings);
+  Result := instance;
+ end;
+
+function m_tstrings_append (instance : VALUE; str : VALUE) : VALUE; cdecl;
+ begin
+  (TObject(instance) as TStrings).Append(ansistring(str));
   Result := instance;
  end;
 
@@ -297,7 +320,194 @@ function m_tstrings_extractname (instance : VALUE; str : VALUE) : VALUE; cdecl;
 
 function m_tstrings_delimiter (instance : VALUE) : VALUE; cdecl;
  begin
-  Result := VALUE((TObject(instance) as TStrings).Delimiter+'');
+  Result := VALUE((TObject(instance) as TStrings).Delimiter + '');
+ end;
+
+function m_tstrings_delimiter_set (instance : VALUE; delimiter : VALUE) : VALUE; cdecl;
+ begin
+  if ValType(delimiter) = rtFixNum
+     then (TObject(instance) as TStrings).Delimiter := Chr(PtrInt(delimiter))
+     else (TObject(instance) as TStrings).Delimiter := ansistring(delimiter)[1];
+  Result := delimiter;
+ end;
+
+function m_tstrings_delimitedtext (instance : VALUE) : VALUE; cdecl;
+ begin
+  Result := VALUE((TObject(instance) as TStrings).DelimitedText);
+ end;
+
+function m_tstrings_delimitedtext_set (instance : VALUE; text : VALUE) : VALUE; cdecl;
+ begin
+  (TObject(instance) as TStrings).DelimitedText := ansistring(text);
+  Result := text;
+ end;
+
+function m_tstrings_strictdelimiter (instance : VALUE) : VALUE; cdecl;
+ begin
+  Result := VALUE((TObject(instance) as TStrings).StrictDelimiter);
+ end;
+
+function m_tstrings_strictdelimiter_set (instance : VALUE; strict : VALUE) : VALUE; cdecl;
+ begin
+  (TObject(instance) as TStrings).StrictDelimiter := Boolean(strict);
+  Result := strict;
+ end;
+
+function m_tstrings_quotechar (instance : VALUE) : VALUE; cdecl;
+ begin
+  Result := VALUE((TObject(instance) as TStrings).QuoteChar + '');
+ end;
+
+function m_tstrings_quotechar_set (instance : VALUE; quote : VALUE) : VALUE; cdecl;
+ begin
+  if ValType(quote) = rtFixNum
+     then (TObject(instance) as TStrings).QuoteChar := Chr(PtrInt(quote))
+     else (TObject(instance) as TStrings).QuoteChar := ansistring(quote)[1];
+  Result := quote;
+ end;
+
+function m_tstrings_separator (instance : VALUE) : VALUE; cdecl;
+ begin
+  Result := VALUE((TObject(instance) as TStrings).NameValueSeparator + '');
+ end;
+
+function m_tstrings_separator_set (instance : VALUE; separator : VALUE) : VALUE; cdecl;
+ begin
+  if ValType(separator) = rtFixNum
+     then (TObject(instance) as TStrings).NameValueSeparator := Chr(PtrInt(separator))
+     else (TObject(instance) as TStrings).NameValueSeparator := ansistring(separator)[1];
+  Result := separator;
+ end;
+
+function m_tstrings_commatext (instance : VALUE) : VALUE; cdecl;
+ begin
+  Result := VALUE((TObject(instance) as TStrings).CommaText);
+ end;
+
+function m_tstrings_commatext_set (instance : VALUE; text : VALUE) : VALUE; cdecl;
+ begin
+  (TObject(instance) as TStrings).CommaText := ansistring(text);
+  Result := text;
+ end;
+
+function m_tstrings_count (instance : VALUE) : VALUE; cdecl;
+ begin
+  Result := VALUE((TObject(instance) as TStrings).Count);
+ end;
+
+function m_tstrings_names (instance : VALUE) : VALUE; cdecl;
+ var
+   arr : array of VALUE;
+   obj : TStrings;
+   idx : Integer;
+ begin
+  obj := TObject(instance) as TStrings;
+  SetLength(arr, obj.Count);
+  for idx := 0 to obj.Count - 1 do
+      arr[idx] := VALUE(obj.Names[idx]);
+  Result := MakeArray(arr);
+  SetLength(arr, 0);
+ end;
+
+function m_tstrings_objects (instance : VALUE) : VALUE; cdecl;
+ var
+   arr : array of VALUE;
+   obj : TStrings;
+   idx : Integer;
+ begin
+  obj := TObject(instance) as TStrings;
+  SetLength(arr, obj.Count);
+  for idx := 0 to obj.Count - 1 do
+      arr[idx] := VALUE(obj.Objects[idx]);
+  Result := MakeArray(arr);
+  SetLength(arr, 0);
+ end;
+
+function m_tstrings_values (instance : VALUE) : VALUE; cdecl;
+ var
+   obj : TStrings;
+   idx : Integer;
+ begin
+  obj := TObject(instance) as TStrings;
+  Result := MakeHash;
+  for idx := 0 to obj.Count - 1 do
+      HashSet(Result, VALUE(ID(obj.Names[idx])), VALUE(obj.ValueFromIndex[idx]));
+ end;
+
+function m_tstrings_strings (instance : VALUE) : VALUE; cdecl;
+ var
+   arr : array of VALUE;
+   obj : TStrings;
+   idx : Integer;
+ begin
+  obj := TObject(instance) as TStrings;
+  SetLength(arr, obj.Count);
+  for idx := 0 to obj.Count do
+      arr[idx] := VALUE(obj.Strings[idx]);
+  Result := MakeArray(arr);
+  SetLength(arr, 0);
+ end;
+
+function m_tstrings_sub (instance : VALUE; index : VALUE) : VALUE; cdecl;
+ begin
+  try
+   case ValType(index) of
+        rtFixNum :
+          Result := VALUE((TObject(instance) as TStrings).Strings[PtrInt(index)]);
+        rtSymbol :
+          Result := VALUE((TObject(instance) as TStrings).Values[ansistring(ID(index))]);
+        else
+          Result := VALUE((TObject(instance) as TStrings).Values[ansistring(index)]);
+   end;
+  except
+   Result := Qnil;
+  end;
+ end;
+
+function m_tstrings_sub_set (instance : VALUE; index : VALUE; val : VALUE) : VALUE; cdecl;
+ begin
+  case ValType(index) of
+       rtFixNum :
+         (TObject(instance) as TStrings).Strings[PtrInt(index)] := ansistring(val);
+       rtSymbol :
+         (TObject(instance) as TStrings).Values[ansistring(ID(index))] := ansistring(val);
+       else
+         (TObject(instance) as TStrings).Values[ansistring(index)] := ansistring(val);
+  end;
+  Result := val;
+ end;
+
+function m_tstrings_each (instance : VALUE) : VALUE; cdecl;
+ var
+   obj : TStrings;
+   item : ansistring;
+ begin
+  obj := TObject(instance) as TStrings;
+  for item in obj do
+      Yield(VALUE(item));
+  Result := instance;
+ end;
+
+function m_tstrings_each_value (instance : VALUE) : VALUE; cdecl;
+ var
+   obj : TStrings;
+   idx : Integer;
+ begin
+  obj := TObject(instance) as TStrings;
+  for idx := 0 to obj.Count - 1 do
+      Yield(MakeArray([VALUE(ID(obj.Names[idx])), VALUE(obj.ValueFromIndex[idx])]));
+  Result := instance;
+ end;
+
+function m_tstrings_text (instance : VALUE) : VALUE; cdecl;
+ begin
+  Result := VALUE((TObject(instance) as TStrings).Text);
+ end;
+
+function m_tstrings_text_set (instance : VALUE; text : VALUE) : VALUE; cdecl;
+ begin
+  (TObject(instance) as TStrings).Text := ansistring(text);
+  Result := text;
  end;
 
 procedure TStringsClassHook(cStrings : VALUE);
@@ -305,6 +515,7 @@ procedure TStringsClassHook(cStrings : VALUE);
   DefineMethod(cStrings, 'add', @m_tstrings_add);
   DefineMethod(cStrings, 'addobject', @m_tstrings_addobject);
   DefineMethod(cStrings, 'addstrings', @m_tstrings_addstrings);
+  DefineMethod(cStrings, 'append', @m_tstrings_append);
   DefineMethod(cStrings, 'clear', @m_tstrings_clear);
   DefineMethod(cStrings, 'delete', @m_tstrings_delete);
   DefineMethod(cStrings, 'exchange', @m_tstrings_exchange);
@@ -312,13 +523,44 @@ procedure TStringsClassHook(cStrings : VALUE);
   DefineMethod(cStrings, 'index_of_name', @m_tstrings_index_of_name);
   DefineMethod(cStrings, 'index_of_object', @m_tstrings_index_of_object);
   DefineMethod(cStrings, 'insert', @m_tstrings_insert);
-  DefineMethod(cStrings, 'insert_object', @m_tstrings_insertobject);
+  DefineMethod(cStrings, 'insertobject', @m_tstrings_insertobject);
   DefineMethod(cStrings, 'loadfromfile', @m_tstrings_loadfromfile);
   DefineMethod(cStrings, 'loadfromstream', @m_tstrings_loadfromstream);
   DefineMethod(cStrings, 'move', @m_tstrings_move);
   DefineMethod(cStrings, 'savetofile', @m_tstrings_savetofile);
   DefineMethod(cStrings, 'savetostream', @m_tstrings_savetostream);
   DefineMethod(cStrings, 'extractname', @m_tstrings_extractname);
+  DefineMethod(cStrings, 'delimiter', @m_tstrings_delimiter);
+  DefineMethod(cStrings, 'delimiter=', @m_tstrings_delimiter_set);
+  DefineMethod(cStrings, 'delimitedtext', @m_tstrings_delimitedtext);
+  DefineMethod(cStrings, 'delimitedtext=', @m_tstrings_delimitedtext_set);
+  DefineMethod(cStrings, 'strictdelimiter?', @m_tstrings_strictdelimiter);
+  DefineMethod(cStrings, 'strictdelimiter=', @m_tstrings_strictdelimiter_set);
+  DefineMethod(cStrings, 'quotechar', @m_tstrings_quotechar);
+  DefineMethod(cStrings, 'quotechar=', @m_tstrings_quotechar_set);
+  DefineMethod(cStrings, 'separator', @m_tstrings_separator);
+  DefineMethod(cStrings, 'separator=', @m_tstrings_separator_set);
+  DefineMethod(cStrings, 'commatext', @m_tstrings_commatext);
+  DefineMethod(cStrings, 'commatext=', @m_tstrings_commatext_set);
+  DefineMethod(cStrings, 'count', @m_tstrings_count);
+  DefineMethod(cStrings, 'names', @m_tstrings_names);
+  DefineMethod(cStrings, 'objects', @m_tstrings_objects);
+  DefineMethod(cStrings, 'values', @m_tstrings_values);
+  DefineMethod(cStrings, 'strings', @m_tstrings_strings);
+  DefineMethod(cStrings, '[]', @m_tstrings_sub);
+  DefineMethod(cStrings, '[]=', @m_tstrings_sub_set);
+  IncludeModule(cStrings, ModEnumerable);
+  DefineMethod(cStrings, 'each', @m_tstrings_each);
+  DefineMethod(cStrings, 'each_value', @m_tstrings_each_value);
+  DefineMethod(cStrings, 'text', @m_tstrings_text);
+  DefineMethod(cStrings, 'text=', @m_tstrings_text_set);
+  DefineAlias(cStrings, 'to_s', 'text');
+  DefineAlias(cStrings, 'to_a', 'strings');
+  DefineAlias(cStrings, 'to_h', 'values');
+  DefineAlias(cStrings, 'to_str', 'text');
+  DefineAlias(cStrings, 'to_ary', 'strings');
+  DefineAlias(cStrings, 'to_hash', 'values');
+  DefineAlias(cStrings, '<<', 'append');
  end;
 
 end.

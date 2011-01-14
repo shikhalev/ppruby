@@ -135,6 +135,8 @@ procedure DefineSingletonMethod (instance : VALUE; const name : ansistring; meth
 procedure DefineSingletonMethod (instance : VALUE; const name : ansistring; method : TRubyMethod17);
 procedure DefineSingletonMethod (instance : VALUE; const name : ansistring; method : TRubyMethodArr);
 
+procedure DefineAlias (module : VALUE; const newname, oldname : ansistring);
+
 procedure IncludeModule (cls : VALUE; module : VALUE);
 
 function ModComparable : VALUE;
@@ -172,6 +174,9 @@ function Yield (v : VALUE) : VALUE;
 
 procedure WrapObject (val : VALUE; obj : TObject);
 function MakeArray (const vals : array of VALUE) : VALUE;
+function MakeHash : VALUE;
+function HashGet (hash : VALUE; key : VALUE) : VALUE;
+function HashSet (hash : VALUE; key, val : VALUE) : VALUE;
 
 type
   TRubyValueType = (
@@ -378,6 +383,10 @@ var
   f_rb_yield : function (val : VALUE) : VALUE; cdecl;
   f_rb_include_module : procedure (klass : VALUE; module : VALUE); cdecl;
   f_rb_ary_new4 : function (n : ptrint; elts : PVALUE) : VALUE; cdecl;
+  f_rb_hash_new : function () : VALUE; cdecl;
+  f_rb_hash_aref : function (hash, key : VALUE) : VALUE; cdecl;
+  f_rb_hash_aset : function (hash, key, val : VALUE) : VALUE; cdecl;
+  f_rb_define_alias : procedure (klass : VALUE; name1, name2 : PChar); cdecl;
 
   v_rb_cObject : VALUE;
   v_rb_cFixnum : VALUE;
@@ -431,6 +440,10 @@ procedure init_18_19;
   Pointer(f_rb_yield) := GetProcedureAddress(libRuby, 'rb_yield');
   Pointer(f_rb_include_module) := GetProcedureAddress(libRuby, 'rb_include_module');
   Pointer(f_rb_ary_new4) := GetProcedureAddress(libRuby, 'rb_ary_new4');
+  Pointer(f_rb_hash_new) := GetProcedureAddress(libRuby, 'rb_hash_new');
+  Pointer(f_rb_hash_aref) := GetProcedureAddress(libRuby, 'rb_hash_aref');
+  Pointer(f_rb_hash_aset) := GetProcedureAddress(libRuby, 'rb_hash_aset');
+  Pointer(f_rb_define_alias) := GetProcedureAddress(libRuby, 'rb_define_alias');
   // init library
   f_ruby_init();
   f_ruby_init_loadpath();
@@ -1433,6 +1446,18 @@ procedure DefineSingletonMethod (instance : VALUE; const name : ansistring; meth
   protected_define_singleton_method(instance, PChar(name), Pointer(method), -1);
  end;
 
+procedure DefineAlias(module : VALUE; const newname, oldname : ansistring);
+ begin
+  case Version of
+       rvNone :
+         errInactive;
+       rvRuby18, rvRuby19 :
+         f_rb_define_alias(module, PChar(newname), PChar(oldname));
+       else
+         errUnknown;
+  end;
+ end;
+
 procedure IncludeModule(cls : VALUE; module : VALUE);
  begin
   case Version of
@@ -1707,6 +1732,42 @@ function MakeArray (const vals : array of VALUE) : VALUE;
          errInactive;
        rvRuby18, rvRuby19 :
          Result := f_rb_ary_new4(Length(vals), @vals[0]);
+       else
+         errUnknown;
+  end;
+ end;
+
+function MakeHash : VALUE;
+ begin
+  case Version of
+       rvNone :
+         errInactive;
+       rvRuby18, rvRuby19 :
+         Result := f_rb_hash_new();
+       else
+         errUnknown;
+  end;
+ end;
+
+function HashGet (hash : VALUE; key : VALUE) : VALUE;
+ begin
+  case Version of
+       rvNone :
+         errInactive;
+       rvRuby18, rvRuby19 :
+         Result := f_rb_hash_aref(hash, key);
+       else
+         errUnknown;
+  end;
+ end;
+
+function HashSet (hash : VALUE; key, val : VALUE) : VALUE;
+ begin
+  case Version of
+       rvNone :
+         errInactive;
+       rvRuby18, rvRuby19 :
+         Result := f_rb_hash_aset(hash, key, val);
        else
          errUnknown;
   end;
