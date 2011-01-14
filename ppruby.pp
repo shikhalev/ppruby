@@ -291,8 +291,8 @@ const
   LIB19 = 'libruby19.so';
 {$ELSE !UNIX}
  {$IFDEF WINDOWS}
-  LIB18 = 'mingw-ruby18.dll';
-  LIB19 = 'mingw-ruby19.dll';
+  LIB18 = 'msvcrt-ruby18.dll';
+  LIB19 = 'msvcrt-ruby19.dll';
  {$ELSE !WINDOWS}
   LIB18 = 'ruby18'; // ... I don't know...
   LIB19 = 'ruby19';
@@ -937,7 +937,7 @@ operator explicit (v : VALUE) : Int64;
           rec.val := v;
           f_rb_protect(@try_val2i64, VALUE(@rec), @res);
           chkConversion(res);
-          Result := v.i64;
+          Result := rec.i64;
          end;
   end;
  end;
@@ -951,7 +951,7 @@ type
 
 function try_val2w64 (v : VALUE) : VALUE; cdecl;
  begin
-  PW64Rec(v)^.w64 := f_rb_num2ll(PW64Rec(v)^.val);
+  PW64Rec(v)^.w64 := f_rb_num2ull(PW64Rec(v)^.val);
   Result := Qnil;
  end;
 
@@ -968,7 +968,7 @@ operator explicit (v : VALUE) : QWord;
           rec.val := v;
           f_rb_protect(@try_val2w64, VALUE(@rec), @res);
           chkConversion(res);
-          Result := v.w64;
+          Result := rec.w64;
          end;
   end;
  end;
@@ -991,7 +991,7 @@ operator explicit(const v : QWord) : VALUE;
        rvNone :
          errInactive;
        rvRuby18, rvRuby19 :
-         Result := f_rb_ll2inum(v);
+         Result := f_rb_ull2inum(v);
        else
          errUnknown;
   end;
