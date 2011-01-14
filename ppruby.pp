@@ -1,13 +1,15 @@
+{$codepage utf8}
+{$smartlink on}
+{$mode objfpc}{$h+}
+
+unit ppRuby;
+
 (*
    Package : RubyFCL
    File : ppruby.pp
    Desc : core unit of ruby binding
    License : GNU GPL
 *)
-
-unit ppRuby;
-
-{$mode objfpc}{$H+}
 
 interface
 
@@ -160,6 +162,16 @@ procedure RemoveClassHook (cls : TClass; hook : TClassHook);
 
 function ErrorInfo : VALUE;
 function Inspect (v : VALUE) : VALUE;
+function Yield (v : VALUE) : VALUE;
+
+type
+  TRubyValueType = (
+    rtNone, rtNil, rtObject, rtClass, rtModule, rtFloat, rtString, rtRegExp,
+    rtArray, rtFixNum, rtHash, rtBigNum, rtFile, rtStruct, rtData, rtSymbol,
+    rtTrue, rtFalse, rtUndef
+  );
+
+function ValType (v : VALUE) : TRubyValueType;
 
 type
   ERubyError = class(Exception)
@@ -349,6 +361,8 @@ var
   f_ruby_script : procedure (name : PChar); cdecl;
   f_ruby_finalize : procedure (); cdecl;
   f_rb_eval_string_protect : function (str : pchar; state : PInteger) : VALUE; cdecl;
+  f_rb_define_alloc_func : procedure (klass : VALUE; func : Pfunc); cdecl;
+  f_rb_yield : function (val : VALUE) : VALUE; cdecl;
 
   v_rb_cObject : VALUE;
   v_rb_eNoMethodError : VALUE;
@@ -390,6 +404,8 @@ procedure init_18_19;
   Pointer(f_ruby_script) := GetProcedureAddress(libRuby, 'ruby_script');
   Pointer(f_ruby_finalize) := GetProcedureAddress(libRuby, 'ruby_finalize');
   Pointer(f_rb_eval_string_protect) := GetProcedureAddress(libRuby, 'rb_eval_string_protect');
+  Pointer(f_rb_define_alloc_func) := GetProcedureAddress(libRuby, 'rb_define_alloc_func');
+  Pointer(f_rb_yield) := GetProcedureAddress(libRuby, 'rb_yield');
   // init library
   f_ruby_init();
   f_ruby_init_loadpath();
@@ -404,7 +420,7 @@ procedure init_18_19;
 
 procedure done_18_19;
  begin
- f_ruby_finalize();
+  f_ruby_finalize();
  end;
 
 const
@@ -472,22 +488,22 @@ const
   FIXNUM_FLAG = $01;
   SYMBOL_FLAG = $0E;
 
-//  T_NONE      = $00;
+  T_NONE      = $00;
 
   T_NIL       = $01;
-//  T_OBJECT    = $02;
+  T_OBJECT    = $02;
   T_CLASS     = $03;
 //  T_ICLASS    = $04;
-//  T_MODULE    = $05;
-//  T_FLOAT     = $06;
-//  T_STRING    = $07;
-//  T_REGEXP    = $08;
-//  T_ARRAY     = $09;
+  T_MODULE    = $05;
+  T_FLOAT     = $06;
+  T_STRING    = $07;
+  T_REGEXP    = $08;
+  T_ARRAY     = $09;
   T_FIXNUM    = $0A;
-//  T_HASH      = $0B;
-//  T_STRUCT    = $0C;
-//  T_BIGNUM    = $0D;
-//  T_FILE      = $0E;
+  T_HASH      = $0B;
+  T_STRUCT    = $0C;
+  T_BIGNUM    = $0D;
+  T_FILE      = $0E;
 
   T_TRUE      = $20;
   T_FALSE     = $21;
@@ -929,6 +945,11 @@ function do_method_missing (argc : Integer; argv : PVALUE; instance : VALUE) : V
      then f_rb_raise(v_rb_eNoMethodError, 'No method ''%s'' for %s.', PChar(ansistring(msg.msg)), PChar(ansistring(f_rb_inspect(instance))));
  end;
 
+function do_alloc (cls : VALUE) : VALUE; cdecl;
+ begin
+  Result := f_rb_data_object_alloc(cls, nil, nil, nil);
+ end;
+
 operator explicit (const v : TClass) : VALUE;
  var
    idx, cidx, hidx : PtrInt;
@@ -948,6 +969,7 @@ operator explicit (const v : TClass) : VALUE;
           SetLength(cacheClasses, idx + 1);
           cacheClasses[idx].cls := v;
           cacheClasses[idx].val := Result;
+          f_rb_define_alloc_func(Result, @do_alloc);
           DefineMethod(Result, 'method_missing', @do_method_missing);
           for cidx := 0 to High(hooksClasses) do
               if hooksClasses[cidx].cls = v
@@ -1026,7 +1048,7 @@ operator explicit (v : VALUE) : QWord;
   end;
  end;
 
-operator explicit(const v : Int64) : VALUE;
+operator explicit (const v : Int64) : VALUE;
  begin
   case Version of
        rvNone :
@@ -1038,7 +1060,7 @@ operator explicit(const v : Int64) : VALUE;
   end;
  end;
 
-operator explicit(const v : QWord) : VALUE;
+operator explicit (const v : QWord) : VALUE;
  begin
   case Version of
        rvNone :
@@ -1561,6 +1583,69 @@ function Inspect (v : VALUE) : VALUE;
          errInactive;
        rvRuby18, rvRuby19 :
          result := f_rb_inspect(v);
+       else
+         errUnknown;
+  end;
+ end;
+
+function Yield (v : VALUE) : VALUE;
+ begin
+  case Version of
+       rvNone :
+         errInactive;
+       rvRuby18, rvRuby19 :
+         Result := f_rb_yield(v);
+       else
+         errUnknown;
+  end;
+ end;
+
+function ValType (v : VALUE) : TRubyValueType;
+ begin
+  case Version of
+       rvNone :
+         errInactive;
+       rvRuby18, rvRuby19 :
+         case rb_type(v) of
+              T_NONE :
+                Result := rtNone;
+              T_NIL :
+                Result := rtNil;
+              T_TRUE :
+                Result := rtTrue;
+              T_FALSE :
+                Result := rtFalse;
+              T_FIXNUM :
+                Result := rtFixNum;
+              T_BIGNUM :
+                Result := rtBigNum;
+              T_REGEXP :
+                Result := rtRegExp;
+              T_ARRAY :
+                Result := rtArray;
+              T_HASH :
+                Result := rtHash;
+              T_STRUCT :
+                Result := rtStruct;
+              T_STRING :
+                Result := rtString;
+              T_FILE :
+                Result := rtFile;
+              T_SYMBOL :
+                Result := rtSymbol;
+              T_OBJECT :
+                Result := rtObject;
+              T_CLASS :
+                Result := rtClass;
+              T_MODULE :
+                Result := rtModule;
+              T_FLOAT :
+                Result := rtFloat;
+              T_DATA :
+                Result := rtData;
+              else
+                Result := rtUndef;
+         end;
        else
          errUnknown;
   end;

@@ -7,7 +7,7 @@ unit RubyFCL;
 interface
 
 uses
-  ppRuby, LazarusPackageIntf;
+  ppRuby, ppRubyClasses, LazarusPackageIntf;
 
 implementation
 
