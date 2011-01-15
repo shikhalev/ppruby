@@ -578,9 +578,29 @@ function m_tstringlist_initialize (instance : VALUE) : VALUE; cdecl;
   Result := instance;
  end;
 
+function m_tstringlist_sort (instance : VALUE) : VALUE; cdecl;
+ begin
+  (TObject(instance) as TStringList).Sort;
+  Result := instance;
+ end;
+
+function m_tstringlist_sorted (instance : VALUE) : VALUE; cdecl;
+ begin
+  Result := VALUE((TObject(instance) as TStringList).Sorted);
+ end;
+
+function m_tstringlist_sorted_set (instance : VALUE; sorted : VALUE) : VALUE; cdecl;
+ begin
+  (TObject(instance) as TStringList).Sorted := Boolean(sorted);
+  Result := sorted;
+ end;
+
 procedure TStringListClassHook (cStringList : VALUE);
  begin
   DefineMethod(cStringList, 'initialize', @m_tstringlist_initialize);
+  DefineMethod(cStringList, 'sort', @m_tstringlist_sort);
+  DefineMethod(cStringList, 'sorted?', @m_tstringlist_sorted);
+  DefineMethod(cStringList, 'sorted=', @m_tstringlist_sorted_set);
  end;
 
 function m_tstream_position (instance : VALUE) : VALUE; cdecl;
