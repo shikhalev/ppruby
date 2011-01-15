@@ -822,6 +822,16 @@ procedure TStringStreamClassHook (cStringStream : VALUE);
   DefineMethod(cStringStream, 'datastring', @m_tstringstream_datastring);
  end;
 
+function m_tbasicaction_execute (instance : VALUE) : VALUE; cdecl;
+ begin
+  Result := VALUE((TObject(instance) as TBasicAction).Execute);
+ end;
+
+procedure TBasicActionClassHook (cBasicAction : VALUE);
+ begin
+  DefineMethod(cBasicAction, 'execute', @m_tbasicaction_execute);
+ end;
+
 initialization
  ppRuby.AddClassHook(TObject, @TObjectClassHook);
  ppRuby.AddClassHook(TPersistent, @TPersistentClassHook);
@@ -833,5 +843,6 @@ initialization
  ppRuby.AddClassHook(TCustomMemoryStream, @TCustomMemoryStreamClassHook);
  ppRuby.AddClassHook(TMemoryStream, @TMemoryStreamClassHook);
  ppRuby.AddClassHook(TStringStream, @TStringStreamClassHook);
+ ppRuby.AddClassHook(TBasicAction, @TBasicActionClassHook);
 end.
 
