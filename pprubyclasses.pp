@@ -20,6 +20,9 @@ procedure TObjectClassHook (cObject : VALUE);
 procedure TPersistentClassHook (cPersistent : VALUE);
 procedure TComponentClassHook (cComponent : VALUE);
 procedure TStringsClassHook (cStrings : VALUE);
+procedure TStringListClassHook (cStringList : VALUE);
+procedure TStreamClassHook (cStream : VALUE);
+procedure TFileStreamClassHook (cFileStream : VALUE);
 
 implementation
 
@@ -561,6 +564,164 @@ procedure TStringsClassHook(cStrings : VALUE);
   DefineAlias(cStrings, 'to_ary', 'strings');
   DefineAlias(cStrings, 'to_hash', 'values');
   DefineAlias(cStrings, '<<', 'append');
+ end;
+
+type
+  TStringListClass = class of TStringList;
+
+function m_tstringlist_initialize (instance : VALUE) : VALUE; cdecl;
+ var
+   obj : TStringList;
+ begin
+  obj := TStringListClass(TClass(ValClass(instance))).Create;
+  WrapObject(instance, obj);
+  Result := instance;
+ end;
+
+procedure TStringListClassHook (cStringList : VALUE);
+ begin
+  DefineMethod(cStringList, 'initialize', @m_tstringlist_initialize);
+ end;
+
+function m_tstream_position (instance : VALUE) : VALUE; cdecl;
+ begin
+  Result := VALUE((TObject(instance) as TStream).Position);
+ end;
+
+function m_tstream_position_set (instance : VALUE; pos : VALUE) : VALUE; cdecl;
+ begin
+  (TObject(instance) as TStream).Position := Int64(pos);
+  Result := pos;
+ end;
+
+function m_tstream_size (instance : VALUE) : VALUE; cdecl;
+ begin
+  Result := VALUE((TObject(instance) as TStream).Size);
+ end;
+
+function m_tstream_size_set (instance : VALUE; size : VALUE) : VALUE; cdecl;
+ begin
+  (TObject(instance) as TStream).Size := Int64(size);
+  Result := size;
+ end;
+
+function m_tstream_copy (instance : VALUE; source : VALUE; count : VALUE) : VALUE; cdecl;
+ begin
+  Result := VALUE((TObject(instance) as TStream).CopyFrom(TObject(source) as TStream, Int64(count)));
+ end;
+
+function m_tstream_readcomponent (instance : VALUE; component : VALUE) : VALUE; cdecl;
+ begin
+  try
+   Result := VALUE((TObject(instance) as TStream).ReadComponent(TObject(component) as TComponent));
+  except
+   Result := Qnil;
+  end;
+ end;
+
+function m_tstream_writecomponent (instance : VALUE; component : VALUE) : VALUE; cdecl;
+ begin
+  (TObject(instance) as TStream).WriteComponent(TObject(component) as TComponent);
+  Result := instance;
+ end;
+
+function m_tstream_readbyte (instance : VALUE) : VALUE; cdecl;
+ begin
+  Result := VALUE((TObject(instance) as TStream).ReadByte);
+ end;
+
+function m_tstream_readword (instance : VALUE) : VALUE; cdecl;
+ begin
+  Result := VALUE((TObject(instance) as TStream).ReadWord);
+ end;
+
+function m_tstream_readdword (instance : VALUE) : VALUE; cdecl;
+ begin
+  Result := VALUE((TObject(instance) as TStream).ReadDWord);
+ end;
+
+function m_tstream_readqword (instance : VALUE) : VALUE; cdecl;
+ begin
+  Result := VALUE((TObject(instance) as TStream).ReadQWord);
+ end;
+
+function m_tstream_readstring (instance : VALUE) : VALUE; cdecl;
+ begin
+  Result := VALUE((TObject(instance) as TStream).ReadAnsiString);
+ end;
+
+function m_tstream_writebyte (instance : VALUE; v : VALUE) : VALUE; cdecl;
+ begin
+  (TObject(instance) as TStream).WriteByte(PtrInt(v));
+  Result := instance;
+ end;
+
+function m_tstream_writeword (instance : VALUE; v : VALUE) : VALUE; cdecl;
+ begin
+  (TObject(instance) as TStream).WriteWord(PtrInt(v));
+  Result := instance;
+ end;
+
+function m_tstream_writedword (instance : VALUE; v : VALUE) : VALUE; cdecl;
+ begin
+  (TObject(instance) as TStream).WriteDWord(PtrInt(v));
+  Result := instance;
+ end;
+
+function m_tstream_writeqword (instance : VALUE; v : VALUE) : VALUE; cdecl;
+ begin
+  (TObject(instance) as TStream).WriteQWord(Int64(v));
+  Result := instance;
+ end;
+
+function m_tstream_writestring (instance : VALUE; v : VALUE) : VALUE; cdecl;
+ begin
+  (TObject(instance) as TStream).WriteAnsiString(ansistring(v));
+  Result := instance;
+ end;
+
+procedure TStreamClassHook(cStream : VALUE);
+ begin
+  DefineMethod(cStream, 'copy', @m_tstream_copy);
+  DefineMethod(cStream, 'position', @m_tstream_position);
+  DefineMethod(cStream, 'position=', @m_tstream_position_set);
+  DefineMethod(cStream, 'size', @m_tstream_size);
+  DefineMethod(cStream, 'size=', @m_tstream_size_set);
+  DefineMethod(cStream, 'readcomponent', @m_tstream_readcomponent);
+  DefineMethod(cStream, 'writecomponent', @m_tstream_writecomponent);
+  DefineMethod(cStream, 'readbyte', @m_tstream_readbyte);
+  DefineMethod(cStream, 'readword', @m_tstream_readword);
+  DefineMethod(cStream, 'readdword', @m_tstream_readdword);
+  DefineMethod(cStream, 'readqword', @m_tstream_readqword);
+  DefineMethod(cStream, 'readstring', @m_tstream_readstring);
+  DefineMethod(cStream, 'writebyte', @m_tstream_writebyte);
+  DefineMethod(cStream, 'writeword', @m_tstream_writeword);
+  DefineMethod(cStream, 'writedword', @m_tstream_writedword);
+  DefineMethod(cStream, 'writeqword', @m_tstream_writeqword);
+  DefineMethod(cStream, 'writestring', @m_tstream_writestring);
+ end;
+
+type
+  TFileStreamClass = class of TFileStream;
+
+function m_tfilestream_initialize (instance : VALUE; filename : VALUE; mode : VALUE) : VALUE; cdecl;
+ var
+   obj : TFileStream;
+ begin
+  obj := TFileStreamClass(TClass(ValClass(instance))).Create(ansistring(filename), PtrInt(mode));
+  WrapObject(instance, obj);
+  Result := instance;
+ end;
+
+function m_tfilestream_filename (instance : VALUE) : VALUE; cdecl;
+ begin
+  Result := VALUE((TObject(instance) as TFileStream).FileName);
+ end;
+
+procedure TFileStreamClassHook(cFileStream : VALUE);
+ begin
+  DefineMethod(cFileStream, 'initialize', @m_tfilestream_initialize);
+  DefineMethod(cFileStream, 'filename', @m_tfilestream_filename);
  end;
 
 end.
