@@ -1,5 +1,4 @@
 {$codepage utf8}
-{$smartlink on}
 {$mode objfpc}{$h+}
 
 unit ppRubyClasses;
@@ -16,14 +15,7 @@ interface
 uses
   Classes, SysUtils, ppRuby;
 
-procedure TObjectClassHook (cObject : VALUE);
-procedure TPersistentClassHook (cPersistent : VALUE);
-procedure TComponentClassHook (cComponent : VALUE);
-procedure TStringsClassHook (cStrings : VALUE);
-procedure TStringListClassHook (cStringList : VALUE);
-procedure TStreamClassHook (cStream : VALUE);
-procedure TFileStreamClassHook (cFileStream : VALUE);
-procedure TCustomMemoryStreamClassHook (cCustomMemoryStream : VALUE);
+// no interface — see ininialization
 
 implementation
 
@@ -757,11 +749,52 @@ function m_tcustommemorystream_savetostream (instance : VALUE; stream : VALUE) :
   Result := instance;
  end;
 
-procedure TCustomMemoryStreamClassHook(cCustomMemoryStream : VALUE);
+procedure TCustomMemoryStreamClassHook (cCustomMemoryStream : VALUE);
  begin
   DefineMethod(cCustomMemoryStream, 'savetofile', @m_tcustommemorystream_savetofile);
   DefineMethod(cCustomMemoryStream, 'savetostream', @m_tcustommemorystream_savetostream);
  end;
 
+type
+  TMemoryStreamClass = class of TMemoryStream;
+
+function m_tmemorystream_initialize (instance : VALUE) : VALUE; cdecl;
+ var
+   obj : TMemoryStream;
+ begin
+  obj := TMemoryStreamClass(TClass(ValClass(instance))).Create;
+  WrapObject(instance, obj);
+  Result := instance;
+ end;
+
+function m_tmemorystream_loadfromfile (instance : VALUE; filename : VALUE) : VALUE; cdecl;
+ begin
+  (TObject(instance) as TMemoryStream).LoadFromFile(ansistring(filename));
+  Result := instance;
+ end;
+
+function m_tmemorystream_loadfromstream (instance : VALUE; stream : VALUE) : VALUE; cdecl;
+ begin
+  (TObject(instance) as TMemoryStream).LoadFromStream(TObject(stream) as TStream);
+  Result := instance;
+ end;
+
+procedure TMemoryStreamClassHook (cMemoryStream : VALUE);
+ begin
+  DefineMethod(cMemoryStream, 'initialize', @m_tmemorystream_initialize);
+  DefineMethod(cMemoryStream, 'loadfromfile', @m_tmemorystream_loadfromfile);
+  DefineMethod(cMemoryStream, 'loadfromstream', @m_tmemorystream_loadfromstream);
+ end;
+
+initialization
+ ppRuby.AddClassHook(TObject, @TObjectClassHook);
+ ppRuby.AddClassHook(TPersistent, @TPersistentClassHook);
+ ppRuby.AddClassHook(TComponent, @TComponentClassHook);
+ ppRuby.AddClassHook(TStrings, @TStringsClassHook);
+ ppRuby.AddClassHook(TStringList, @TStringListClassHook);
+ ppRuby.AddClassHook(TStream, @TStreamClassHook);
+ ppRuby.AddClassHook(TFileStream, @TFileStreamClassHook);
+ ppRuby.AddClassHook(TCustomMemoryStream, @TCustomMemoryStreamClassHook);
+ ppRuby.AddClassHook(TMemoryStream, @TMemoryStreamClassHook);
 end.
 
