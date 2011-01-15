@@ -23,6 +23,7 @@ procedure TStringsClassHook (cStrings : VALUE);
 procedure TStringListClassHook (cStringList : VALUE);
 procedure TStreamClassHook (cStream : VALUE);
 procedure TFileStreamClassHook (cFileStream : VALUE);
+procedure TCustomMemoryStreamClassHook (cCustomMemoryStream : VALUE);
 
 implementation
 
@@ -742,6 +743,24 @@ procedure TFileStreamClassHook(cFileStream : VALUE);
  begin
   DefineMethod(cFileStream, 'initialize', @m_tfilestream_initialize);
   DefineMethod(cFileStream, 'filename', @m_tfilestream_filename);
+ end;
+
+function m_tcustommemorystream_savetofile (instance : VALUE; filename : VALUE) : VALUE; cdecl;
+ begin
+  (TObject(instance) as TCustomMemoryStream).SaveToFile(ansistring(filename));
+  Result := instance;
+ end;
+
+function m_tcustommemorystream_savetostream (instance : VALUE; stream : VALUE) : VALUE; cdecl;
+ begin
+  (TObject(instance) as TCustomMemoryStream).SaveToStream(TObject(stream) as TStream);
+  Result := instance;
+ end;
+
+procedure TCustomMemoryStreamClassHook(cCustomMemoryStream : VALUE);
+ begin
+  DefineMethod(cCustomMemoryStream, 'savetofile', @m_tcustommemorystream_savetofile);
+  DefineMethod(cCustomMemoryStream, 'savetostream', @m_tcustommemorystream_savetostream);
  end;
 
 end.
