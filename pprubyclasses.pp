@@ -706,12 +706,12 @@ procedure TStreamClassHook(cStream : VALUE);
   DefineMethod(cStream, 'readword', @m_tstream_readword);
   DefineMethod(cStream, 'readdword', @m_tstream_readdword);
   DefineMethod(cStream, 'readqword', @m_tstream_readqword);
-  DefineMethod(cStream, 'readstring', @m_tstream_readstring);
+  DefineMethod(cStream, 'readansistring', @m_tstream_readstring);
   DefineMethod(cStream, 'writebyte', @m_tstream_writebyte);
   DefineMethod(cStream, 'writeword', @m_tstream_writeword);
   DefineMethod(cStream, 'writedword', @m_tstream_writedword);
   DefineMethod(cStream, 'writeqword', @m_tstream_writeqword);
-  DefineMethod(cStream, 'writestring', @m_tstream_writestring);
+  DefineMethod(cStream, 'writeansistring', @m_tstream_writestring);
  end;
 
 type
@@ -786,6 +786,42 @@ procedure TMemoryStreamClassHook (cMemoryStream : VALUE);
   DefineMethod(cMemoryStream, 'loadfromstream', @m_tmemorystream_loadfromstream);
  end;
 
+type
+  TStringStreamClass = class of TStringStream;
+
+function m_tstringstream_initialize (instance : VALUE; str : VALUE) : VALUE; cdecl;
+ var
+   obj : TStringStream;
+ begin
+  obj := TStringStreamClass(TClass(ValClass(instance))).Create(ansistring(str));
+  WrapObject(instance, obj);
+  Result := instance;
+ end;
+
+function m_tstringstream_readstring (instance : VALUE; count : VALUE) : VALUE; cdecl;
+ begin
+  Result := VALUE((TObject(instance) as TStringStream).ReadString(PtrInt(count)));
+ end;
+
+function m_tstringstream_writestring (instance : VALUE; str : VALUE) : VALUE; cdecl;
+ begin
+  (TObject(instance) as TStringStream).WriteString(ansistring(str));
+  Result := instance;
+ end;
+
+function m_tstringstream_datastring (instance : VALUE) : VALUE; cdecl;
+ begin
+  Result := VALUE((TObject(instance) as TStringStream).DataString);
+ end;
+
+procedure TStringStreamClassHook (cStringStream : VALUE);
+ begin
+  DefineMethod(cStringStream, 'initialize', @m_tstringstream_initialize);
+  DefineMethod(cStringStream, 'readstring', @m_tstringstream_readstring);
+  DefineMethod(cStringStream, 'writestring', @m_tstringstream_writestring);
+  DefineMethod(cStringStream, 'datastring', @m_tstringstream_datastring);
+ end;
+
 initialization
  ppRuby.AddClassHook(TObject, @TObjectClassHook);
  ppRuby.AddClassHook(TPersistent, @TPersistentClassHook);
@@ -796,5 +832,6 @@ initialization
  ppRuby.AddClassHook(TFileStream, @TFileStreamClassHook);
  ppRuby.AddClassHook(TCustomMemoryStream, @TCustomMemoryStreamClassHook);
  ppRuby.AddClassHook(TMemoryStream, @TMemoryStreamClassHook);
+ ppRuby.AddClassHook(TStringStream, @TStringStreamClassHook);
 end.
 

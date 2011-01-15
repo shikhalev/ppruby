@@ -9,6 +9,9 @@
         <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/>
       </SearchPaths>
       <Other>
+        <Verbosity>
+          <ShowHintsForUnusedUnitsInMainSrc Value="True"/>
+        </Verbosity>
         <CompilerPath Value="$(CompPath)"/>
       </Other>
     </CompilerOptions>
@@ -22,7 +25,7 @@
       </Item1>
       <Item2>
         <Filename Value="pprubyclasses.pp"/>
-        <UnitName Value="pprubyclasses"/>
+        <UnitName Value="ppRubyClasses"/>
       </Item2>
     </Files>
     <Type Value="RunAndDesignTime"/>
