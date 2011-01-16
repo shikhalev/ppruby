@@ -180,6 +180,8 @@ procedure DefineAlias (module : VALUE; const newname, oldname : ansistring);
 
 procedure IncludeModule (cls : VALUE; module : VALUE);
 
+function EvalString (const S : UTF8String) : VALUE;
+
 function ModComparable : VALUE;
 function ModEnumerable : VALUE;
 function ModPrecision : VALUE;
@@ -253,6 +255,7 @@ type
     ERubyNotClass = class(ERubyConversion);
   ERubyDefinition = class(ERubyError);
   EIncompatibleType = class(ERubyError);
+  ERubyExecution = class(ERubyError);
 
 resourcestring
   msgActivateError =
@@ -275,6 +278,8 @@ resourcestring
     'Incompatible type of value.';
   msgCanNotConvertTo =
     'Can not convert %s to %s.';
+  msgErrorWhileExec =
+    'Error while execution.';
 
 type
   TRubyMsg = record
@@ -1647,6 +1652,24 @@ procedure IncludeModule(cls : VALUE; module : VALUE);
          errInactive;
        rvRuby18, rvRuby19 :
          f_rb_include_module(cls, module);
+       else
+         errUnknown;
+  end;
+ end;
+
+function EvalString(const S : UTF8String) : VALUE;
+ var
+   res : Integer;
+ begin
+  case Version of
+       rvNone :
+         errInactive;
+       rvRuby18, rvRuby19 :
+         begin
+          Result := f_rb_eval_string_protect(PChar(S), @res);
+          if res <> 0
+             then raise ERubyExecution.Create(msgErrorWhileExec);
+         end;
        else
          errUnknown;
   end;
