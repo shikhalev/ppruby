@@ -189,6 +189,28 @@ function m_tcontrol_anchorside (instance : VALUE; kind : VALUE) : VALUE; cdecl;
   Result := VALUE((TObject(instance) as TControl).AnchorSide[TAnchorKind(kind)]);
  end;
 
+function m_tcontrol_autosize (instance : VALUE) : VALUE; cdecl;
+ begin
+  Result := VALUE((TObject(instance) as TControl).AutoSize);
+ end;
+
+function m_tcontrol_autosize_set (instance : VALUE; autosize : VALUE) : VALUE; cdecl;
+ begin
+  (TObject(instance) as TControl).AutoSize := Boolean(autosize);
+  Result := autosize;
+ end;
+
+function m_tcontrol_borderspacing (instance : VALUE) : VALUE; cdecl;
+ begin
+  Result := VALUE((TObject(instance) as TControl).BorderSpacing);
+ end;
+
+function m_tcontrol_borderspacing_set (instance : VALUE; spacing : VALUE) : VALUE; cdecl;
+ begin
+  (TObject(instance) as TControl).BorderSpacing := TObject(spacing) as TControlBorderSpacing;
+  Result := spacing;
+ end;
+
 procedure TControlClassHook (cControl : VALUE);
  begin
   DefineMethod(cControl, 'hide', @m_tcontrol_hide);
@@ -200,7 +222,11 @@ procedure TControlClassHook (cControl : VALUE);
   DefineMethod(cControl, 'align=', @m_tcontrol_align_set);
   DefineMethod(cControl, 'anchors', @m_tcontrol_anchors);
   DefineMethod(cControl, 'anchors=', @m_tcontrol_anchors_set);
-  DefineMethod(cControl, 'anchorside', @m_tcontrol_anchorside)
+  DefineMethod(cControl, 'anchorside', @m_tcontrol_anchorside);
+  DefineMethod(cControl, 'autosize', @m_tcontrol_autosize);
+  DefineMethod(cControl, 'autosize=', @m_tcontrol_autosize_set);
+  DefineMethod(cControl, 'borderspacing', @m_tcontrol_borderspacing);
+  DefineMethod(cControl, 'borderspacing=', @m_tcontrol_borderspacing_set);
  end;
 
 function m_tanchorside_owner (instance : VALUE) : VALUE; cdecl;
