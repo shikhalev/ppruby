@@ -60,21 +60,21 @@
       <Unit2>
         <Filename Value="../ppruby.pp"/>
         <UnitName Value="ppRuby"/>
-        <EditorIndex Value="4"/>
+        <EditorIndex Value="3"/>
         <WindowIndex Value="0"/>
-        <TopLine Value="253"/>
-        <CursorPos X="21" Y="1457"/>
+        <TopLine Value="1741"/>
+        <CursorPos X="65" Y="1754"/>
         <UsageCount Value="100"/>
         <Loaded Value="True"/>
       </Unit2>
       <Unit3>
         <Filename Value="../static/ruby18.pp"/>
         <UnitName Value="ruby18"/>
-        <EditorIndex Value="8"/>
+        <EditorIndex Value="7"/>
         <WindowIndex Value="0"/>
-        <TopLine Value="552"/>
-        <CursorPos X="1" Y="574"/>
-        <UsageCount Value="85"/>
+        <TopLine Value="765"/>
+        <CursorPos X="1" Y="789"/>
+        <UsageCount Value="88"/>
         <Loaded Value="True"/>
       </Unit3>
       <Unit4>
@@ -88,21 +88,19 @@
       <Unit5>
         <Filename Value="../pprubyclasses.pp"/>
         <UnitName Value="ppRubyClasses"/>
-        <EditorIndex Value="7"/>
+        <EditorIndex Value="6"/>
         <WindowIndex Value="0"/>
         <TopLine Value="822"/>
         <CursorPos X="64" Y="832"/>
-        <UsageCount Value="26"/>
+        <UsageCount Value="29"/>
         <Loaded Value="True"/>
       </Unit5>
       <Unit6>
         <Filename Value="../../../../opt/src/freepascal/rtl/objpas/classes/classesh.inc"/>
-        <EditorIndex Value="3"/>
         <WindowIndex Value="0"/>
         <TopLine Value="1711"/>
         <CursorPos X="3" Y="1712"/>
         <UsageCount Value="14"/>
-        <Loaded Value="True"/>
       </Unit6>
       <Unit7>
         <Filename Value="../../../../opt/src/freepascal/rtl/objpas/classes/persist.inc"/>
@@ -141,7 +139,7 @@
         <WindowIndex Value="0"/>
         <TopLine Value="144"/>
         <CursorPos X="38" Y="157"/>
-        <UsageCount Value="15"/>
+        <UsageCount Value="18"/>
         <Loaded Value="True"/>
       </Unit11>
       <Unit12>
@@ -171,12 +169,12 @@
       <Unit15>
         <Filename Value="../../../../opt/src/lazarus/lcl/controls.pp"/>
         <UnitName Value="Controls"/>
-        <IsVisibleTab Value="True"/>
         <EditorIndex Value="2"/>
         <WindowIndex Value="0"/>
-        <TopLine Value="1367"/>
-        <CursorPos X="29" Y="1371"/>
-        <UsageCount Value="15"/>
+        <TopLine Value="108"/>
+        <CursorPos X="3" Y="121"/>
+        <FoldState Value=" T8+42{=3 pjHmg2N4]98ja24[I4DjL2H:"/>
+        <UsageCount Value="18"/>
         <Loaded Value="True"/>
       </Unit15>
       <Unit16>
@@ -198,11 +196,11 @@
       <Unit18>
         <Filename Value="../pprubyforms.pp"/>
         <UnitName Value="ppRubyForms"/>
-        <EditorIndex Value="5"/>
+        <EditorIndex Value="4"/>
         <WindowIndex Value="0"/>
-        <TopLine Value="23"/>
-        <CursorPos X="1" Y="46"/>
-        <UsageCount Value="14"/>
+        <TopLine Value="1"/>
+        <CursorPos X="1" Y="13"/>
+        <UsageCount Value="17"/>
         <Loaded Value="True"/>
       </Unit18>
       <Unit19>
@@ -216,134 +214,135 @@
       <Unit20>
         <Filename Value="../pprubycontrols.pp"/>
         <UnitName Value="ppRubyControls"/>
-        <EditorIndex Value="6"/>
+        <IsVisibleTab Value="True"/>
+        <EditorIndex Value="5"/>
         <WindowIndex Value="0"/>
-        <TopLine Value="9"/>
-        <CursorPos X="1" Y="30"/>
-        <UsageCount Value="10"/>
+        <TopLine Value="99"/>
+        <CursorPos X="49" Y="117"/>
+        <UsageCount Value="14"/>
         <Loaded Value="True"/>
       </Unit20>
     </Units>
     <JumpHistory Count="30" HistoryIndex="29">
       <Position1>
         <Filename Value="../../../../opt/src/lazarus/lcl/controls.pp"/>
-        <Caret Line="1638" Column="26" TopLine="1629"/>
+        <Caret Line="1257" Column="44" TopLine="1238"/>
       </Position1>
       <Position2>
         <Filename Value="../../../../opt/src/lazarus/lcl/controls.pp"/>
-        <Caret Line="864" Column="28" TopLine="851"/>
+        <Caret Line="1371" Column="29" TopLine="1367"/>
       </Position2>
       <Position3>
-        <Filename Value="../pprubyforms.pp"/>
-        <Caret Line="8" Column="27" TopLine="1"/>
+        <Filename Value="../pprubyclasses.pp"/>
+        <Caret Line="827" Column="3" TopLine="808"/>
       </Position3>
       <Position4>
-        <Filename Value="../pprubyforms.pp"/>
-        <Caret Line="10" Column="36" TopLine="1"/>
+        <Filename Value="../../../../opt/src/lazarus/lcl/controls.pp"/>
+        <Caret Line="1372" Column="24" TopLine="1367"/>
       </Position4>
       <Position5>
-        <Filename Value="../pprubyforms.pp"/>
-        <Caret Line="19" Column="5" TopLine="1"/>
+        <Filename Value="../pprubycontrols.pp"/>
+        <Caret Line="51" Column="52" TopLine="27"/>
       </Position5>
       <Position6>
-        <Filename Value="../pprubyforms.pp"/>
-        <Caret Line="8" Column="50" TopLine="1"/>
+        <Filename Value="../pprubycontrols.pp"/>
+        <Caret Line="33" Column="75" TopLine="10"/>
       </Position6>
       <Position7>
-        <Filename Value="../pprubyforms.pp"/>
-        <Caret Line="19" Column="25" TopLine="1"/>
+        <Filename Value="../../../../opt/src/lazarus/lcl/controls.pp"/>
+        <Caret Line="117" Column="3" TopLine="107"/>
       </Position7>
       <Position8>
-        <Filename Value="../../../../opt/src/lazarus/lcl/forms.pp"/>
-        <Caret Line="691" Column="22" TopLine="681"/>
+        <Filename Value="../../../../opt/src/lazarus/lcl/controls.pp"/>
+        <Caret Line="864" Column="3" TopLine="1125"/>
       </Position8>
       <Position9>
-        <Filename Value="../../../../opt/src/lazarus/lcl/forms.pp"/>
-        <Caret Line="681" Column="33" TopLine="661"/>
+        <Filename Value="../pprubycontrols.pp"/>
+        <Caret Line="86" Column="36" TopLine="26"/>
       </Position9>
       <Position10>
-        <Filename Value="../../../../opt/src/lazarus/lcl/forms.pp"/>
-        <Caret Line="682" Column="32" TopLine="660"/>
+        <Filename Value="../../../../opt/src/lazarus/lcl/controls.pp"/>
+        <Caret Line="1373" Column="27" TopLine="1358"/>
       </Position10>
       <Position11>
-        <Filename Value="../pprubyforms.pp"/>
-        <Caret Line="11" Column="46" TopLine="1"/>
+        <Filename Value="../ppruby.pp"/>
+        <Caret Line="184" Column="1" TopLine="163"/>
       </Position11>
       <Position12>
-        <Filename Value="../pprubyforms.pp"/>
-        <Caret Line="36" Column="23" TopLine="10"/>
+        <Filename Value="../ppruby.pp"/>
+        <Caret Line="622" Column="33" TopLine="625"/>
       </Position12>
       <Position13>
-        <Filename Value="../../../../opt/src/lazarus/lcl/forms.pp"/>
-        <Caret Line="69" Column="3" TopLine="95"/>
+        <Filename Value="../static/ruby18.pp"/>
+        <Caret Line="558" Column="37" TopLine="552"/>
       </Position13>
       <Position14>
-        <Filename Value="../../../../opt/src/lazarus/lcl/forms.pp"/>
-        <Caret Line="263" Column="3" TopLine="250"/>
+        <Filename Value="../static/ruby18.pp"/>
+        <Caret Line="1" Column="1" TopLine="1"/>
       </Position14>
       <Position15>
-        <Filename Value="../../../../opt/src/lazarus/lcl/forms.pp"/>
-        <Caret Line="407" Column="3" TopLine="394"/>
+        <Filename Value="../ppruby.pp"/>
+        <Caret Line="1747" Column="1" TopLine="1735"/>
       </Position15>
       <Position16>
-        <Filename Value="../../../../opt/src/lazarus/lcl/forms.pp"/>
-        <Caret Line="794" Column="3" TopLine="781"/>
+        <Filename Value="../ppruby.pp"/>
+        <Caret Line="180" Column="62" TopLine="171"/>
       </Position16>
       <Position17>
-        <Filename Value="../../../../opt/src/lazarus/lcl/forms.pp"/>
-        <Caret Line="691" Column="3" TopLine="678"/>
+        <Filename Value="../ppruby.pp"/>
+        <Caret Line="1740" Column="27" TopLine="1722"/>
       </Position17>
       <Position18>
-        <Filename Value="../../../../opt/src/lazarus/lcl/forms.pp"/>
-        <Caret Line="794" Column="3" TopLine="781"/>
+        <Filename Value="../ppruby.pp"/>
+        <Caret Line="454" Column="1" TopLine="435"/>
       </Position18>
       <Position19>
-        <Filename Value="../../../../opt/src/lazarus/lcl/forms.pp"/>
-        <Caret Line="263" Column="3" TopLine="250"/>
+        <Filename Value="../ppruby.pp"/>
+        <Caret Line="1754" Column="49" TopLine="1741"/>
       </Position19>
       <Position20>
-        <Filename Value="../../../../opt/src/lazarus/lcl/forms.pp"/>
-        <Caret Line="157" Column="3" TopLine="144"/>
+        <Filename Value="../../../../opt/src/lazarus/lcl/controls.pp"/>
+        <Caret Line="120" Column="3" TopLine="107"/>
       </Position20>
       <Position21>
-        <Filename Value="../../../../opt/src/lazarus/lcl/forms.pp"/>
-        <Caret Line="198" Column="3" TopLine="185"/>
+        <Filename Value="../../../../opt/src/lazarus/lcl/controls.pp"/>
+        <Caret Line="1374" Column="48" TopLine="1361"/>
       </Position21>
       <Position22>
-        <Filename Value="../../../../opt/src/lazarus/lcl/forms.pp"/>
-        <Caret Line="85" Column="3" TopLine="72"/>
+        <Filename Value="../../../../opt/src/lazarus/lcl/controls.pp"/>
+        <Caret Line="745" Column="3" TopLine="750"/>
       </Position22>
       <Position23>
-        <Filename Value="../../../../opt/src/lazarus/lcl/forms.pp"/>
-        <Caret Line="1174" Column="3" TopLine="1161"/>
+        <Filename Value="../../../../opt/src/lazarus/lcl/controls.pp"/>
+        <Caret Line="1374" Column="50" TopLine="1249"/>
       </Position23>
       <Position24>
-        <Filename Value="../../../../opt/src/lazarus/lcl/forms.pp"/>
-        <Caret Line="407" Column="32" TopLine="403"/>
+        <Filename Value="../../../../opt/src/lazarus/lcl/controls.pp"/>
+        <Caret Line="772" Column="33" TopLine="747"/>
       </Position24>
       <Position25>
-        <Filename Value="../../../../opt/src/lazarus/lcl/forms.pp"/>
-        <Caret Line="157" Column="38" TopLine="144"/>
+        <Filename Value="../../../../opt/src/lazarus/lcl/controls.pp"/>
+        <Caret Line="121" Column="3" TopLine="108"/>
       </Position25>
       <Position26>
         <Filename Value="../../../../opt/src/lazarus/lcl/controls.pp"/>
-        <Caret Line="1999" Column="33" TopLine="1986"/>
+        <Caret Line="753" Column="43" TopLine="732"/>
       </Position26>
       <Position27>
         <Filename Value="../../../../opt/src/lazarus/lcl/controls.pp"/>
-        <Caret Line="1638" Column="28" TopLine="1625"/>
+        <Caret Line="121" Column="3" TopLine="108"/>
       </Position27>
       <Position28>
         <Filename Value="../../../../opt/src/lazarus/lcl/controls.pp"/>
-        <Caret Line="1257" Column="44" TopLine="1238"/>
+        <Caret Line="772" Column="33" TopLine="747"/>
       </Position28>
       <Position29>
-        <Filename Value="../../../../opt/src/lazarus/lcl/controls.pp"/>
-        <Caret Line="1371" Column="29" TopLine="1367"/>
+        <Filename Value="../pprubycontrols.pp"/>
+        <Caret Line="200" Column="20" TopLine="180"/>
       </Position29>
       <Position30>
-        <Filename Value="../pprubyclasses.pp"/>
-        <Caret Line="827" Column="3" TopLine="808"/>
+        <Filename Value="../pprubycontrols.pp"/>
+        <Caret Line="114" Column="3" TopLine="92"/>
       </Position30>
     </JumpHistory>
   </ProjectOptions>

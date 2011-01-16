@@ -172,8 +172,12 @@ function ErrorInfo : VALUE;
 function Inspect (v : VALUE) : VALUE;
 function Yield (v : VALUE) : VALUE;
 
+type
+  TValueArray = array of VALUE;
+
 procedure WrapObject (val : VALUE; obj : TObject);
 function MakeArray (const vals : array of VALUE) : VALUE;
+function ArrayIncludes (arr : VALUE; item : VALUE) : Boolean;
 function MakeHash : VALUE;
 function HashGet (hash : VALUE; key : VALUE) : VALUE;
 function HashSet (hash : VALUE; key, val : VALUE) : VALUE;
@@ -228,6 +232,8 @@ resourcestring
     'Value is not a pascal class.';
   msgIncompatible =
     'Incompatible type of value.';
+  msgCanNotConvertTo =
+    'Can not convert %s to %s.';
 
 type
   TRubyMsg = record
@@ -387,6 +393,7 @@ var
   f_rb_hash_aref : function (hash, key : VALUE) : VALUE; cdecl;
   f_rb_hash_aset : function (hash, key, val : VALUE) : VALUE; cdecl;
   f_rb_define_alias : procedure (klass : VALUE; name1, name2 : PChar); cdecl;
+  f_rb_ary_includes : function (ary, item : VALUE) : VALUE; cdecl;
 
   v_rb_cObject : VALUE;
   v_rb_cFixnum : VALUE;
@@ -444,6 +451,7 @@ procedure init_18_19;
   Pointer(f_rb_hash_aref) := GetProcedureAddress(libRuby, 'rb_hash_aref');
   Pointer(f_rb_hash_aset) := GetProcedureAddress(libRuby, 'rb_hash_aset');
   Pointer(f_rb_define_alias) := GetProcedureAddress(libRuby, 'rb_define_alias');
+  Pointer(f_rb_ary_includes) := GetProcedureAddress(libRuby, 'rb_ary_includes');
   // init library
   f_ruby_init();
   f_ruby_init_loadpath();
@@ -1732,6 +1740,18 @@ function MakeArray (const vals : array of VALUE) : VALUE;
          errInactive;
        rvRuby18, rvRuby19 :
          Result := f_rb_ary_new4(Length(vals), @vals[0]);
+       else
+         errUnknown;
+  end;
+ end;
+
+function ArrayIncludes (arr : VALUE; item : VALUE) : Boolean;
+ begin
+  case Version of
+       rvNone :
+         errInactive;
+       rvRuby18, rvRuby19 :
+         Result := (f_rb_ary_includes(arr, item).data <> _Qfalse);
        else
          errUnknown;
   end;

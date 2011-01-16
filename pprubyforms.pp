@@ -10,10 +10,6 @@ uses
 operator explicit (v : VALUE) : TWindowState;
 operator explicit (v : TWindowState) : VALUE;
 
-resourcestring
-  msgCanNotConvertTo =
-    'Can not convert %s to %s.';
-
 implementation
 
 var
