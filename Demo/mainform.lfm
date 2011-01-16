@@ -1,8 +1,111 @@
 object frmMain: TfrmMain
-  Left = 232
-  Height = 240
-  Top = 135
-  Width = 320
+  Left = 279
+  Height = 406
+  Top = 157
+  Width = 589
   Caption = 'Ruby-scripting Demo'
+  ClientHeight = 406
+  ClientWidth = 589
   LCLVersion = '0.9.31'
+  Visible = True
+  object pnlLeft: TPanel
+    Left = 0
+    Height = 406
+    Top = 0
+    Width = 368
+    Align = alLeft
+    ClientHeight = 406
+    ClientWidth = 368
+    TabOrder = 0
+    object memScript: TMemo
+      Left = 1
+      Height = 295
+      Top = 1
+      Width = 366
+      Align = alTop
+      Font.Height = -10
+      Font.Name = 'Monospace'
+      Lines.Strings = (
+        'f = application.frmMain'
+        'mo = f.memOut'
+        ''
+        'mo.lines.clear'
+        'f.each do |obj|'
+        '    mo.lines.add obj.to_s'
+        'end'
+        ''
+      )
+      ParentFont = False
+      ScrollBars = ssAutoBoth
+      TabOrder = 0
+    end
+    object splTB: TSplitter
+      Cursor = crVSplit
+      Left = 1
+      Height = 5
+      Top = 296
+      Width = 366
+      Align = alTop
+      ResizeAnchor = akTop
+    end
+    object memOut: TMemo
+      Left = 1
+      Height = 104
+      Top = 301
+      Width = 366
+      Align = alClient
+      Color = clBtnFace
+      Font.Height = -10
+      Font.Name = 'Monospace'
+      Lines.Strings = (
+        'memOut'
+      )
+      ParentFont = False
+      ReadOnly = True
+      ScrollBars = ssAutoBoth
+      TabOrder = 2
+    end
+  end
+  object splLR: TSplitter
+    Left = 368
+    Height = 406
+    Top = 0
+    Width = 5
+  end
+  object pnlRight: TPanel
+    Left = 373
+    Height = 406
+    Top = 0
+    Width = 216
+    Align = alClient
+    ClientHeight = 406
+    ClientWidth = 216
+    TabOrder = 2
+    object btnRun: TButton
+      Left = 1
+      Height = 25
+      Top = 1
+      Width = 214
+      Align = alTop
+      Caption = 'Run!'
+      OnClick = btnRunClick
+      TabOrder = 0
+    end
+    object memAdd: TMemo
+      Left = 1
+      Height = 379
+      Top = 26
+      Width = 214
+      Align = alClient
+      Font.Height = -10
+      Font.Name = 'Monospace'
+      Lines.Strings = (
+        'memAdd'
+      )
+      ParentFont = False
+      ReadOnly = True
+      ScrollBars = ssAutoBoth
+      TabOrder = 1
+    end
+  end
 end
