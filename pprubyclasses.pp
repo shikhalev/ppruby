@@ -832,6 +832,8 @@ procedure TBasicActionClassHook (cBasicAction : VALUE);
   DefineMethod(cBasicAction, 'execute', @m_tbasicaction_execute);
  end;
 
+// TODO: TCollection, TCollectionItem
+
 initialization
  ppRuby.AddClassHook(TObject, @TObjectClassHook);
  ppRuby.AddClassHook(TPersistent, @TPersistentClassHook);

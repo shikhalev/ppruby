@@ -56,19 +56,15 @@
         <ComponentName Value="frmMain"/>
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="MainForm"/>
-        <IsVisibleTab Value="True"/>
-        <EditorIndex Value="0"/>
         <WindowIndex Value="0"/>
         <TopLine Value="22"/>
         <CursorPos X="29" Y="47"/>
         <UsageCount Value="200"/>
-        <Loaded Value="True"/>
-        <LoadedDesigner Value="True"/>
       </Unit1>
       <Unit2>
         <Filename Value="../ppruby.pp"/>
         <UnitName Value="ppRuby"/>
-        <EditorIndex Value="3"/>
+        <EditorIndex Value="2"/>
         <WindowIndex Value="0"/>
         <TopLine Value="258"/>
         <CursorPos X="28" Y="282"/>
@@ -78,7 +74,7 @@
       <Unit3>
         <Filename Value="../static/ruby18.pp"/>
         <UnitName Value="ruby18"/>
-        <EditorIndex Value="7"/>
+        <EditorIndex Value="6"/>
         <WindowIndex Value="0"/>
         <TopLine Value="550"/>
         <CursorPos X="1" Y="565"/>
@@ -96,10 +92,11 @@
       <Unit5>
         <Filename Value="../pprubyclasses.pp"/>
         <UnitName Value="ppRubyClasses"/>
-        <EditorIndex Value="6"/>
+        <IsVisibleTab Value="True"/>
+        <EditorIndex Value="5"/>
         <WindowIndex Value="0"/>
-        <TopLine Value="822"/>
-        <CursorPos X="64" Y="832"/>
+        <TopLine Value="820"/>
+        <CursorPos X="38" Y="835"/>
         <UsageCount Value="33"/>
         <Loaded Value="True"/>
       </Unit5>
@@ -143,7 +140,7 @@
       <Unit11>
         <Filename Value="../../../../opt/src/lazarus/lcl/forms.pp"/>
         <UnitName Value="Forms"/>
-        <EditorIndex Value="1"/>
+        <EditorIndex Value="0"/>
         <WindowIndex Value="0"/>
         <TopLine Value="897"/>
         <CursorPos X="17" Y="911"/>
@@ -177,7 +174,7 @@
       <Unit15>
         <Filename Value="../../../../opt/src/lazarus/lcl/controls.pp"/>
         <UnitName Value="Controls"/>
-        <EditorIndex Value="2"/>
+        <EditorIndex Value="1"/>
         <WindowIndex Value="0"/>
         <TopLine Value="632"/>
         <CursorPos X="3" Y="645"/>
@@ -203,10 +200,10 @@
       <Unit18>
         <Filename Value="../pprubyforms.pp"/>
         <UnitName Value="ppRubyForms"/>
-        <EditorIndex Value="4"/>
+        <EditorIndex Value="3"/>
         <WindowIndex Value="0"/>
-        <TopLine Value="26"/>
-        <CursorPos X="35" Y="61"/>
+        <TopLine Value="1"/>
+        <CursorPos X="53" Y="15"/>
         <UsageCount Value="21"/>
         <Loaded Value="True"/>
       </Unit18>
@@ -221,7 +218,7 @@
       <Unit20>
         <Filename Value="../pprubycontrols.pp"/>
         <UnitName Value="ppRubyControls"/>
-        <EditorIndex Value="5"/>
+        <EditorIndex Value="4"/>
         <WindowIndex Value="0"/>
         <TopLine Value="219"/>
         <CursorPos X="73" Y="229"/>
@@ -229,7 +226,7 @@
         <Loaded Value="True"/>
       </Unit20>
     </Units>
-    <JumpHistory Count="30" HistoryIndex="29">
+    <JumpHistory Count="27" HistoryIndex="26">
       <Position1>
         <Filename Value="../static/ruby18.pp"/>
         <Caret Line="1" Column="1" TopLine="1"/>
@@ -338,18 +335,6 @@
         <Filename Value="../ppruby.pp"/>
         <Caret Line="1668" Column="1" TopLine="1657"/>
       </Position27>
-      <Position28>
-        <Filename Value="mainform.pp"/>
-        <Caret Line="10" Column="27" TopLine="1"/>
-      </Position28>
-      <Position29>
-        <Filename Value="mainform.pp"/>
-        <Caret Line="11" Column="27" TopLine="1"/>
-      </Position29>
-      <Position30>
-        <Filename Value="mainform.pp"/>
-        <Caret Line="42" Column="3" TopLine="18"/>
-      </Position30>
     </JumpHistory>
   </ProjectOptions>
   <CompilerOptions>

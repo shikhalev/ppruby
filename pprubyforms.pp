@@ -12,6 +12,8 @@ operator explicit (v : TWindowState) : VALUE;
 
 implementation
 
+// TODO: TCustomForm, TApplication... and all others
+
 var
   cacheWindowStates : array [TWindowState] of VALUE;
 
