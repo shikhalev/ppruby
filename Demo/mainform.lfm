@@ -31,7 +31,7 @@ object frmMain: TfrmMain
         ''
         'mo.lines.clear'
         'f.each do |obj|'
-        '    mo.lines.add obj.to_s'
+        '    mo.lines << obj.to_s'
         'end'
         ''
       )
@@ -58,7 +58,7 @@ object frmMain: TfrmMain
       Font.Height = -10
       Font.Name = 'Monospace'
       Lines.Strings = (
-        'memOut'
+        ''
       )
       ParentFont = False
       ReadOnly = True
@@ -100,7 +100,25 @@ object frmMain: TfrmMain
       Font.Height = -10
       Font.Name = 'Monospace'
       Lines.Strings = (
-        'memAdd'
+        'Copy/Paste in top-left memo following samples:'
+        ''
+        '-----------------------------'
+        'f = application.frmMain'
+        'mo = f.memOut'
+        ''
+        'mo.lines.clear'
+        'f.each do |obj|'
+        '    mo.lines << obj.to_s'
+        'end'
+        '-----------------------------'
+        'application.frmMain.caption = "This is demo of ppRuby!"'
+        '-----------------------------'
+        'application.frmMain.top = 0'
+        '-----------------------------'
+        'f = application.frmMain'
+        ''
+        'f.memOut.Lines = f.memAdd.lines'
+        '-----------------------------'
       )
       ParentFont = False
       ReadOnly = True
