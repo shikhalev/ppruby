@@ -993,6 +993,8 @@ procedure do_property_get (instance : VALUE; mid : VALUE; obj : TObject; const n
           end;
  end;
 
+// TODO: get/set sets
+
 procedure do_property_set (obj : TObject; const name : ansistring; val : VALUE; var return : VALUE);
  var
    info : PPropInfo;

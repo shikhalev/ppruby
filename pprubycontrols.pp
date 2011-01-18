@@ -271,6 +271,17 @@ procedure TAnchorSideClassHook (cAnchorSide : VALUE);
   DefineMethod(cAnchorSide, 'side=', @m_tanchorside_side_set);
  end;
 
+function m_tcontrolborderspacing_isequal (instance : VALUE; other : VALUE) : VALUE; cdecl;
+ begin
+  Result := VALUE((TObject(instance) as TControlBorderSpacing).IsEqual(TObject(other) as TControlBorderSpacing));
+ end;
+
+procedure TControlBorderSpacingClassHook (cControlBorderSpacing : VALUE);
+ begin
+  DefineMethod(cControlBorderSpacing, 'isequal?', @m_tcontrolborderspacing_isequal);
+  DefineAlias(cControlBorderSpacing, '===', 'isequal?');
+ end;
+
 initialization
  ppRuby.AddLoadHook(@InitEnumCaches);
  ppRuby.AddClassHook(TControl, @TControlClassHook);
