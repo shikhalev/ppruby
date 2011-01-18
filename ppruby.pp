@@ -181,6 +181,7 @@ procedure DefineAlias (module : VALUE; const newname, oldname : ansistring);
 procedure IncludeModule (cls : VALUE; module : VALUE);
 
 function EvalString (const S : UTF8String) : VALUE;
+function CallMethod (obj : VALUE; method : UTF8String; const args : array of VALUE) : VALUE;
 
 function ModComparable : VALUE;
 function ModEnumerable : VALUE;
@@ -943,6 +944,51 @@ operator explicit (const v : TObject) : VALUE;
   end;
  end;
 
+function setstring2valuearray (const str : ansistring) : VALUE;
+ var
+   arr : array of VALUE;
+   idx, len : Integer;
+   cur : ansistring;
+ begin
+  cur := '';
+  SetLength(arr, 0);
+  for idx := 1 to Length(str) do
+      if str[idx] in ['a'..'z', 'A'..'Z', '_', '0'..'9']
+         then cur := cur + str[idx]
+         else if cur <> ''
+                 then begin
+                       len := Length(arr);
+                       SetLength(arr, len + 1);
+                       arr[len] := VALUE(ID(cur));
+                       cur := '';
+                      end;
+  if cur <> ''
+     then begin
+           len := Length(arr);
+           SetLength(arr, len + 1);
+           arr[len] := VALUE(ID(cur));
+           cur := '';
+          end;
+  Result := MakeArray(arr);
+  SetLength(arr, 0);
+ end;
+
+function value2setstring (v : VALUE) : ansistring;
+ begin
+  try
+   case ValType(v) of
+        rtString :
+          Result := ansistring(v);
+        rtArray :
+          Result := ansistring(CallMethod(v, 'join', [VALUE(', ')]));
+        else
+          Result := ansistring(CallMethod(CallMethod(v, 'to_a', []), 'join', [VALUE(', ')]));
+   end;
+  except
+   Result := '';
+  end;
+ end;
+
 type
   PPropRec = ^TPropRec;
   TPropRec = record
@@ -972,6 +1018,8 @@ procedure do_property_get (instance : VALUE; mid : VALUE; obj : TObject; const n
                  return := VALUE(QWord(GetInt64Prop(obj, info)));
                tkEnumeration :
                  return := VALUE(ID(GetEnumProp(obj, info)));
+               tkSet :
+                 return := setstring2valuearray(GetSetProp(obj, info, false));
                tkFloat :
                  return := VALUE(GetFloatProp(obj, info));
                tkSString, tkLString, tkAString :
@@ -1012,6 +1060,8 @@ procedure do_property_set (obj : TObject; const name : ansistring; val : VALUE; 
                   SetInt64Prop(obj, info, Int64(QWord(val)));
                 tkEnumeration :
                   SetEnumProp(obj, info, ansistring(ID(val)));
+                tkSet :
+                  SetSetProp(obj, info, value2setstring(val));
                 tkFloat :
                   SetFloatProp(obj, info, Double(val));
                 tkSString, tkLString, tkAString :
@@ -1671,6 +1721,46 @@ function EvalString(const S : UTF8String) : VALUE;
           Result := f_rb_eval_string_protect(PChar(S), @res);
           if res <> 0
              then raise ERubyExecution.Create(msgErrorWhileExec);
+         end;
+       else
+         errUnknown;
+  end;
+ end;
+
+type
+  PCallMethRec = ^TCallMethRec;
+  TCallMethRec = record
+    obj    : VALUE;
+    name   : PChar;
+    argc   : Integer;
+    argv   : PVALUE;
+    result : VALUE;
+  end;
+
+function try_callmethod (v : VALUE) : VALUE; cdecl;
+ begin
+  PCallMethRec(v)^.result := f_rb_funcall2(PCallMethRec(v)^.obj, f_rb_intern(PCallMethRec(v)^.name), PCallMethRec(v)^.argc, PCallMethRec(v)^.argv);
+  Result := Qnil;
+ end;
+
+function CallMethod (obj : VALUE; method : UTF8String; const args : array of VALUE) : VALUE;
+ var
+   rec : TCallMethRec;
+   res : Integer;
+ begin
+  case Version of
+       rvNone :
+         errInactive;
+       rvRuby18, rvRuby19 :
+         begin
+          rec.obj := obj;
+          rec.name := PChar(method);
+          rec.argc := Length(args);
+          rec.argv := @args[0];
+          f_rb_protect(@try_callmethod, VALUE(@rec), @res);
+          if res <> 0
+             then raise ERubyExecution.Create(msgErrorWhileExec);
+          Result := rec.result;
          end;
        else
          errUnknown;
