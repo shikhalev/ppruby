@@ -832,7 +832,115 @@ procedure TBasicActionClassHook (cBasicAction : VALUE);
   DefineMethod(cBasicAction, 'execute', @m_tbasicaction_execute);
  end;
 
-// TODO: TCollection, TCollectionItem
+type
+  TCollectionClass = class of TCollection;
+
+function m_tcollection_initialize (instance : VALUE; itemclass : VALUE) : VALUE; cdecl;
+ var
+  obj : TCollection;
+ begin
+  obj := TCollectionClass(TClass(ValClass(instance))).Create(TCollectionItemClass(TClass(itemclass)));
+  WrapObject(instance, obj);
+  Result := instance;
+ end;
+
+function m_tcollection_owner (instance : VALUE) : VALUE; cdecl;
+ begin
+  Result := VALUE((TObject(instance) as TCollection).Owner);
+ end;
+
+function m_tcollection_add (instance : VALUE) : VALUE; cdecl;
+ begin
+  Result := VALUE((TObject(instance) as TCollection).Add);
+ end;
+
+function m_tcollection_clear (instance : VALUE) : VALUE; cdecl;
+ begin
+  (TObject(instance) as TCollection).Clear;
+  Result := instance;
+ end;
+
+function m_tcollection_delete (instance : VALUE; index : VALUE) : VALUE; cdecl;
+ begin
+  (TObject(instance) as TCollection).Delete(PtrInt(index));
+  Result := instance;
+ end;
+
+function m_tcollection_insert (instance : VALUE; index : VALUE) : VALUE; cdecl;
+ begin
+  Result := VALUE((TObject(instance) as TCollection).Insert(PtrInt(index)));
+ end;
+
+function m_tcollection_find (instance : VALUE; id : VALUE) : VALUE; cdecl;
+ begin
+  Result := VALUE((TObject(instance) as TCollection).FindItemID(PtrInt(id)));
+ end;
+
+function m_tcollection_exchange (instance : VALUE; idx1, idx2 : VALUE) : VALUE; cdecl;
+ begin
+  (TObject(instance) as TCollection).Exchange(PtrInt(idx1), PtrInt(idx2));
+  Result := instance;
+ end;
+
+function m_tcollection_count (instance : VALUE) : VALUE; cdecl;
+ begin
+  Result := VALUE((TObject(instance) as TCollection).Count);
+ end;
+
+function m_tcollection_sub (instance : VALUE; index : VALUE) : VALUE; cdecl;
+ begin
+  Result := VALUE((TObject(instance) as TCollection).Items[PtrInt(index)]);
+ end;
+
+function m_tcollection_each (instance : VALUE) : VALUE; cdecl;
+ var
+   obj : TCollection;
+   item : TCollectionItem;
+ begin
+  obj := TObject(instance) as TCollection;
+  for item in obj do
+      Yield(VALUE(item));
+  Result := instance;
+ end;
+
+function m_tcollection_items (instance : VALUE) : VALUE; cdecl;
+ var
+   obj : TCollection;
+   arr : array of VALUE;
+   idx : Integer;
+ begin
+  obj := TObject(instance) as TCollection;
+  SetLength(arr, obj.Count);
+  for idx := 0 to obj.Count - 1 do
+      arr[idx] := VALUE(obj.Items[idx]);
+  Result := MakeArray(arr);
+  SetLength(arr, 0);
+ end;
+
+function m_tcollection_itemclass (instance : VALUE) : VALUE; cdecl;
+ begin
+  Result := VALUE((TObject(instance) as TCollection).ItemClass);
+ end;
+
+procedure TCollectionClassHook (cCollection : VALUE);
+ begin
+  DefineMethod(cCollection, 'initialize', @m_tcollection_initialize);
+  DefineMethod(cCollection, 'owner', @m_tcollection_owner);
+  DefineMethod(cCollection, 'add', @m_tcollection_add);
+  DefineMethod(cCollection, 'delete', @m_tcollection_delete);
+  DefineMethod(cCollection, 'insert', @m_tcollection_insert);
+  DefineMethod(cCollection, 'clear', @m_tcollection_clear);
+  DefineMethod(cCollection, 'find', @m_tcollection_find);
+  DefineMethod(cCollection, 'exchange', @m_tcollection_exchange);
+  DefineMethod(cCollection, 'count', @m_tcollection_count);
+  DefineMethod(cCollection, '[]', @m_tcollection_sub);
+  IncludeModule(cCollection, ModEnumerable);
+  DefineMethod(cCollection, 'each', @m_tcollection_each);
+  DefineMethod(cCollection, 'items', @m_tcollection_items);
+  DefineMethod(cCollection, 'itemclass', @m_tcollection_itemclass);
+ end;
+
+// TODO: TCollectionItem
 
 initialization
  ppRuby.AddClassHook(TObject, @TObjectClassHook);
@@ -846,5 +954,6 @@ initialization
  ppRuby.AddClassHook(TMemoryStream, @TMemoryStreamClassHook);
  ppRuby.AddClassHook(TStringStream, @TStringStreamClassHook);
  ppRuby.AddClassHook(TBasicAction, @TBasicActionClassHook);
+ ppRuby.AddClassHook(TCollection, @TCollectionClassHook);
 end.
 
