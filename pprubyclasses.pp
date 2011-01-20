@@ -940,7 +940,54 @@ procedure TCollectionClassHook (cCollection : VALUE);
   DefineMethod(cCollection, 'itemclass', @m_tcollection_itemclass);
  end;
 
-// TODO: TCollectionItem
+function m_tcollectionitem_collection (instance : VALUE) : VALUE; cdecl;
+ begin
+  Result := VALUE((TObject(instance) as TCollectionItem).Collection);
+ end;
+
+function m_tcollectionitem_collection_set (instance : VALUE; collection : VALUE) : VALUE; cdecl;
+ begin
+  (TObject(instance) as TCollectionItem).Collection := TObject(collection) as TCollection;
+  Result := collection;
+ end;
+
+function m_tcollectionitem_id (instance : VALUE) : VALUE; cdecl;
+ begin
+  Result := VALUE((TObject(instance) as TCollectionItem).ID);
+ end;
+
+function m_tcollectionitem_index (instance : VALUE) : VALUE; cdecl;
+ begin
+  Result := VALUE((TObject(instance) as TCollectionItem).Index);
+ end;
+
+function m_tcollectionitem_index_set (instance : VALUE; index : VALUE) : VALUE; cdecl;
+ begin
+  (TObject(instance) as TCollectionItem).Index := PtrInt(index);
+  Result := index;
+ end;
+
+function m_tcollectionitem_displayname (instance : VALUE) : VALUE; cdecl;
+ begin
+  Result := VALUE((TObject(instance) as TCollectionItem).DisplayName);
+ end;
+
+function m_tcollectionitem_displayname_set (instance : VALUE; name : VALUE) : VALUE; cdecl;
+ begin
+  (TObject(instance) as TCollectionItem).DisplayName := ansistring(name);
+  Result := name;
+ end;
+
+procedure TCollectionItemClassHook (cCollectionItem : VALUE);
+ begin
+  DefineMethod(cCollectionItem, 'collection', @m_tcollectionitem_collection);
+  DefineMethod(cCollectionItem, 'collection=', @m_tcollectionitem_collection_set);
+  DefineMethod(cCollectionItem, 'id', @m_tcollectionitem_id);
+  DefineMethod(cCollectionItem, 'index', @m_tcollectionitem_index);
+  DefineMethod(cCollectionItem, 'index=', @m_tcollectionitem_index_set);
+  DefineMethod(cCollectionItem, 'displayname', @m_tcollectionitem_displayname);
+  DefineMethod(cCollectionItem, 'displayname=', @m_tcollectionitem_displayname_set);
+ end;
 
 initialization
  ppRuby.AddClassHook(TObject, @TObjectClassHook);
@@ -955,5 +1002,6 @@ initialization
  ppRuby.AddClassHook(TStringStream, @TStringStreamClassHook);
  ppRuby.AddClassHook(TBasicAction, @TBasicActionClassHook);
  ppRuby.AddClassHook(TCollection, @TCollectionClassHook);
+ ppRuby.AddClassHook(TCollectionItem, @TCollectionItemClassHook);
 end.
 
