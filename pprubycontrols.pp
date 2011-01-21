@@ -276,15 +276,35 @@ function m_tcontrolborderspacing_isequal (instance : VALUE; other : VALUE) : VAL
   Result := VALUE((TObject(instance) as TControlBorderSpacing).IsEqual(TObject(other) as TControlBorderSpacing));
  end;
 
+function m_tcontrolborderspacing_get_space (instance : VALUE; kind : VALUE) : VALUE; cdecl;
+ begin
+  Result := VALUE((TObject(instance) as TControlBorderSpacing).Space[TAnchorKind(kind)]);
+ end;
+
+function m_tcontrolborderspacing_set_space (instance : VALUE; kind : VALUE; space : VALUE) : VALUE; cdecl;
+ begin
+  (TObject(instance) as TControlBorderSpacing).Space[TAnchorKind(kind)] := PtrInt(space);
+  Result := space;
+ end;
+
+function m_tcontrolborderspacing_get_sidespace (instance : VALUE; kind : VALUE) : VALUE; cdecl;
+ begin
+  Result := VALUE((TObject(instance) as TControlBorderSpacing).GetSideSpace(TAnchorKind(kind)));
+ end;
+
 procedure TControlBorderSpacingClassHook (cControlBorderSpacing : VALUE);
  begin
   DefineMethod(cControlBorderSpacing, 'isequal?', @m_tcontrolborderspacing_isequal);
   DefineAlias(cControlBorderSpacing, '===', 'isequal?');
+  DefineMethod(cControlBorderSpacing, 'get_space', @m_tcontrolborderspacing_get_space);
+  DefineMethod(cControlBorderSpacing, 'set_space', @m_tcontrolborderspacing_set_space);
+  DefineMethod(cControlBorderSpacing, 'get_sidespace', @m_tcontrolborderspacing_get_sidespace);
  end;
 
 initialization
  ppRuby.AddLoadHook(@InitEnumCaches);
  ppRuby.AddClassHook(TControl, @TControlClassHook);
  ppRuby.AddClassHook(TAnchorSide, @TAnchorSideClassHook);
+ ppRuby.AddClassHook(TControlBorderSpacing, @TControlBorderSpacingClassHook);
 end.
 
