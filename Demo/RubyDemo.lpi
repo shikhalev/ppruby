@@ -67,14 +67,14 @@
         <EditorIndex Value="2"/>
         <WindowIndex Value="0"/>
         <TopLine Value="1016"/>
-        <CursorPos X="10" Y="1081"/>
+        <CursorPos X="18" Y="1021"/>
         <UsageCount Value="100"/>
         <Loaded Value="True"/>
       </Unit2>
       <Unit3>
         <Filename Value="../static/ruby18.pp"/>
         <UnitName Value="ruby18"/>
-        <EditorIndex Value="5"/>
+        <EditorIndex Value="6"/>
         <WindowIndex Value="0"/>
         <TopLine Value="550"/>
         <CursorPos X="1" Y="565"/>
@@ -84,11 +84,11 @@
       <Unit4>
         <Filename Value="../pprubyclasses.pp"/>
         <UnitName Value="ppRubyClasses"/>
-        <EditorIndex Value="4"/>
+        <EditorIndex Value="5"/>
         <WindowIndex Value="0"/>
         <TopLine Value="922"/>
         <CursorPos X="1" Y="925"/>
-        <UsageCount Value="83"/>
+        <UsageCount Value="88"/>
         <Loaded Value="True"/>
       </Unit4>
       <Unit5>
@@ -96,7 +96,7 @@
         <WindowIndex Value="0"/>
         <TopLine Value="464"/>
         <CursorPos X="3" Y="469"/>
-        <UsageCount Value="10"/>
+        <UsageCount Value="9"/>
       </Unit5>
       <Unit6>
         <Filename Value="../../../../opt/src/lazarus/lcl/forms.pp"/>
@@ -105,7 +105,7 @@
         <WindowIndex Value="0"/>
         <TopLine Value="1019"/>
         <CursorPos X="27" Y="1045"/>
-        <UsageCount Value="72"/>
+        <UsageCount Value="77"/>
         <Loaded Value="True"/>
       </Unit6>
       <Unit7>
@@ -114,7 +114,7 @@
         <WindowIndex Value="0"/>
         <TopLine Value="462"/>
         <CursorPos X="3" Y="476"/>
-        <UsageCount Value="1"/>
+        <UsageCount Value="0"/>
       </Unit7>
       <Unit8>
         <Filename Value="../../../../opt/src/lazarus/lcl/controls.pp"/>
@@ -123,7 +123,7 @@
         <WindowIndex Value="0"/>
         <TopLine Value="671"/>
         <CursorPos X="3" Y="646"/>
-        <UsageCount Value="72"/>
+        <UsageCount Value="77"/>
         <Loaded Value="True"/>
       </Unit8>
       <Unit9>
@@ -132,7 +132,7 @@
         <WindowIndex Value="0"/>
         <TopLine Value="1"/>
         <CursorPos X="53" Y="15"/>
-        <UsageCount Value="12"/>
+        <UsageCount Value="11"/>
       </Unit9>
       <Unit10>
         <Filename Value="../../../../opt/src/freepascal/rtl/objpas/types.pp"/>
@@ -140,26 +140,28 @@
         <WindowIndex Value="0"/>
         <TopLine Value="28"/>
         <CursorPos X="3" Y="85"/>
-        <UsageCount Value="2"/>
+        <UsageCount Value="1"/>
       </Unit10>
       <Unit11>
         <Filename Value="../pprubycontrols.pp"/>
         <UnitName Value="ppRubyControls"/>
-        <IsVisibleTab Value="True"/>
-        <EditorIndex Value="3"/>
+        <EditorIndex Value="4"/>
         <WindowIndex Value="0"/>
         <TopLine Value="282"/>
-        <CursorPos X="38" Y="298"/>
-        <UsageCount Value="68"/>
+        <CursorPos X="27" Y="300"/>
+        <UsageCount Value="73"/>
         <Loaded Value="True"/>
       </Unit11>
       <Unit12>
         <Filename Value="../../../../opt/src/freepascal/rtl/objpas/typinfo.pp"/>
         <UnitName Value="typinfo"/>
+        <IsVisibleTab Value="True"/>
+        <EditorIndex Value="3"/>
         <WindowIndex Value="0"/>
-        <TopLine Value="272"/>
-        <CursorPos X="11" Y="286"/>
-        <UsageCount Value="56"/>
+        <TopLine Value="116"/>
+        <CursorPos X="7" Y="118"/>
+        <UsageCount Value="61"/>
+        <Loaded Value="True"/>
       </Unit12>
       <Unit13>
         <Filename Value="../../../../opt/src/lazarus-ccr/components/geckoport/Components/GeckoBrowser.pas"/>
@@ -167,126 +169,130 @@
         <WindowIndex Value="0"/>
         <TopLine Value="2254"/>
         <CursorPos X="1" Y="2282"/>
-        <UsageCount Value="10"/>
+        <UsageCount Value="9"/>
       </Unit13>
     </Units>
-    <JumpHistory Count="29" HistoryIndex="28">
+    <JumpHistory Count="30" HistoryIndex="29">
       <Position1>
         <Filename Value="../ppruby.pp"/>
-        <Caret Line="1022" Column="25" TopLine="997"/>
+        <Caret Line="282" Column="3" TopLine="268"/>
       </Position1>
       <Position2>
         <Filename Value="../ppruby.pp"/>
-        <Caret Line="996" Column="22" TopLine="985"/>
+        <Caret Line="184" Column="35" TopLine="170"/>
       </Position2>
       <Position3>
         <Filename Value="../ppruby.pp"/>
-        <Caret Line="347" Column="43" TopLine="333"/>
+        <Caret Line="1750" Column="31" TopLine="1728"/>
       </Position3>
       <Position4>
         <Filename Value="../ppruby.pp"/>
-        <Caret Line="16" Column="1" TopLine="2"/>
+        <Caret Line="1731" Column="18" TopLine="1714"/>
       </Position4>
       <Position5>
         <Filename Value="../ppruby.pp"/>
-        <Caret Line="2098" Column="4" TopLine="2037"/>
+        <Caret Line="1012" Column="22" TopLine="999"/>
       </Position5>
       <Position6>
         <Filename Value="../ppruby.pp"/>
-        <Caret Line="984" Column="17" TopLine="983"/>
+        <Caret Line="1015" Column="53" TopLine="1001"/>
       </Position6>
       <Position7>
         <Filename Value="../ppruby.pp"/>
-        <Caret Line="990" Column="26" TopLine="965"/>
+        <Caret Line="1057" Column="47" TopLine="1031"/>
       </Position7>
       <Position8>
-        <Filename Value="../ppruby.pp"/>
-        <Caret Line="974" Column="10" TopLine="948"/>
+        <Filename Value="../pprubyclasses.pp"/>
+        <Caret Line="837" Column="3" TopLine="791"/>
       </Position8>
       <Position9>
-        <Filename Value="../ppruby.pp"/>
-        <Caret Line="421" Column="3" TopLine="407"/>
+        <Filename Value="../pprubyclasses.pp"/>
+        <Caret Line="146" Column="11" TopLine="133"/>
       </Position9>
       <Position10>
-        <Filename Value="../ppruby.pp"/>
-        <Caret Line="978" Column="1" TopLine="955"/>
+        <Filename Value="../pprubycontrols.pp"/>
+        <Caret Line="260" Column="63" TopLine="247"/>
       </Position10>
       <Position11>
-        <Filename Value="../ppruby.pp"/>
-        <Caret Line="184" Column="92" TopLine="183"/>
+        <Filename Value="../pprubycontrols.pp"/>
+        <Caret Line="288" Column="30" TopLine="262"/>
       </Position11>
       <Position12>
-        <Filename Value="../ppruby.pp"/>
-        <Caret Line="1749" Column="58" TopLine="1723"/>
+        <Filename Value="../pprubycontrols.pp"/>
+        <Caret Line="276" Column="49" TopLine="262"/>
       </Position12>
       <Position13>
-        <Filename Value="../ppruby.pp"/>
-        <Caret Line="282" Column="3" TopLine="268"/>
+        <Filename Value="../pprubycontrols.pp"/>
+        <Caret Line="297" Column="20" TopLine="264"/>
       </Position13>
       <Position14>
-        <Filename Value="../ppruby.pp"/>
-        <Caret Line="184" Column="35" TopLine="170"/>
+        <Filename Value="../pprubycontrols.pp"/>
+        <Caret Line="40" Column="48" TopLine="26"/>
       </Position14>
       <Position15>
-        <Filename Value="../ppruby.pp"/>
-        <Caret Line="1750" Column="31" TopLine="1728"/>
+        <Filename Value="../pprubycontrols.pp"/>
+        <Caret Line="223" Column="26" TopLine="209"/>
       </Position15>
       <Position16>
-        <Filename Value="../ppruby.pp"/>
-        <Caret Line="1731" Column="18" TopLine="1714"/>
+        <Filename Value="../pprubycontrols.pp"/>
+        <Caret Line="224" Column="26" TopLine="210"/>
       </Position16>
       <Position17>
-        <Filename Value="../ppruby.pp"/>
-        <Caret Line="1012" Column="22" TopLine="999"/>
+        <Filename Value="../pprubyclasses.pp"/>
+        <Caret Line="922" Column="46" TopLine="917"/>
       </Position17>
       <Position18>
         <Filename Value="../ppruby.pp"/>
-        <Caret Line="1015" Column="53" TopLine="1001"/>
+        <Caret Line="1021" Column="18" TopLine="1016"/>
       </Position18>
       <Position19>
-        <Filename Value="../ppruby.pp"/>
-        <Caret Line="1057" Column="47" TopLine="1031"/>
+        <Filename Value="../../../../opt/src/freepascal/rtl/objpas/typinfo.pp"/>
+        <Caret Line="42" Column="20" TopLine="79"/>
       </Position19>
       <Position20>
-        <Filename Value="../pprubyclasses.pp"/>
-        <Caret Line="837" Column="3" TopLine="791"/>
+        <Filename Value="../../../../opt/src/freepascal/rtl/objpas/typinfo.pp"/>
+        <Caret Line="553" Column="10" TopLine="563"/>
       </Position20>
       <Position21>
-        <Filename Value="../pprubyclasses.pp"/>
-        <Caret Line="146" Column="11" TopLine="133"/>
+        <Filename Value="../../../../opt/src/freepascal/rtl/objpas/typinfo.pp"/>
+        <Caret Line="528" Column="10" TopLine="481"/>
       </Position21>
       <Position22>
-        <Filename Value="../pprubycontrols.pp"/>
-        <Caret Line="260" Column="63" TopLine="247"/>
+        <Filename Value="../../../../opt/src/freepascal/rtl/objpas/typinfo.pp"/>
+        <Caret Line="825" Column="10" TopLine="811"/>
       </Position22>
       <Position23>
-        <Filename Value="../pprubycontrols.pp"/>
-        <Caret Line="288" Column="30" TopLine="262"/>
+        <Filename Value="../../../../opt/src/freepascal/rtl/objpas/typinfo.pp"/>
+        <Caret Line="842" Column="10" TopLine="822"/>
       </Position23>
       <Position24>
-        <Filename Value="../pprubycontrols.pp"/>
-        <Caret Line="276" Column="49" TopLine="262"/>
+        <Filename Value="../../../../opt/src/freepascal/rtl/objpas/typinfo.pp"/>
+        <Caret Line="725" Column="11" TopLine="744"/>
       </Position24>
       <Position25>
-        <Filename Value="../pprubycontrols.pp"/>
-        <Caret Line="297" Column="20" TopLine="264"/>
+        <Filename Value="../../../../opt/src/freepascal/rtl/objpas/typinfo.pp"/>
+        <Caret Line="825" Column="37" TopLine="823"/>
       </Position25>
       <Position26>
-        <Filename Value="../pprubycontrols.pp"/>
-        <Caret Line="40" Column="48" TopLine="26"/>
+        <Filename Value="../../../../opt/src/freepascal/rtl/objpas/typinfo.pp"/>
+        <Caret Line="113" Column="26" TopLine="99"/>
       </Position26>
       <Position27>
-        <Filename Value="../pprubycontrols.pp"/>
-        <Caret Line="223" Column="26" TopLine="209"/>
+        <Filename Value="../../../../opt/src/freepascal/rtl/objpas/typinfo.pp"/>
+        <Caret Line="107" Column="7" TopLine="105"/>
       </Position27>
       <Position28>
-        <Filename Value="../pprubycontrols.pp"/>
-        <Caret Line="224" Column="26" TopLine="210"/>
+        <Filename Value="../../../../opt/src/freepascal/rtl/objpas/typinfo.pp"/>
+        <Caret Line="827" Column="19" TopLine="823"/>
       </Position28>
       <Position29>
-        <Filename Value="../pprubyclasses.pp"/>
-        <Caret Line="922" Column="46" TopLine="917"/>
+        <Filename Value="../../../../opt/src/freepascal/rtl/objpas/typinfo.pp"/>
+        <Caret Line="590" Column="50" TopLine="576"/>
       </Position29>
+      <Position30>
+        <Filename Value="../../../../opt/src/freepascal/rtl/objpas/typinfo.pp"/>
+        <Caret Line="117" Column="23" TopLine="103"/>
+      </Position30>
     </JumpHistory>
   </ProjectOptions>
   <CompilerOptions>
