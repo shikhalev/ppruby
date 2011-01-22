@@ -1104,6 +1104,21 @@ function do_alloc (cls : VALUE) : VALUE; cdecl;
   Result := f_rb_data_object_alloc(cls, nil, nil, nil);
  end;
 
+function do_getprop (instance : VALUE; prop : VALUE) : VALUE; cdecl;
+ begin
+
+ end;
+
+function do_setprop (instance : VALUE; prop, v : VALUE) : VALUE; cdecl;
+ begin
+
+ end;
+
+procedure wrap_published (cls : VALUE; const name : ansistring);
+ begin
+
+ end;
+
 operator explicit (const v : TClass) : VALUE;
  var
    idx, cidx, hidx : PtrInt;
