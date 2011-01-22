@@ -64,6 +64,7 @@
       <Unit2>
         <Filename Value="../ppruby.pp"/>
         <UnitName Value="ppRuby"/>
+        <IsVisibleTab Value="True"/>
         <EditorIndex Value="2"/>
         <WindowIndex Value="0"/>
         <TopLine Value="1016"/>
@@ -155,7 +156,6 @@
       <Unit12>
         <Filename Value="../../../../opt/src/freepascal/rtl/objpas/typinfo.pp"/>
         <UnitName Value="typinfo"/>
-        <IsVisibleTab Value="True"/>
         <EditorIndex Value="3"/>
         <WindowIndex Value="0"/>
         <TopLine Value="116"/>
