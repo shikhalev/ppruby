@@ -930,7 +930,7 @@ procedure TCollectionClassHook (cCollection : VALUE);
   DefineMethod(cCollection, 'delete', @m_tcollection_delete);
   DefineMethod(cCollection, 'insert', @m_tcollection_insert);
   DefineMethod(cCollection, 'clear', @m_tcollection_clear);
-  DefineMethod(cCollection, 'find', @m_tcollection_find);
+  DefineMethod(cCollection, 'finditemid', @m_tcollection_find);
   DefineMethod(cCollection, 'exchange', @m_tcollection_exchange);
   DefineMethod(cCollection, 'count', @m_tcollection_count);
   DefineMethod(cCollection, '[]', @m_tcollection_sub);
