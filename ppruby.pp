@@ -1164,9 +1164,23 @@ function do_setprop (instance : VALUE; name : VALUE; v : VALUE) : VALUE; cdecl;
                  SetInt64Prop(obj, info, Int64(QWord(v)));
                tkEnumeration :
                  SetEnumProp(obj, info, ansistring(ID(v)));
+               tkSet :
+                 SetSetProp(obj, info, value2setstring(v));
+               tkFloat :
+                 SetFloatProp(obj, info, Double(v));
+               tkSString, tkLString, tkAString, tkChar :
+                 SetStrProp(obj, info, ansistring(v));
+               tkWString, tkUString, tkWChar, tkUChar :
+                 SetUnicodeStrProp(obj, info, UnicodeString(v));
+               tkBool :
+                 SetOrdProp(obj, info, Ord(Boolean(v)));
+               tkClass :
+                 SetObjectProp(obj, info, TObject(v));
           end;
   Result := v;
  end;
+
+// TODO! : check char props
 
 operator explicit (const v : TClass) : VALUE;
  var
