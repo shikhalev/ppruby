@@ -442,6 +442,7 @@ var
   f_rb_define_alias : procedure (klass : VALUE; name1, name2 : PChar); cdecl;
   f_rb_ary_includes : function (ary, item : VALUE) : VALUE; cdecl;
   f_rb_define_global_function : procedure (name : PChar; func : Pointer; argc : Integer); cdecl;
+//  f_rb_call_super : function (argc : integer; argv : PVALUE) : VALUE; cdecl;
 
   v_rb_cObject : VALUE;
   v_rb_cFixnum : VALUE;
@@ -501,6 +502,7 @@ procedure init_18_19;
   Pointer(f_rb_define_alias) := GetProcedureAddress(libRuby, 'rb_define_alias');
   Pointer(f_rb_ary_includes) := GetProcedureAddress(libRuby, 'rb_ary_includes');
   Pointer(f_rb_define_global_function) := GetProcedureAddress(libRuby, 'rb_define_global_function');
+//  Pointer(f_rb_call_super) := GetProcedureAddress(libRuby, 'rb_call_super');
   // init library
   f_ruby_init();
   f_ruby_init_loadpath();
@@ -1041,8 +1043,6 @@ procedure do_property_get (instance : VALUE; mid : VALUE; obj : TObject; const n
           end;
  end;
 
-// TODO: get/set sets
-
 procedure do_property_set (obj : TObject; const name : ansistring; val : VALUE; var return : VALUE);
  var
    info : PPropInfo;
@@ -1104,19 +1104,68 @@ function do_alloc (cls : VALUE) : VALUE; cdecl;
   Result := f_rb_data_object_alloc(cls, nil, nil, nil);
  end;
 
-function do_getprop (instance : VALUE; prop : VALUE) : VALUE; cdecl;
+function do_getprop (instance : VALUE; name : VALUE) : VALUE; cdecl;
+ var
+   obj : TObject;
+   prop : ansistring;
+   info : PPropInfo;
  begin
-
+  obj := TObject(instance);
+  if rb_type(name) = T_SYMBOL
+     then prop := ansistring(ID(name))
+     else prop := ansistring(name);
+  info := GetPropInfo(obj, prop);
+  if info <> nil
+     then case info^.PropType^.Kind of
+               tkInteger :
+                 Result := VALUE(GetOrdProp(obj, info));
+               tkInt64 :
+                 Result := VALUE(GetInt64Prop(obj, info));
+               tkQWord :
+                 Result := VALUE(QWord(GetInt64Prop(obj, info)));
+               tkEnumeration :
+                 Result := VALUE(ID(GetEnumProp(obj, info)));
+               tkSet :
+                 Result := setstring2valuearray(GetSetProp(obj, info, false));
+               tkFloat :
+                 Result := VALUE(GetFloatProp(obj, info));
+               tkSString, tkLString, tkAString, tkChar :
+                 Result := VALUE(GetStrProp(obj, info));
+               tkWString, tkUString, tkWChar, tkUChar :
+                 Result := VALUE(GetUnicodeStrProp(obj, info));
+               tkBool :
+                 Result := VALUE(GetOrdProp(obj, info) <> 0);
+               tkClass :
+                 Result := VALUE(GetObjectProp(obj, info));
+               else
+                 Result.data := _Qnil;
+          end
+     else Result.data := _Qnil;
  end;
 
-function do_setprop (instance : VALUE; prop, v : VALUE) : VALUE; cdecl;
+function do_setprop (instance : VALUE; name : VALUE; v : VALUE) : VALUE; cdecl;
+ var
+   obj : TObject;
+   prop : ansistring;
+   info : PPropInfo;
  begin
-
- end;
-
-procedure wrap_published (cls : VALUE; const name : ansistring);
- begin
-
+  obj := TObject(instance);
+  if rb_type(name) = T_SYMBOL
+     then prop := ansistring(ID(name))
+     else prop := ansistring(name);
+  info := GetPropInfo(obj, prop);
+  if info <> nil
+     then case info^.PropType^.Kind of
+               tkInteger :
+                 SetOrdProp(obj, info, PtrInt(v));
+               tkInt64 :
+                 SetInt64Prop(obj, info, Int64(v));
+               tkQWord :
+                 SetInt64Prop(obj, info, Int64(QWord(v)));
+               tkEnumeration :
+                 SetEnumProp(obj, info, ansistring(ID(v)));
+          end;
+  Result := v;
  end;
 
 operator explicit (const v : TClass) : VALUE;
