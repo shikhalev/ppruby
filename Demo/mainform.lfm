@@ -34,6 +34,7 @@ object frmMain: TfrmMain
         '    mo.lines << obj.to_s'
         'end'
         ''
+        ''
       )
       ParentFont = False
       ScrollBars = ssAutoBoth
@@ -58,6 +59,7 @@ object frmMain: TfrmMain
       Font.Height = -10
       Font.Name = 'Monospace'
       Lines.Strings = (
+        ''
         ''
       )
       ParentFont = False
@@ -117,8 +119,9 @@ object frmMain: TfrmMain
         '-----------------------------'
         'f = application.frmMain'
         ''
-        'f.memOut.Lines = f.memAdd.lines'
+        'f.memOut.lines = f.memAdd.lines'
         '-----------------------------'
+        ''
       )
       ParentFont = False
       ReadOnly = True
