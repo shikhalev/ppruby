@@ -1003,79 +1003,16 @@ function try_get_subcomponent(v : VALUE) : VALUE; cdecl;
   Result.data := _Qnil;
  end;
 
-procedure do_property_get (instance : VALUE; mid : VALUE; obj : TObject; const name : ansistring; var return : VALUE);
+procedure do_property_get (instance : VALUE; mid : VALUE; var return : VALUE);
  var
-   info : PPropInfo;
    rec : TPropRec;
    res : Integer;
  begin
-  info := GetPropInfo(obj, name);
-  if info <> nil
-     then case info^.PropType^.Kind of
-               tkInteger :
-                 return := VALUE(GetOrdProp(obj, info));
-               tkInt64 :
-                 return := VALUE(GetInt64Prop(obj, info));
-               tkQWord :
-                 return := VALUE(QWord(GetInt64Prop(obj, info)));
-               tkEnumeration :
-                 return := VALUE(ID(GetEnumProp(obj, info)));
-               tkSet :
-                 return := setstring2valuearray(GetSetProp(obj, info, false));
-               tkFloat :
-                 return := VALUE(GetFloatProp(obj, info));
-               tkSString, tkLString, tkAString :
-                 return := VALUE(GetStrProp(obj, info));
-               tkWString, tkUString :
-                 return := VALUE(GetUnicodeStrProp(obj, info));
-               tkBool :
-                 return := VALUE(GetOrdProp(obj, info) <> 0);
-               tkClass :
-                 return := VALUE(GetObjectProp(obj, info));
-          end;
-  if return.data = _Qundef   // try get subcomponent
-     then begin
-           rec.instance := instance;
-           rec.id := mid;
-           f_rb_protect(@try_get_subcomponent, VALUE(@rec), @res);
-           if res = 0
-              then return := rec.result;
-          end;
- end;
-
-procedure do_property_set (obj : TObject; const name : ansistring; val : VALUE; var return : VALUE);
- var
-   info : PPropInfo;
- begin
-  info := GetPropInfo(obj, name);
-  if info <> nil
-     then begin
-           return := val;
-           case info^.PropType^.Kind of
-                tkInteger :
-                  SetOrdProp(obj, info, PtrInt(val));
-                tkInt64 :
-                  SetInt64Prop(obj, info, Int64(val));
-                tkQWord :
-                  SetInt64Prop(obj, info, Int64(QWord(val)));
-                tkEnumeration :
-                  SetEnumProp(obj, info, ansistring(ID(val)));
-                tkSet :
-                  SetSetProp(obj, info, value2setstring(val));
-                tkFloat :
-                  SetFloatProp(obj, info, Double(val));
-                tkSString, tkLString, tkAString :
-                  SetStrProp(obj, info, ansistring(val));
-                tkWString, tkUString :
-                  SetUnicodeStrProp(obj, info, UnicodeString(val));
-                tkBool :
-                  SetOrdProp(obj, info, Ord(Boolean(val)));
-                tkClass :
-                  SetObjectProp(obj, info, TObject(val));
-                else
-                  return.data := _Qundef;
-           end;
-          end;
+  rec.instance := instance;
+  rec.id := mid;
+  f_rb_protect(@try_get_subcomponent, VALUE(@rec), @res);
+  if res = 0
+     then return := rec.result;
  end;
 
 function do_method_missing (argc : Integer; argv : PVALUE; instance : VALUE) : VALUE; cdecl;
@@ -1092,9 +1029,7 @@ function do_method_missing (argc : Integer; argv : PVALUE; instance : VALUE) : V
   obj.DispatchStr(msg);
   if Result.data = _Qundef
      then if argc = 1   // may be property get
-             then do_property_get(instance, argv[0], obj, msg.msg, Result)
-             else if (argc = 2) and (msg.msg[Length(msg.msg)] = '=') // may be property set
-                     then do_property_set(obj, Copy(msg.msg, 1, Length(msg.msg) - 1), argv[1], Result);
+             then do_property_get(instance, argv[0], Result);
   if Result.data = _Qundef
      then f_rb_raise(v_rb_eNoMethodError, 'No method ''%s'' for %s.', PChar(ansistring(msg.msg)), PChar(ansistring(f_rb_inspect(instance))));
  end;
@@ -1192,7 +1127,32 @@ function do_setprop (instance : VALUE; name : VALUE; v : VALUE) : VALUE; cdecl;
   Result := v;
  end;
 
-// TODO! : check char props
+const
+  tkRubied = [tkInteger, tkInt64, tkQWord, tkUChar, tkWChar, tkChar,
+              tkEnumeration, tkSet, tkSString, tkAString, tkLString,
+              tkClass, tkWString, tkUString, tkBool, tkFloat];
+
+procedure wrap_props (rb_cls : VALUE; pp_cls : TClass);
+ var
+   data : PTypeData;
+   list : PPropList;
+   idx : Integer;
+   param : VALUE;
+   name : ansistring;
+ begin
+  data := GetTypeData(pp_cls.ClassInfo);
+  GetPropList(pp_cls, list);
+  for idx := 0 to data^.PropCount - 1 do
+      if list^[idx]^.PropType^.Kind in tkRubied
+         then begin
+               name := LowerCase(list^[idx]^.Name);
+               param := VALUE('def ' + name + '; self.getprop :' + name + '; end;');
+               f_rb_funcall2(rb_cls, ID('class_eval'), 1, @param);
+               param := VALUE('def ' + name + '=(v); self.setprop(:' + name + ', v); end;');
+               f_rb_funcall2(rb_cls, ID('class_eval'), 1, @param);
+              end;
+  FreeMem(list);
+ end;
 
 operator explicit (const v : TClass) : VALUE;
  var
@@ -1215,6 +1175,9 @@ operator explicit (const v : TClass) : VALUE;
           cacheClasses[idx].val := Result;
           f_rb_define_alloc_func(Result, @do_alloc);
           DefineMethod(Result, 'method_missing', @do_method_missing);
+          DefineMethod(Result, 'getprop', @do_getprop);
+          DefineMethod(Result, 'setprop', @do_setprop);
+          wrap_props(Result, v);
           for cidx := 0 to High(hooksClasses) do
               if hooksClasses[cidx].cls = v
                  then begin
