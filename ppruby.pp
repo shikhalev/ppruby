@@ -1129,10 +1129,14 @@ function do_getprop (instance : VALUE; name : VALUE) : VALUE; cdecl;
                  Result := setstring2valuearray(GetSetProp(obj, info, false));
                tkFloat :
                  Result := VALUE(GetFloatProp(obj, info));
-               tkSString, tkLString, tkAString, tkChar :
+               tkSString, tkLString, tkAString :
                  Result := VALUE(GetStrProp(obj, info));
-               tkWString, tkUString, tkWChar, tkUChar :
+               tkWString, tkUString :
                  Result := VALUE(GetUnicodeStrProp(obj, info));
+               tkChar :
+                 Result := VALUE(ansistring(AnsiChar(GetOrdProp(obj, info))));
+               tkWChar, tkUChar :
+                 Result := VALUE(UnicodeString(UnicodeChar(GetOrdProp(obj, info))));
                tkBool :
                  Result := VALUE(GetOrdProp(obj, info) <> 0);
                tkClass :
@@ -1168,10 +1172,18 @@ function do_setprop (instance : VALUE; name : VALUE; v : VALUE) : VALUE; cdecl;
                  SetSetProp(obj, info, value2setstring(v));
                tkFloat :
                  SetFloatProp(obj, info, Double(v));
-               tkSString, tkLString, tkAString, tkChar :
+               tkSString, tkLString, tkAString :
                  SetStrProp(obj, info, ansistring(v));
-               tkWString, tkUString, tkWChar, tkUChar :
+               tkWString, tkUString :
                  SetUnicodeStrProp(obj, info, UnicodeString(v));
+               tkChar :
+                 if rb_type(v) = T_FIXNUM
+                    then SetOrdProp(obj, info, PtrInt(v))
+                    else SetOrdProp(obj, info, Ord(ansistring(v)[1]));
+               tkWChar, tkUChar :
+                 if rb_type(v) = T_FIXNUM
+                    then SetOrdProp(obj, info, PtrInt(v))
+                    else SetOrdProp(obj, info, Ord(UnicodeString(v)[1]));
                tkBool :
                  SetOrdProp(obj, info, Ord(Boolean(v)));
                tkClass :
