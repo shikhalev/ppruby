@@ -5,30 +5,24 @@
     <CompilerOptions>
       <Version Value="10"/>
       <SearchPaths>
-        <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)/"/>
+        <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/>
       </SearchPaths>
       <Other>
         <CompilerPath Value="$(CompPath)"/>
       </Other>
     </CompilerOptions>
+    <Version Minor="9" Release="2"/>
     <Type Value="DesignTime"/>
-    <RequiredPkgs Count="5">
+    <RequiredPkgs Count="2">
       <Item1>
         <PackageName Value="IDEIntf"/>
+        <MinVersion Major="1" Valid="True"/>
       </Item1>
       <Item2>
         <PackageName Value="RubyLCL"/>
+        <MaxVersion Minor="99" Release="99" Valid="True"/>
+        <MinVersion Minor="9" Release="2" Valid="True"/>
       </Item2>
-      <Item3>
-        <PackageName Value="RubyFCL"/>
-      </Item3>
-      <Item4>
-        <PackageName Value="LCL"/>
-      </Item4>
-      <Item5>
-        <PackageName Value="FCL"/>
-        <MinVersion Major="1" Valid="True"/>
-      </Item5>
     </RequiredPkgs>
     <UsageOptions>
       <UnitPath Value="$(PkgOutDir)"/>
@@ -36,6 +30,5 @@
     <PublishOptions>
       <Version Value="2"/>
     </PublishOptions>
-    <Provides Count="1"/>
   </Package>
 </CONFIG>
