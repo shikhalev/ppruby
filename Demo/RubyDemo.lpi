@@ -44,7 +44,7 @@
         <PackageName Value="LCL"/>
       </Item4>
     </RequiredPackages>
-    <Units Count="33">
+    <Units Count="41">
       <Unit0>
         <Filename Value="RubyDemo.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -60,18 +60,22 @@
         <ComponentName Value="frmMain"/>
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="MainForm"/>
+        <IsVisibleTab Value="True"/>
+        <EditorIndex Value="1"/>
         <WindowIndex Value="0"/>
         <TopLine Value="1"/>
         <CursorPos X="22" Y="15"/>
         <UsageCount Value="200"/>
+        <Loaded Value="True"/>
+        <LoadedDesigner Value="True"/>
       </Unit1>
       <Unit2>
         <Filename Value="../ppruby.pp"/>
         <UnitName Value="ppRuby"/>
         <EditorIndex Value="0"/>
         <WindowIndex Value="0"/>
-        <TopLine Value="1109"/>
-        <CursorPos X="1" Y="1129"/>
+        <TopLine Value="1106"/>
+        <CursorPos X="9" Y="1100"/>
         <UsageCount Value="100"/>
         <Loaded Value="True"/>
       </Unit2>
@@ -81,12 +85,12 @@
         <WindowIndex Value="0"/>
         <TopLine Value="598"/>
         <CursorPos X="1" Y="619"/>
-        <UsageCount Value="108"/>
+        <UsageCount Value="104"/>
       </Unit3>
       <Unit4>
         <Filename Value="../pprubyclasses.pp"/>
         <UnitName Value="ppRubyClasses"/>
-        <EditorIndex Value="1"/>
+        <EditorIndex Value="2"/>
         <WindowIndex Value="0"/>
         <TopLine Value="214"/>
         <CursorPos X="33" Y="977"/>
@@ -98,7 +102,7 @@
         <WindowIndex Value="0"/>
         <TopLine Value="428"/>
         <CursorPos X="3" Y="430"/>
-        <UsageCount Value="5"/>
+        <UsageCount Value="1"/>
       </Unit5>
       <Unit6>
         <Filename Value="../../../../opt/src/lazarus/lcl/forms.pp"/>
@@ -106,7 +110,7 @@
         <WindowIndex Value="0"/>
         <TopLine Value="358"/>
         <CursorPos X="26" Y="372"/>
-        <UsageCount Value="94"/>
+        <UsageCount Value="90"/>
       </Unit6>
       <Unit7>
         <Filename Value="../../../../opt/src/lazarus/lcl/graphics.pp"/>
@@ -114,7 +118,7 @@
         <WindowIndex Value="0"/>
         <TopLine Value="2027"/>
         <CursorPos X="33" Y="2041"/>
-        <UsageCount Value="11"/>
+        <UsageCount Value="7"/>
       </Unit7>
       <Unit8>
         <Filename Value="../../../../opt/src/lazarus/lcl/controls.pp"/>
@@ -122,26 +126,25 @@
         <WindowIndex Value="0"/>
         <TopLine Value="1625"/>
         <CursorPos X="3" Y="1639"/>
-        <UsageCount Value="107"/>
+        <UsageCount Value="103"/>
       </Unit8>
       <Unit9>
         <Filename Value="../pprubyforms.pp"/>
         <UnitName Value="ppRubyForms"/>
-        <IsVisibleTab Value="True"/>
-        <EditorIndex Value="3"/>
+        <EditorIndex Value="4"/>
         <WindowIndex Value="0"/>
-        <TopLine Value="2"/>
+        <TopLine Value="1"/>
         <CursorPos X="1" Y="10"/>
-        <UsageCount Value="35"/>
+        <UsageCount Value="59"/>
         <Loaded Value="True"/>
       </Unit9>
       <Unit10>
         <Filename Value="../pprubycontrols.pp"/>
         <UnitName Value="ppRubyControls"/>
-        <EditorIndex Value="2"/>
+        <EditorIndex Value="3"/>
         <WindowIndex Value="0"/>
         <TopLine Value="15"/>
-        <CursorPos X="75" Y="37"/>
+        <CursorPos X="20" Y="38"/>
         <UsageCount Value="104"/>
         <Loaded Value="True"/>
       </Unit10>
@@ -151,7 +154,7 @@
         <WindowIndex Value="0"/>
         <TopLine Value="27"/>
         <CursorPos X="48" Y="41"/>
-        <UsageCount Value="100"/>
+        <UsageCount Value="96"/>
       </Unit11>
       <Unit12>
         <Filename Value="../../../../opt/src/lazarus-ccr/components/geckoport/Components/GeckoBrowser.pas"/>
@@ -159,21 +162,21 @@
         <WindowIndex Value="0"/>
         <TopLine Value="2254"/>
         <CursorPos X="1" Y="2282"/>
-        <UsageCount Value="6"/>
+        <UsageCount Value="2"/>
       </Unit12>
       <Unit13>
         <Filename Value="../../../../opt/src/freepascal/rtl/unix/sysunixh.inc"/>
         <WindowIndex Value="0"/>
         <TopLine Value="1"/>
         <CursorPos X="2" Y="28"/>
-        <UsageCount Value="9"/>
+        <UsageCount Value="5"/>
       </Unit13>
       <Unit14>
         <Filename Value="../../../../opt/src/lazarus/lcl/include/control.inc"/>
         <WindowIndex Value="0"/>
         <TopLine Value="3757"/>
         <CursorPos X="8" Y="3762"/>
-        <UsageCount Value="11"/>
+        <UsageCount Value="7"/>
       </Unit14>
       <Unit15>
         <Filename Value="../../../../opt/src/lazarus/lcl/lcltype.pp"/>
@@ -181,7 +184,7 @@
         <WindowIndex Value="0"/>
         <TopLine Value="69"/>
         <CursorPos X="3" Y="83"/>
-        <UsageCount Value="10"/>
+        <UsageCount Value="6"/>
       </Unit15>
       <Unit16>
         <Filename Value="../../../../opt/src/freepascal/packages/fcl-image/src/fpcanvas.pp"/>
@@ -189,22 +192,22 @@
         <WindowIndex Value="0"/>
         <TopLine Value="77"/>
         <CursorPos X="3" Y="82"/>
-        <UsageCount Value="10"/>
+        <UsageCount Value="6"/>
       </Unit16>
       <Unit17>
         <Filename Value="../../../../opt/src/lazarus-ccr/components/rx/rxversinfo.pas"/>
         <UnitName Value="RxVersInfo"/>
         <WindowIndex Value="0"/>
-        <TopLine Value="90"/>
+        <TopLine Value="86"/>
         <CursorPos X="27" Y="104"/>
-        <UsageCount Value="6"/>
+        <UsageCount Value="10"/>
       </Unit17>
       <Unit18>
         <Filename Value="../../../../opt/src/lazarus/lcl/include/customform.inc"/>
         <WindowIndex Value="0"/>
         <TopLine Value="1107"/>
         <CursorPos X="7" Y="1121"/>
-        <UsageCount Value="6"/>
+        <UsageCount Value="2"/>
       </Unit18>
       <Unit19>
         <Filename Value="../../../../opt/src/lazarus/components/todolist/todolist.pas"/>
@@ -212,7 +215,7 @@
         <WindowIndex Value="0"/>
         <TopLine Value="34"/>
         <CursorPos X="1" Y="1"/>
-        <UsageCount Value="6"/>
+        <UsageCount Value="2"/>
       </Unit19>
       <Unit20>
         <Filename Value="../../../../opt/src/lazarus/ideintf/menuintf.pas"/>
@@ -220,7 +223,7 @@
         <WindowIndex Value="0"/>
         <TopLine Value="488"/>
         <CursorPos X="10" Y="517"/>
-        <UsageCount Value="18"/>
+        <UsageCount Value="14"/>
       </Unit20>
       <Unit21>
         <Filename Value="../../../../opt/src/lazarus/ideintf/idecommands.pas"/>
@@ -228,14 +231,14 @@
         <WindowIndex Value="0"/>
         <TopLine Value="676"/>
         <CursorPos X="10" Y="690"/>
-        <UsageCount Value="18"/>
+        <UsageCount Value="14"/>
       </Unit21>
       <Unit22>
         <Filename Value="../../../../opt/src/lazarus/ideintf/macrointf.pas"/>
         <UnitName Value="MacroIntf"/>
         <TopLine Value="34"/>
         <CursorPos X="1" Y="1"/>
-        <UsageCount Value="18"/>
+        <UsageCount Value="14"/>
       </Unit22>
       <Unit23>
         <Filename Value="../../../../opt/src/lazarus/ideintf/propedits.pp"/>
@@ -243,7 +246,7 @@
         <WindowIndex Value="0"/>
         <TopLine Value="645"/>
         <CursorPos X="24" Y="657"/>
-        <UsageCount Value="18"/>
+        <UsageCount Value="14"/>
       </Unit23>
       <Unit24>
         <Filename Value="../../../../opt/src/lazarus/ideintf/ideoptionsintf.pas"/>
@@ -251,7 +254,7 @@
         <WindowIndex Value="0"/>
         <TopLine Value="145"/>
         <CursorPos X="1" Y="1"/>
-        <UsageCount Value="17"/>
+        <UsageCount Value="13"/>
       </Unit24>
       <Unit25>
         <Filename Value="../../../../opt/src/lazarus/components/jcf2/IdePlugin/lazarus/jcfideregister.pas"/>
@@ -259,7 +262,7 @@
         <WindowIndex Value="0"/>
         <TopLine Value="67"/>
         <CursorPos X="10" Y="81"/>
-        <UsageCount Value="9"/>
+        <UsageCount Value="5"/>
       </Unit25>
       <Unit26>
         <Filename Value="../../../../opt/src/lazarus/components/jcf2/Settings/JcfRegistrySettings.pas"/>
@@ -267,14 +270,14 @@
         <WindowIndex Value="0"/>
         <TopLine Value="614"/>
         <CursorPos X="3" Y="188"/>
-        <UsageCount Value="9"/>
+        <UsageCount Value="5"/>
       </Unit26>
       <Unit27>
         <Filename Value="../../../../opt/src/lazarus/components/jcf2/IdePlugin/lazarus/jcfsettings.lpi"/>
         <WindowIndex Value="0"/>
         <TopLine Value="1"/>
         <CursorPos X="1" Y="1"/>
-        <UsageCount Value="9"/>
+        <UsageCount Value="5"/>
         <DefaultSyntaxHighlighter Value="XML"/>
       </Unit27>
       <Unit28>
@@ -283,14 +286,14 @@
         <WindowIndex Value="0"/>
         <TopLine Value="681"/>
         <CursorPos X="11" Y="696"/>
-        <UsageCount Value="9"/>
+        <UsageCount Value="5"/>
       </Unit28>
       <Unit29>
         <Filename Value="../../../../opt/src/lazarus/components/jcf2/Settings/SetTransform.pas"/>
         <UnitName Value="SetTransform"/>
         <TopLine Value="23"/>
         <CursorPos X="14" Y="36"/>
-        <UsageCount Value="9"/>
+        <UsageCount Value="5"/>
       </Unit29>
       <Unit30>
         <Filename Value="../../../../opt/src/lazarus/components/jcf2/Settings/SettingsTypes.pas"/>
@@ -298,7 +301,7 @@
         <WindowIndex Value="0"/>
         <TopLine Value="28"/>
         <CursorPos X="1" Y="1"/>
-        <UsageCount Value="9"/>
+        <UsageCount Value="5"/>
       </Unit30>
       <Unit31>
         <Filename Value="../../../../opt/src/lazarus/components/jcf2/Settings/JcfSetBase.pas"/>
@@ -306,7 +309,7 @@
         <WindowIndex Value="0"/>
         <TopLine Value="22"/>
         <CursorPos X="10" Y="39"/>
-        <UsageCount Value="9"/>
+        <UsageCount Value="5"/>
       </Unit31>
       <Unit32>
         <Filename Value="../../../../opt/src/lazarus/components/jcf2/Settings/Streams/SettingsStream.pas"/>
@@ -314,10 +317,84 @@
         <WindowIndex Value="0"/>
         <TopLine Value="37"/>
         <CursorPos X="1" Y="1"/>
-        <UsageCount Value="9"/>
+        <UsageCount Value="5"/>
       </Unit32>
+      <Unit33>
+        <Filename Value="../rubyfcl.pas"/>
+        <UnitName Value="RubyFCL"/>
+        <EditorIndex Value="5"/>
+        <WindowIndex Value="0"/>
+        <TopLine Value="1"/>
+        <CursorPos X="33" Y="10"/>
+        <UsageCount Value="34"/>
+        <Loaded Value="True"/>
+      </Unit33>
+      <Unit34>
+        <Filename Value="../../../../opt/src/lazarus/packager/registration/lazaruspackageintf.pas"/>
+        <UnitName Value="LazarusPackageIntf"/>
+        <WindowIndex Value="0"/>
+        <TopLine Value="1"/>
+        <CursorPos X="1" Y="1"/>
+        <UsageCount Value="25"/>
+      </Unit34>
+      <Unit35>
+        <Filename Value="../../../../opt/src/fbdataset/fb_define.inc"/>
+        <WindowIndex Value="0"/>
+        <TopLine Value="10"/>
+        <CursorPos X="2" Y="25"/>
+        <UsageCount Value="16"/>
+      </Unit35>
+      <Unit36>
+        <Filename Value="../../../../opt/src/lazarus/components/FBDataSet/fbcustomdatasetsqleditorl.pas"/>
+        <UnitName Value="fbcustomdatasetsqleditorl"/>
+        <WindowIndex Value="0"/>
+        <TopLine Value="549"/>
+        <CursorPos X="81" Y="564"/>
+        <UsageCount Value="10"/>
+      </Unit36>
+      <Unit37>
+        <Filename Value="../../../../opt/src/uib/source/uiblib.pas"/>
+        <UnitName Value="uiblib"/>
+        <WindowIndex Value="0"/>
+        <TopLine Value="828"/>
+        <CursorPos X="14" Y="843"/>
+        <UsageCount Value="10"/>
+      </Unit37>
+      <Unit38>
+        <Filename Value="../../../../opt/src/lazarus/components/FBDataSet/jvuibtransactionedit.pas"/>
+        <UnitName Value="jvuibtransactionedit"/>
+        <WindowIndex Value="0"/>
+        <TopLine Value="53"/>
+        <CursorPos X="27" Y="68"/>
+        <UsageCount Value="10"/>
+      </Unit38>
+      <Unit39>
+        <Filename Value="../../../../opt/src/wsrpc/curl_h.pas"/>
+        <UnitName Value="curl_h"/>
+        <WindowIndex Value="0"/>
+        <TopLine Value="1"/>
+        <CursorPos X="1" Y="1"/>
+        <UsageCount Value="10"/>
+      </Unit39>
+      <Unit40>
+        <Filename Value="../../../../opt/src/fpc_tds/libtds.pas"/>
+        <UnitName Value="libTDS"/>
+        <WindowIndex Value="0"/>
+        <TopLine Value="1"/>
+        <CursorPos X="1" Y="1"/>
+        <UsageCount Value="10"/>
+      </Unit40>
     </Units>
-    <JumpHistory Count="0" HistoryIndex="-1"/>
+    <JumpHistory Count="2" HistoryIndex="1">
+      <Position1>
+        <Filename Value="../rubyfcl.pas"/>
+        <Caret Line="1" Column="1" TopLine="1"/>
+      </Position1>
+      <Position2>
+        <Filename Value="../rubyfcl.pas"/>
+        <Caret Line="10" Column="33" TopLine="1"/>
+      </Position2>
+    </JumpHistory>
   </ProjectOptions>
   <CompilerOptions>
     <Version Value="10"/>

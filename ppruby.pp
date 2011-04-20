@@ -135,46 +135,25 @@ procedure DefineSingletonMethod (instance : VALUE; const name : ansistring; meth
 procedure DefineSingletonMethod (instance : VALUE; const name : ansistring; method : TRubyMethod17);
 procedure DefineSingletonMethod (instance : VALUE; const name : ansistring; method : TRubyMethodArr);
 
-type
-  TRubyFunction0   = function () : VALUE; cdecl;
-  TRubyFunction1   = function (a : VALUE) : VALUE; cdecl;
-  TRubyFunction2   = function (a, b : VALUE) : VALUE; cdecl;
-  TRubyFunction3   = function (a, b, c : VALUE) : VALUE; cdecl;
-  TRubyFunction4   = function (a, b, c, d : VALUE) : VALUE; cdecl;
-  TRubyFunction5   = function (a, b, c, d, e : VALUE) : VALUE; cdecl;
-  TRubyFunction6   = function (a, b, c, d, e, f : VALUE) : VALUE; cdecl;
-  TRubyFunction7   = function (a, b, c, d, e, f, g : VALUE) : VALUE; cdecl;
-  TRubyFunction8   = function (a, b, c, d, e, f, g, h : VALUE) : VALUE; cdecl;
-  TRubyFunction9   = function (a, b, c, d, e, f, g, h, i : VALUE) : VALUE; cdecl;
-  TRubyFunction10  = function (a, b, c, d, e, f, g, h, i, j : VALUE) : VALUE; cdecl;
-  TRubyFunction11  = function (a, b, c, d, e, f, g, h, i, j, k : VALUE) : VALUE; cdecl;
-  TRubyFunction12  = function (a, b, c, d, e, f, g, h, i, j, k, l : VALUE) : VALUE; cdecl;
-  TRubyFunction13  = function (a, b, c, d, e, f, g, h, i, j, k, l, m : VALUE) : VALUE; cdecl;
-  TRubyFunction14  = function (a, b, c, d, e, f, g, h, i, j, k, l, m, n : VALUE) : VALUE; cdecl;
-  TRubyFunction15  = function (a, b, c, d, e, f, g, h, i, j, k, l, m, n, o : VALUE) : VALUE; cdecl;
-  TRubyFunction16  = function (a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p : VALUE) : VALUE; cdecl;
-  TRubyFunction17  = function (a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q : VALUE) : VALUE; cdecl;
-  TRubyFunctionArr = function (argc : LongInt; argv : PVALUE) : VALUE; cdecl;
-
-procedure DefineFunction (const name : ansistring; func : TRubyFunction0);
-procedure DefineFunction (const name : ansistring; func : TRubyFunction1);
-procedure DefineFunction (const name : ansistring; func : TRubyFunction2);
-procedure DefineFunction (const name : ansistring; func : TRubyFunction3);
-procedure DefineFunction (const name : ansistring; func : TRubyFunction4);
-procedure DefineFunction (const name : ansistring; func : TRubyFunction5);
-procedure DefineFunction (const name : ansistring; func : TRubyFunction6);
-procedure DefineFunction (const name : ansistring; func : TRubyFunction7);
-procedure DefineFunction (const name : ansistring; func : TRubyFunction8);
-procedure DefineFunction (const name : ansistring; func : TRubyFunction9);
-procedure DefineFunction (const name : ansistring; func : TRubyFunction10);
-procedure DefineFunction (const name : ansistring; func : TRubyFunction11);
-procedure DefineFunction (const name : ansistring; func : TRubyFunction12);
-procedure DefineFunction (const name : ansistring; func : TRubyFunction13);
-procedure DefineFunction (const name : ansistring; func : TRubyFunction14);
-procedure DefineFunction (const name : ansistring; func : TRubyFunction15);
-procedure DefineFunction (const name : ansistring; func : TRubyFunction16);
-procedure DefineFunction (const name : ansistring; func : TRubyFunction17);
-procedure DefineFunction (const name : ansistring; func : TRubyFunctionArr);
+procedure DefineFunction (const name : ansistring; func : TRubyMethod0);
+procedure DefineFunction (const name : ansistring; func : TRubyMethod1);
+procedure DefineFunction (const name : ansistring; func : TRubyMethod2);
+procedure DefineFunction (const name : ansistring; func : TRubyMethod3);
+procedure DefineFunction (const name : ansistring; func : TRubyMethod4);
+procedure DefineFunction (const name : ansistring; func : TRubyMethod5);
+procedure DefineFunction (const name : ansistring; func : TRubyMethod6);
+procedure DefineFunction (const name : ansistring; func : TRubyMethod7);
+procedure DefineFunction (const name : ansistring; func : TRubyMethod8);
+procedure DefineFunction (const name : ansistring; func : TRubyMethod9);
+procedure DefineFunction (const name : ansistring; func : TRubyMethod10);
+procedure DefineFunction (const name : ansistring; func : TRubyMethod11);
+procedure DefineFunction (const name : ansistring; func : TRubyMethod12);
+procedure DefineFunction (const name : ansistring; func : TRubyMethod13);
+procedure DefineFunction (const name : ansistring; func : TRubyMethod14);
+procedure DefineFunction (const name : ansistring; func : TRubyMethod15);
+procedure DefineFunction (const name : ansistring; func : TRubyMethod16);
+procedure DefineFunction (const name : ansistring; func : TRubyMethod17);
+procedure DefineFunction (const name : ansistring; func : TRubyMethodArr);
 
 procedure DefineAlias (module : VALUE; const newname, oldname : ansistring);
 
@@ -1643,97 +1622,97 @@ procedure protected_define_function (name : PChar; func : Pointer; argc : Intege
   end;
  end;
 
-procedure DefineFunction(const name : ansistring; func : TRubyFunction0);
+procedure DefineFunction(const name : ansistring; func : TRubyMethod0);
  begin
   protected_define_function(PChar(name), Pointer(func), 0);
  end;
 
-procedure DefineFunction(const name : ansistring; func : TRubyFunction1);
+procedure DefineFunction(const name : ansistring; func : TRubyMethod1);
  begin
   protected_define_function(PChar(name), Pointer(func), 1);
  end;
 
-procedure DefineFunction(const name : ansistring; func : TRubyFunction2);
+procedure DefineFunction(const name : ansistring; func : TRubyMethod2);
  begin
   protected_define_function(PChar(name), Pointer(func), 2);
  end;
 
-procedure DefineFunction(const name : ansistring; func : TRubyFunction3);
+procedure DefineFunction(const name : ansistring; func : TRubyMethod3);
  begin
   protected_define_function(PChar(name), Pointer(func), 3);
  end;
 
-procedure DefineFunction(const name : ansistring; func : TRubyFunction4);
+procedure DefineFunction(const name : ansistring; func : TRubyMethod4);
  begin
   protected_define_function(PChar(name), Pointer(func), 4);
  end;
 
-procedure DefineFunction(const name : ansistring; func : TRubyFunction5);
+procedure DefineFunction(const name : ansistring; func : TRubyMethod5);
  begin
   protected_define_function(PChar(name), Pointer(func), 5);
  end;
 
-procedure DefineFunction(const name : ansistring; func : TRubyFunction6);
+procedure DefineFunction(const name : ansistring; func : TRubyMethod6);
  begin
   protected_define_function(PChar(name), Pointer(func), 6);
  end;
 
-procedure DefineFunction(const name : ansistring; func : TRubyFunction7);
+procedure DefineFunction(const name : ansistring; func : TRubyMethod7);
  begin
   protected_define_function(PChar(name), Pointer(func), 7);
  end;
 
-procedure DefineFunction(const name : ansistring; func : TRubyFunction8);
+procedure DefineFunction(const name : ansistring; func : TRubyMethod8);
  begin
   protected_define_function(PChar(name), Pointer(func), 8);
  end;
 
-procedure DefineFunction(const name : ansistring; func : TRubyFunction9);
+procedure DefineFunction(const name : ansistring; func : TRubyMethod9);
  begin
   protected_define_function(PChar(name), Pointer(func), 9);
  end;
 
-procedure DefineFunction(const name : ansistring; func : TRubyFunction10);
+procedure DefineFunction(const name : ansistring; func : TRubyMethod10);
  begin
   protected_define_function(PChar(name), Pointer(func), 10);
  end;
 
-procedure DefineFunction(const name : ansistring; func : TRubyFunction11);
+procedure DefineFunction(const name : ansistring; func : TRubyMethod11);
  begin
   protected_define_function(PChar(name), Pointer(func), 11);
  end;
 
-procedure DefineFunction(const name : ansistring; func : TRubyFunction12);
+procedure DefineFunction(const name : ansistring; func : TRubyMethod12);
  begin
   protected_define_function(PChar(name), Pointer(func), 12);
  end;
 
-procedure DefineFunction(const name : ansistring; func : TRubyFunction13);
+procedure DefineFunction(const name : ansistring; func : TRubyMethod13);
  begin
   protected_define_function(PChar(name), Pointer(func), 13);
  end;
 
-procedure DefineFunction(const name : ansistring; func : TRubyFunction14);
+procedure DefineFunction(const name : ansistring; func : TRubyMethod14);
  begin
   protected_define_function(PChar(name), Pointer(func), 14);
  end;
 
-procedure DefineFunction(const name : ansistring; func : TRubyFunction15);
+procedure DefineFunction(const name : ansistring; func : TRubyMethod15);
  begin
   protected_define_function(PChar(name), Pointer(func), 15);
  end;
 
-procedure DefineFunction(const name : ansistring; func : TRubyFunction16);
+procedure DefineFunction(const name : ansistring; func : TRubyMethod16);
  begin
   protected_define_function(PChar(name), Pointer(func), 16);
  end;
 
-procedure DefineFunction(const name : ansistring; func : TRubyFunction17);
+procedure DefineFunction(const name : ansistring; func : TRubyMethod17);
  begin
   protected_define_function(PChar(name), Pointer(func), 17);
  end;
 
-procedure DefineFunction(const name : ansistring; func : TRubyFunctionArr);
+procedure DefineFunction(const name : ansistring; func : TRubyMethodArr);
  begin
   protected_define_function(PChar(name), Pointer(func), -1);
  end;

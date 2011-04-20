@@ -11,12 +11,12 @@ implementation
 
 // TODO: TCustomForm, TApplication... and all others
 
-function gf_application : VALUE; cdecl;
+function gf_application (main : VALUE) : VALUE; cdecl;
  begin
   Result := VALUE(Application);
  end;
 
-function gf_screen : VALUE; cdecl;
+function gf_screen (main : VALUE) : VALUE; cdecl;
  begin
   Result := VALUE(Screen);
  end;
