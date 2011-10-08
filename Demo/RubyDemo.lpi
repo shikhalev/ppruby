@@ -61,10 +61,10 @@
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="MainForm"/>
         <IsVisibleTab Value="True"/>
-        <EditorIndex Value="1"/>
+        <EditorIndex Value="5"/>
         <WindowIndex Value="0"/>
         <TopLine Value="1"/>
-        <CursorPos X="22" Y="15"/>
+        <CursorPos X="1" Y="5"/>
         <UsageCount Value="200"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
@@ -90,7 +90,7 @@
       <Unit4>
         <Filename Value="../pprubyclasses.pp"/>
         <UnitName Value="ppRubyClasses"/>
-        <EditorIndex Value="2"/>
+        <EditorIndex Value="1"/>
         <WindowIndex Value="0"/>
         <TopLine Value="214"/>
         <CursorPos X="33" Y="977"/>
@@ -131,7 +131,7 @@
       <Unit9>
         <Filename Value="../pprubyforms.pp"/>
         <UnitName Value="ppRubyForms"/>
-        <EditorIndex Value="4"/>
+        <EditorIndex Value="3"/>
         <WindowIndex Value="0"/>
         <TopLine Value="1"/>
         <CursorPos X="1" Y="10"/>
@@ -141,7 +141,7 @@
       <Unit10>
         <Filename Value="../pprubycontrols.pp"/>
         <UnitName Value="ppRubyControls"/>
-        <EditorIndex Value="3"/>
+        <EditorIndex Value="2"/>
         <WindowIndex Value="0"/>
         <TopLine Value="15"/>
         <CursorPos X="20" Y="38"/>
@@ -322,7 +322,7 @@
       <Unit33>
         <Filename Value="../rubyfcl.pas"/>
         <UnitName Value="RubyFCL"/>
-        <EditorIndex Value="5"/>
+        <EditorIndex Value="4"/>
         <WindowIndex Value="0"/>
         <TopLine Value="1"/>
         <CursorPos X="33" Y="10"/>
@@ -385,7 +385,7 @@
         <UsageCount Value="10"/>
       </Unit40>
     </Units>
-    <JumpHistory Count="2" HistoryIndex="1">
+    <JumpHistory Count="3" HistoryIndex="2">
       <Position1>
         <Filename Value="../rubyfcl.pas"/>
         <Caret Line="1" Column="1" TopLine="1"/>
@@ -394,6 +394,10 @@
         <Filename Value="../rubyfcl.pas"/>
         <Caret Line="10" Column="33" TopLine="1"/>
       </Position2>
+      <Position3>
+        <Filename Value="mainform.pp"/>
+        <Caret Line="32" Column="51" TopLine="1"/>
+      </Position3>
     </JumpHistory>
   </ProjectOptions>
   <CompilerOptions>
