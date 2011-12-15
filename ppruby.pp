@@ -4,6 +4,10 @@
 
 unit ppRuby;
 
+{$ifdef darwin}
+  {$linkframework Ruby}
+{$endif}   
+
 (*
    Package : RubyFCL
    File : ppruby.pp
@@ -349,8 +353,13 @@ procedure insert_object(obj : TObject; val : VALUE; idx : PtrInt);
 
 const
 {$IFDEF UNIX}
-  LIB18 = 'libruby18.so';
-  LIB19 = 'libruby19.so';
+  {$IFDEF DARWIN}
+    LIB18 = '/System/Library/Frameworks/Ruby.framework/Versions/1.8/Ruby';
+    LIB19 = '/System/Library/Frameworks/Ruby.framework/Versions/1.9/Ruby';
+  {$ELSE}
+    LIB18 = 'libruby18.so';
+    LIB19 = 'libruby19.so';
+  {$ENDIF}
 {$ELSE !UNIX}
  {$IFDEF WINDOWS}
   LIB18 = 'msvcrt-ruby18.dll';
@@ -359,7 +368,7 @@ const
   LIB18 = 'ruby18'; // ... I don't know...
   LIB19 = 'ruby19';
  {$ENDIF WINDOWS}
-{$ENDIF UNIX}
+{$ENDIF UNIX}   
 
 procedure init_18_19; forward;
 procedure done_18_19; forward;
