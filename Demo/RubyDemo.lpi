@@ -44,26 +44,28 @@
         <PackageName Value="LCL"/>
       </Item4>
     </RequiredPackages>
-    <Units Count="41">
+    <Units Count="43">
       <Unit0>
         <Filename Value="RubyDemo.lpr"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="RubyDemo"/>
+        <EditorIndex Value="6"/>
         <WindowIndex Value="0"/>
         <TopLine Value="1"/>
-        <CursorPos X="1" Y="1"/>
+        <CursorPos X="38" Y="10"/>
         <UsageCount Value="200"/>
+        <Loaded Value="True"/>
       </Unit0>
       <Unit1>
         <Filename Value="mainform.pp"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="frmMain"/>
+        <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="MainForm"/>
-        <IsVisibleTab Value="True"/>
         <EditorIndex Value="5"/>
         <WindowIndex Value="0"/>
-        <TopLine Value="1"/>
+        <TopLine Value="9"/>
         <CursorPos X="1" Y="5"/>
         <UsageCount Value="200"/>
         <Loaded Value="True"/>
@@ -72,10 +74,11 @@
       <Unit2>
         <Filename Value="../ppruby.pp"/>
         <UnitName Value="ppRuby"/>
+        <IsVisibleTab Value="True"/>
         <EditorIndex Value="0"/>
         <WindowIndex Value="0"/>
-        <TopLine Value="1106"/>
-        <CursorPos X="9" Y="1100"/>
+        <TopLine Value="578"/>
+        <CursorPos X="3" Y="614"/>
         <UsageCount Value="100"/>
         <Loaded Value="True"/>
       </Unit2>
@@ -92,7 +95,7 @@
         <UnitName Value="ppRubyClasses"/>
         <EditorIndex Value="1"/>
         <WindowIndex Value="0"/>
-        <TopLine Value="214"/>
+        <TopLine Value="845"/>
         <CursorPos X="33" Y="977"/>
         <UsageCount Value="119"/>
         <Loaded Value="True"/>
@@ -135,7 +138,7 @@
         <WindowIndex Value="0"/>
         <TopLine Value="1"/>
         <CursorPos X="1" Y="10"/>
-        <UsageCount Value="59"/>
+        <UsageCount Value="60"/>
         <Loaded Value="True"/>
       </Unit9>
       <Unit10>
@@ -326,7 +329,7 @@
         <WindowIndex Value="0"/>
         <TopLine Value="1"/>
         <CursorPos X="33" Y="10"/>
-        <UsageCount Value="34"/>
+        <UsageCount Value="35"/>
         <Loaded Value="True"/>
       </Unit33>
       <Unit34>
@@ -384,8 +387,25 @@
         <CursorPos X="1" Y="1"/>
         <UsageCount Value="10"/>
       </Unit40>
+      <Unit41>
+        <Filename Value="../rubyide.pas"/>
+        <UnitName Value="RubyIDE"/>
+        <EditorIndex Value="7"/>
+        <WindowIndex Value="0"/>
+        <TopLine Value="1"/>
+        <CursorPos X="1" Y="1"/>
+        <UsageCount Value="11"/>
+        <Loaded Value="True"/>
+      </Unit41>
+      <Unit42>
+        <Filename Value="../../../../opt/src/freepascal/rtl/objpas/sysutils/sysutilh.inc"/>
+        <WindowIndex Value="0"/>
+        <TopLine Value="88"/>
+        <CursorPos X="19" Y="109"/>
+        <UsageCount Value="10"/>
+      </Unit42>
     </Units>
-    <JumpHistory Count="3" HistoryIndex="2">
+    <JumpHistory Count="16" HistoryIndex="15">
       <Position1>
         <Filename Value="../rubyfcl.pas"/>
         <Caret Line="1" Column="1" TopLine="1"/>
@@ -398,10 +418,62 @@
         <Filename Value="mainform.pp"/>
         <Caret Line="32" Column="51" TopLine="1"/>
       </Position3>
+      <Position4>
+        <Filename Value="RubyDemo.lpr"/>
+        <Caret Line="1" Column="1" TopLine="1"/>
+      </Position4>
+      <Position5>
+        <Filename Value="RubyDemo.lpr"/>
+        <Caret Line="10" Column="38" TopLine="1"/>
+      </Position5>
+      <Position6>
+        <Filename Value="../ppruby.pp"/>
+        <Caret Line="511" Column="85" TopLine="489"/>
+      </Position6>
+      <Position7>
+        <Filename Value="mainform.pp"/>
+        <Caret Line="5" Column="1" TopLine="9"/>
+      </Position7>
+      <Position8>
+        <Filename Value="../ppruby.pp"/>
+        <Caret Line="1765" Column="42" TopLine="1754"/>
+      </Position8>
+      <Position9>
+        <Filename Value="../ppruby.pp"/>
+        <Caret Line="229" Column="17" TopLine="208"/>
+      </Position9>
+      <Position10>
+        <Filename Value="../ppruby.pp"/>
+        <Caret Line="2212" Column="3" TopLine="2188"/>
+      </Position10>
+      <Position11>
+        <Filename Value="mainform.pp"/>
+        <Caret Line="5" Column="1" TopLine="9"/>
+      </Position11>
+      <Position12>
+        <Filename Value="../ppruby.pp"/>
+        <Caret Line="1758" Column="3" TopLine="1754"/>
+      </Position12>
+      <Position13>
+        <Filename Value="../ppruby.pp"/>
+        <Caret Line="2213" Column="16" TopLine="2188"/>
+      </Position13>
+      <Position14>
+        <Filename Value="../ppruby.pp"/>
+        <Caret Line="833" Column="18" TopLine="815"/>
+      </Position14>
+      <Position15>
+        <Filename Value="../ppruby.pp"/>
+        <Caret Line="845" Column="35" TopLine="358"/>
+      </Position15>
+      <Position16>
+        <Filename Value="../ppruby.pp"/>
+        <Caret Line="25" Column="3" TopLine="622"/>
+      </Position16>
     </JumpHistory>
   </ProjectOptions>
   <CompilerOptions>
-    <Version Value="10"/>
+    <Version Value="11"/>
     <Target>
       <Filename Value="RubyDemo"/>
     </Target>
@@ -433,4 +505,5 @@
       </Item3>
     </Exceptions>
   </Debugging>
+  <EditorMacros Count="0"/>
 </CONFIG>

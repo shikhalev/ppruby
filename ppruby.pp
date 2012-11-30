@@ -507,7 +507,8 @@ procedure init_18_19;
   v_rb_cSymbol := PVALUE(GetProcedureAddress(libRuby, 'rb_cSymbol'))^;
   v_rb_mComparable := PVALUE(GetProcedureAddress(libRuby, 'rb_mComparable'))^;
   v_rb_mEnumerable := PVALUE(GetProcedureAddress(libRuby, 'rb_mEnumerable'))^;
-  v_rb_mPrecision := PVALUE(GetProcedureAddress(libRuby, 'rb_mPrecision'))^;
+  if verRuby <> rvRuby19
+     then v_rb_mPrecision := PVALUE(GetProcedureAddress(libRuby, 'rb_mPrecision'))^;
   v_rb_eNoMethodError := PVALUE(GetProcedureAddress(libRuby, 'rb_eNoMethodError'))^;
  end;
 
@@ -2209,7 +2210,7 @@ function ValClass(v : VALUE) : VALUE;
 constructor ERubyError.Create(const msg : UTF8String);
  begin
   case Version of
-       rvRuby18, rvRuby19 :
+       rvRuby18 :
          begin
           fldErrInfo := ErrorInfo;
           if (fldErrInfo.data = _Qnil) or (fldErrInfo.data = _Qundef)
