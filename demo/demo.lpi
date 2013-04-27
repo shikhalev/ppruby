@@ -46,7 +46,7 @@
         <IsPartOfProject Value="True"/>
         <ComponentName Value="frmMain"/>
         <ResourceBaseClass Value="Form"/>
-        <UnitName Value="mainform"/>
+        <UnitName Value="MainForm"/>
       </Unit1>
     </Units>
   </ProjectOptions>
