@@ -7,7 +7,7 @@ unit ppruby;
 interface
 
 uses
-  Ruby19Consts, LazarusPackageIntf;
+  Ruby19Consts, Ruby19Dynamic, Ruby19RTL, LazarusPackageIntf;
 
 implementation
 

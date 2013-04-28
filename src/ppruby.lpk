@@ -2,6 +2,7 @@
 <CONFIG>
   <Package Version="4">
     <Name Value="ppruby"/>
+    <Author Value="Ivan Shikhalev"/>
     <CompilerOptions>
       <Version Value="11"/>
       <SearchPaths>
@@ -14,11 +15,21 @@
         <CompilerPath Value="$(CompPath)"/>
       </Other>
     </CompilerOptions>
-    <Files Count="1">
+    <Description Value="Ruby API interface for FPC"/>
+    <Version Minor="10"/>
+    <Files Count="3">
       <Item1>
         <Filename Value="ruby19consts.pp"/>
         <UnitName Value="Ruby19Consts"/>
       </Item1>
+      <Item2>
+        <Filename Value="ruby19dynamic.pp"/>
+        <UnitName Value="ruby19dynamic"/>
+      </Item2>
+      <Item3>
+        <Filename Value="ruby19rtl.pp"/>
+        <UnitName Value="ruby19rtl"/>
+      </Item3>
     </Files>
     <Type Value="RunAndDesignTime"/>
     <RequiredPkgs Count="1">
@@ -27,7 +38,7 @@
       </Item1>
     </RequiredPkgs>
     <UsageOptions>
-      <UnitPath Value="$(PkgOutDir);/home/ivan/projects/ppruby/src"/>
+      <UnitPath Value="$(PkgOutDir)"/>
     </UsageOptions>
     <PublishOptions>
       <Version Value="2"/>
