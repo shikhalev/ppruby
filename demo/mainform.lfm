@@ -4,5 +4,16 @@ object frmMain: TfrmMain
   Top = 253
   Width = 320
   Caption = 'frmMain'
+  ClientHeight = 240
+  ClientWidth = 320
   LCLVersion = '1.1'
+  object Button1: TButton
+    Left = 100
+    Height = 25
+    Top = 114
+    Width = 75
+    Caption = 'Button1'
+    OnClick = Button1Click
+    TabOrder = 0
+  end
 end
