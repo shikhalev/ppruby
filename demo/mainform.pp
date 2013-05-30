@@ -5,8 +5,7 @@ unit MainForm;
 interface
 
 uses
-  Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs, StdCtrls,
-  Ruby19Consts;
+  Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs, StdCtrls;
 
 type
 
@@ -32,7 +31,6 @@ implementation
 
 procedure TfrmMain.Button1Click(Sender: TObject);
 begin
-  Button1.Caption:= IntToStr(Integer(ruby_special_consts.RUBY_IMMEDIATE_MASK));
 end;
 
 end.

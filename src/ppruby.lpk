@@ -17,19 +17,11 @@
     </CompilerOptions>
     <Description Value="Ruby API interface for FPC"/>
     <Version Minor="10"/>
-    <Files Count="3">
+    <Files Count="1">
       <Item1>
-        <Filename Value="ruby19consts.pp"/>
-        <UnitName Value="Ruby19Consts"/>
+        <Filename Value="rubyengine.pas"/>
+        <UnitName Value="rubyengine"/>
       </Item1>
-      <Item2>
-        <Filename Value="ruby19dynamic.pp"/>
-        <UnitName Value="ruby19dynamic"/>
-      </Item2>
-      <Item3>
-        <Filename Value="ruby19rtl.pp"/>
-        <UnitName Value="ruby19rtl"/>
-      </Item3>
     </Files>
     <Type Value="RunAndDesignTime"/>
     <RequiredPkgs Count="1">
