@@ -28,8 +28,6 @@ type
   end;
 
 type
-  TRubyEngine = class;
-
   TRubyClass = class of TRubyEngine;
 
   { TRubyEngine }
@@ -37,21 +35,30 @@ type
   TRubyEngine = class(TObject)
   protected
     fldLib : THandle;
+    p_ruby_errinfo : PVALUE;
     ruby_init : procedure (); cdecl;
     ruby_init_loadpath : procedure (); cdecl;
     ruby_script : procedure (script : PChar); cdecl;
     ruby_finalize : procedure (); cdecl;
-    rb_eval_string_protect : function (Str : PChar; out Err : Integer) : VALUE; cdecl;
+    rb_eval_string_protect : function (Str : PChar; out Err : Integer) : VALUE;
+                                      cdecl;
+    rb_string_value_cstr : function (constref v : VALUE) : PChar; cdecl;
   protected
     class function Version : TVersion; virtual; abstract;
     class function DefaultScript : UTF8String; virtual;
     procedure SetupUTF8; virtual; abstract;
   public
     class function DefaultLibrary : UTF8String; virtual;
-    class function Detect (const Vers : array of TRubyClass; const Scr : UTF8String = '') : TRubyEngine;
-    function Execute (const Str : UTF8String) : VALUE;
+    class function Detect (
+                   const Vers : array of TRubyClass;
+                   const Scr : UTF8String = ''
+                   ) : TRubyEngine;
+    function Execute (const Str : UTF8String) : VALUE; virtual;
+    function ErrInfo : VALUE; virtual;
+    function ValueToString (v : VALUE) : UTF8String; virtual;
   public
-    constructor Create (const Lib : UTF8String; const Scr : UTF8String = ''); virtual;
+    constructor Create (const Lib : UTF8String; const Scr : UTF8String = '');
+                                      virtual;
     constructor Create;
     destructor Destroy; override;
   end;
@@ -167,7 +174,10 @@ class function TRubyEngine.DefaultScript : UTF8String;
  result := ParamStr(0);
  end;
 
-class function TRubyEngine.Detect (const Vers : array of TRubyClass; const Scr : UTF8String = '') : TRubyEngine;
+class function TRubyEngine.Detect (
+               const Vers : array of TRubyClass;
+               const Scr : UTF8String = ''
+               ) : TRubyEngine;
  var
    idx : Integer;
  begin
@@ -190,20 +200,39 @@ function TRubyEngine.Execute (const Str : UTF8String) : VALUE;
  begin
  result := rb_eval_string_protect(PChar(Str), res);
  if res <> 0
-    then raise ERubyExecError.CreateFmt(msgRubyExecError, [res]);
+    then raise ERubyExecError.Create(Format(msgRubyExecError, [res]) +
+                 LineEnding + LineEnding + ValueToString(p_ruby_errinfo^));
  end;
 
-constructor TRubyEngine.Create (const Lib : UTF8String; const Scr : UTF8String = '');
+function TRubyEngine.ErrInfo : VALUE;
+ begin
+ result := p_ruby_errinfo^;
+ end;
+
+function TRubyEngine.ValueToString(v : VALUE) : UTF8String;
+ begin
+ result := UTF8String(rb_string_value_cstr(v)) + ''
+ end;
+
+constructor TRubyEngine.Create (
+               const Lib : UTF8String;
+               const Scr : UTF8String = ''
+               );
  begin
  inherited Create;
  fldLib := LoadLibrary(Lib);
  if fldLib = 0
     then raise ERubyLibraryNotFound.CreateFmt(msgRubyLibraryNotFound, [Lib]);
+ Pointer(p_ruby_errinfo) := GetProcedureAddress(fldLib, 'ruby_errinfo');
  Pointer(ruby_init) := GetProcedureAddress(fldLib, 'ruby_init');
- Pointer(ruby_init_loadpath) := GetProcedureAddress(fldLib, 'ruby_init_loadpath');
+ Pointer(ruby_init_loadpath) := GetProcedureAddress(fldLib,
+                                  'ruby_init_loadpath');
  Pointer(ruby_script) := GetProcedureAddress(fldLib, 'ruby_script');
- Pointer(rb_eval_string_protect) := GetProcedureAddress(fldLib, 'rb_eval_string_protect');
+ Pointer(rb_eval_string_protect) := GetProcedureAddress(fldLib,
+                                      'rb_eval_string_protect');
  Pointer(ruby_finalize) := GetProcedureAddress(fldLib, 'ruby_finalize');
+ Pointer(rb_string_value_cstr) := GetProcedureAddress(fldLib,
+                                    'rb_string_value_cstr');
  ruby_init();
  ruby_init_loadpath();
  if Scr = ''

@@ -5,9 +5,9 @@ unit MainForm;
 interface
 
 uses
-  Classes, SysUtils, FileUtil, SynMemo, SynHighlighterAny, SynHighlighterMulti,
-  SynUniHighlighter, Forms, Controls, Graphics, Dialogs, StdCtrls, ComCtrls,
-  ActnList, Menus, StdActns;
+  Classes, SysUtils, FileUtil, SynMemo, SynHighlighterAny, Forms, Controls,
+  Graphics, Dialogs, StdCtrls, ComCtrls,
+  ActnList, Menus, RubyEngine;
 
 type
 
@@ -32,31 +32,31 @@ type
     actRuby18: TAction;
     alsMain: TActionList;
     ilsMain: TImageList;
-    MenuItem1: TMenuItem;
-    MenuItem10: TMenuItem;
-    MenuItem11: TMenuItem;
-    MenuItem12: TMenuItem;
-    MenuItem13: TMenuItem;
-    MenuItem14: TMenuItem;
-    MenuItem15: TMenuItem;
-    MenuItem16: TMenuItem;
-    MenuItem17: TMenuItem;
-    MenuItem18: TMenuItem;
-    MenuItem19: TMenuItem;
-    MenuItem20: TMenuItem;
-    MenuItem21: TMenuItem;
-    MenuItem22: TMenuItem;
-    MenuItem23: TMenuItem;
-    MenuItem24: TMenuItem;
+    mnuFileNew: TMenuItem;
+    mnuEditCut: TMenuItem;
+    mnuEditCopy: TMenuItem;
+    mnuEditPaste: TMenuItem;
+    mnuSep4: TMenuItem;
+    mnuEditDelete: TMenuItem;
+    mnuSep5: TMenuItem;
+    mnuEditSelectAll: TMenuItem;
+    mnuHelp: TMenuItem;
+    mnuRun: TMenuItem;
+    mnuSep6: TMenuItem;
+    mnuCleanOutput: TMenuItem;
+    mnuSep7: TMenuItem;
+    mnuRuby18: TMenuItem;
+    mnuRuby19: TMenuItem;
+    mnuHelpAbout: TMenuItem;
     mnuRuby: TMenuItem;
-    MenuItem2: TMenuItem;
-    MenuItem3: TMenuItem;
-    MenuItem4: TMenuItem;
-    MenuItem5: TMenuItem;
-    MenuItem6: TMenuItem;
-    MenuItem7: TMenuItem;
-    MenuItem8: TMenuItem;
-    MenuItem9: TMenuItem;
+    mnuSep1: TMenuItem;
+    mnuFileOpen: TMenuItem;
+    mnuFileSave: TMenuItem;
+    mnuFileSaveAs: TMenuItem;
+    mnuSep2: TMenuItem;
+    mnuFileExit: TMenuItem;
+    mnuEditUndo: TMenuItem;
+    mnuSep3: TMenuItem;
     mnuEdit: TMenuItem;
     mnuFile: TMenuItem;
     mnuMain: TMainMenu;
@@ -64,29 +64,31 @@ type
     stbMain: TStatusBar;
     anyMain: TSynAnySyn;
     synMain: TSynMemo;
-    ToolButton10: TToolButton;
-    ToolButton11: TToolButton;
-    ToolButton12: TToolButton;
-    ToolButton13: TToolButton;
-    ToolButton14: TToolButton;
-    ToolButton15: TToolButton;
-    ToolButton16: TToolButton;
-    ToolButton17: TToolButton;
-    ToolButton18: TToolButton;
+    tbnEditPaste: TToolButton;
+    tbnSep3: TToolButton;
+    tbnRun: TToolButton;
+    tbnCleanOutput: TToolButton;
+    tbnSep4: TToolButton;
+    tbnRuby18: TToolButton;
+    tbnRuby19: TToolButton;
+    tbnSep5: TToolButton;
+    tbnHelpAbout: TToolButton;
     tbnSep1: TToolButton;
     tbnEditUndo: TToolButton;
     tbnFileSave: TToolButton;
     tbnFileSaveAs: TToolButton;
-    ToolButton7: TToolButton;
-    ToolButton8: TToolButton;
-    ToolButton9: TToolButton;
-    uniMain: TSynUniSyn;
+    tbnSep2: TToolButton;
+    tbnEditCut: TToolButton;
+    tbnEditCopy: TToolButton;
     barMain: TToolBar;
     tbnFileNew: TToolButton;
     tbnFileOpen: TToolButton;
+    procedure actRuby18Execute(Sender : TObject);
+    procedure actRuby19Execute(Sender : TObject);
+    procedure actRunExecute(Sender : TObject);
 
   private
-    { private declarations }
+    fldRuby : TRubyEngine;
   public
     { public declarations }
   end;
@@ -100,7 +102,56 @@ implementation
 
 { TfrmMain }
 
+procedure TfrmMain.actRuby18Execute(Sender : TObject);
+ begin
+ if actRuby19.Checked
+    then begin
+         fldRuby.Destroy;
+         fldRuby := nil;
+         actRuby19.Checked := false;
+         actRun.Enabled := false;
+         end;
+ if actRuby18.Checked
+    then begin
+         fldRuby.Destroy;
+         fldRuby := nil;
+         actRuby18.Checked := false;
+         actRun.Enabled := false;
+         end
+    else begin
+         fldRuby := TRuby18.Create;
+         actRuby18.Checked := true;
+         actRun.Enabled := true;
+         end;
+ end;
 
+procedure TfrmMain.actRuby19Execute(Sender : TObject);
+ begin
+ if actRuby18.Checked
+    then begin
+         fldRuby.Destroy;
+         fldRuby := nil;
+         actRuby18.Checked := false;
+         actRun.Enabled := false;
+         end;
+ if actRuby19.Checked
+    then begin
+         fldRuby.Destroy;
+         fldRuby := nil;
+         actRuby19.Checked := false;
+         actRun.Enabled := false;
+         end
+    else begin
+         fldRuby := TRuby19.Create;
+         actRuby19.Checked := true;
+         actRun.Enabled := true;
+         end;
+ end;
+
+procedure TfrmMain.actRunExecute(Sender : TObject);
+ begin
+ fldRuby.Execute(synMain.Text);
+ end;
 
 end.
 
