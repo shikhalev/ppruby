@@ -28,6 +28,9 @@ type
   end;
 
 type
+  TRubyEngine = class;
+
+  TRubyClass = class of TRubyEngine;
 
   { TRubyEngine }
 
@@ -41,13 +44,15 @@ type
     rb_eval_string_protect : function (Str : PChar; out Err : Integer) : VALUE; cdecl;
   protected
     class function Version : TVersion; virtual; abstract;
-    class function LibName : UnicodeString; virtual;
+    class function DefaultScript : UTF8String; virtual;
     procedure SetupUTF8; virtual; abstract;
   public
-    function Execute (const Str : UnicodeString) : VALUE;
+    class function DefaultLibrary : UTF8String; virtual;
+    class function Detect (const Vers : array of TRubyClass; const Scr : UTF8String = '') : TRubyEngine;
+    function Execute (const Str : UTF8String) : VALUE;
   public
-    constructor Create (const Lib : UnicodeString; const Scr : UnicodeString = ''); virtual;
-    constructor Create (const Scr : UnicodeString = '');
+    constructor Create (const Lib : UTF8String; const Scr : UTF8String = ''); virtual;
+    constructor Create;
     destructor Destroy; override;
   end;
 
@@ -55,7 +60,7 @@ type
 
   TRuby18 = class(TRubyEngine)
   protected
-    class function Version: TVersion; override;
+    class function Version : TVersion; override;
     procedure SetupUTF8; override;
   end;
 
@@ -63,8 +68,15 @@ type
 
   TRuby19 = class(TRuby18)
   protected
-    class function Version: TVersion; override;
+    class function Version : TVersion; override;
     procedure SetupUTF8; override;
+  end;
+
+  { TRuby20 }
+
+  TRuby20 = class(TRuby19)
+  protected
+    class function Version : TVersion; override;
   end;
 
 type
@@ -80,6 +92,14 @@ const
   msgRubyExecError = 'Error #%d while execution.';
 
 implementation
+
+{ TRuby20 }
+
+class function TRuby20.Version: TVersion;
+ begin
+ result.major := 2;
+ result.minor := 0;
+ end;
 
 { TRuby18 }
 
@@ -117,7 +137,7 @@ procedure TRuby19.SetupUTF8;
 
 { TRubyEngine }
 
-class function TRubyEngine.LibName : UnicodeString;
+class function TRubyEngine.DefaultLibrary : UTF8String;
  var
    ver : TVersion;
  begin
@@ -142,7 +162,29 @@ class function TRubyEngine.LibName : UnicodeString;
 {$endif}
  end;
 
-function TRubyEngine.Execute (const Str : UnicodeString) : VALUE;
+class function TRubyEngine.DefaultScript : UTF8String;
+ begin
+ result := ParamStr(0);
+ end;
+
+class function TRubyEngine.Detect (const Vers : array of TRubyClass; const Scr : UTF8String = '') : TRubyEngine;
+ var
+   idx : Integer;
+ begin
+ for idx := 0 to High(Vers) do
+     try
+       result := Vers[idx].Create(Vers[idx].DefaultLibrary, Scr);
+       Exit;
+     except
+       on ERubyError do
+          Continue;
+       on Exception do
+          raise
+     end;
+ result := nil
+ end;
+
+function TRubyEngine.Execute (const Str : UTF8String) : VALUE;
  var
    res : Integer;
  begin
@@ -151,7 +193,7 @@ function TRubyEngine.Execute (const Str : UnicodeString) : VALUE;
     then raise ERubyExecError.CreateFmt(msgRubyExecError, [res]);
  end;
 
-constructor TRubyEngine.Create (const Lib : UnicodeString; const Scr : UnicodeString = '');
+constructor TRubyEngine.Create (const Lib : UTF8String; const Scr : UTF8String = '');
  begin
  inherited Create;
  fldLib := LoadLibrary(Lib);
@@ -165,14 +207,14 @@ constructor TRubyEngine.Create (const Lib : UnicodeString; const Scr : UnicodeSt
  ruby_init();
  ruby_init_loadpath();
  if Scr = ''
-    then ruby_script(PChar(ParamStr(0)))
+    then ruby_script(PChar(DefaultScript))
     else ruby_script(PChar(Scr));
  SetupUTF8;
  end;
 
-constructor TRubyEngine.Create (const Scr : UnicodeString = '');
+constructor TRubyEngine.Create;
  begin
- Create(LibName, Scr)
+ Create(DefaultLibrary, DefaultScript)
  end;
 
 destructor TRubyEngine.Destroy;

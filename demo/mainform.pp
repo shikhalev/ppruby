@@ -5,8 +5,9 @@ unit MainForm;
 interface
 
 uses
-  Classes, SysUtils, FileUtil, SynMemo, SynUniHighlighter, Forms, Controls,
-  Graphics, Dialogs, StdCtrls, ComCtrls, ActnList, Menus, StdActns;
+  Classes, SysUtils, FileUtil, SynMemo, SynHighlighterAny, SynHighlighterMulti,
+  SynUniHighlighter, Forms, Controls, Graphics, Dialogs, StdCtrls, ComCtrls,
+  ActnList, Menus, StdActns;
 
 type
 
@@ -61,6 +62,7 @@ type
     mnuMain: TMainMenu;
     memOutput: TMemo;
     stbMain: TStatusBar;
+    anyMain: TSynAnySyn;
     synMain: TSynMemo;
     ToolButton10: TToolButton;
     ToolButton11: TToolButton;
