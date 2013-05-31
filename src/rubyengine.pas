@@ -9,18 +9,7 @@ unit RubyEngine;
 interface
 
 uses
-  SysUtils, DynLibs;
-
-type
-  PVALUE = ^VALUE;
-  VALUE = record
-    value : PtrUInt
-  end;
-
-  PID = ^ID;
-  ID = record
-    value : PtrUInt;
-  end;
+  SysUtils, DynLibs, RubyTypes, Ruby19Types;
 
 type
   TVersion = record
@@ -73,7 +62,7 @@ type
 
   { TRuby19 }
 
-  TRuby19 = class(TRuby18)
+  TRuby19 = class(TRubyEngine)
   protected
     class function Version : TVersion; override;
     procedure SetupUTF8; override;

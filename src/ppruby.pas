@@ -7,7 +7,7 @@ unit ppruby;
 interface
 
 uses
-  RubyEngine, LazarusPackageIntf;
+  RubyEngine, Ruby19Types, RubyTypes, LazarusPackageIntf;
 
 implementation
 
@@ -16,5 +16,5 @@ begin
 end;
 
 initialization
-  RegisterPackage('ppruby', @Register);
+  RegisterPackage( 'ppruby', @Register);
 end.
