@@ -31,6 +31,7 @@
     <RequiredPkgs Count="1">
       <Item1>
         <PackageName Value="FCL"/>
+        <MinVersion Major="1" Valid="True"/>
       </Item1>
     </RequiredPkgs>
     <UsageOptions>

@@ -147,7 +147,7 @@ function TRuby18.Description : UTF8String;
  result := UTF8String(ruby_description) + '';
  end;
 
-constructor TRuby18.Create(const Lib : UTF8String; const Scr : UTF8String);
+constructor TRuby18.Create (const Lib : UTF8String; const Scr : UTF8String);
  begin
  inherited Create(Lib, Scr);
  Pointer(p_ruby_errinfo) := GetProcedureAddress(fldLib, 'ruby_errinfo');
@@ -186,13 +186,13 @@ function TRuby19.ErrInfo : VALUE;
  result := rb_errinfo();
  end;
 
-function TRuby19.Execute(const Str : UTF8String) : VALUE;
+function TRuby19.Execute (const Str : UTF8String) : VALUE;
  begin
  rb_set_errinfo(Qnil);
  result := inherited Execute(Str);
  end;
 
-constructor TRuby19.Create(const Lib : UTF8String; const Scr : UTF8String);
+constructor TRuby19.Create (const Lib : UTF8String; const Scr : UTF8String);
  begin
  inherited Create(Lib, Scr);
  Pointer(rb_errinfo) := GetProcedureAddress(fldLib, 'rb_errinfo');

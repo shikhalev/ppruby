@@ -5,9 +5,9 @@ unit MainForm;
 interface
 
 uses
-  Classes, SysUtils, FileUtil, SynMemo, SynHighlighterAny, Forms, Controls,
-  Graphics, Dialogs, StdCtrls, ComCtrls,
-  ActnList, Menus, RubyEngine;
+  Classes, SysUtils, FileUtil, SynMemo, SynHighlighterAny, SynUniHighlighter,
+  Forms, Controls, Graphics, Dialogs, StdCtrls, ComCtrls, ActnList, Menus,
+  RubyEngine;
 
 type
 
@@ -83,6 +83,7 @@ type
     barMain: TToolBar;
     tbnFileNew: TToolButton;
     tbnFileOpen: TToolButton;
+    procedure actCleanOutputExecute(Sender : TObject);
     procedure actRuby18Execute(Sender : TObject);
     procedure actRuby19Execute(Sender : TObject);
     procedure actRunExecute(Sender : TObject);
@@ -111,6 +112,9 @@ procedure TfrmMain.actRuby18Execute(Sender : TObject);
          actRuby19.Checked := false;
          actRun.Enabled := false;
          stbMain.Panels[0].Text := '[not loaded]';
+         memOutput.Lines.Add('---');
+         memOutput.Lines.Add('=== Unload');
+         memOutput.Lines.Add('---');
          end;
  if actRuby18.Checked
     then begin
@@ -119,12 +123,18 @@ procedure TfrmMain.actRuby18Execute(Sender : TObject);
          actRuby18.Checked := false;
          actRun.Enabled := false;
          stbMain.Panels[0].Text := '[not loaded]';
+         memOutput.Lines.Add('---');
+         memOutput.Lines.Add('=== Unload');
+         memOutput.Lines.Add('---');
          end
     else try
            fldRuby := TRuby18.Create;
            actRuby18.Checked := true;
            actRun.Enabled := true;
            stbMain.Panels[0].text := fldRuby.Description;
+           memOutput.Lines.Add('---');
+           memOutput.Lines.Add('=== Load: ' + fldRuby.Description);
+           memOutput.Lines.add('---');
          except
            on ERubyInitError do
               begin
@@ -132,6 +142,11 @@ procedure TfrmMain.actRuby18Execute(Sender : TObject);
               raise;
               end;
          end;
+ end;
+
+procedure TfrmMain.actCleanOutputExecute(Sender : TObject);
+ begin
+ memOutput.Clear;
  end;
 
 procedure TfrmMain.actRuby19Execute(Sender : TObject);
@@ -143,6 +158,9 @@ procedure TfrmMain.actRuby19Execute(Sender : TObject);
          actRuby18.Checked := false;
          actRun.Enabled := false;
          stbMain.Panels[0].Text := '[not loaded]';
+         memOutput.Lines.Add('---');
+         memOutput.Lines.Add('=== Unload');
+         memOutput.Lines.Add('---');
          end;
  if actRuby19.Checked
     then begin
@@ -151,12 +169,18 @@ procedure TfrmMain.actRuby19Execute(Sender : TObject);
          actRuby19.Checked := false;
          actRun.Enabled := false;
          stbMain.Panels[0].Text := '[not loaded]';
+         memOutput.Lines.Add('---');
+         memOutput.Lines.Add('=== Unload');
+         memOutput.Lines.Add('---');
          end
     else try
            fldRuby := TRuby19.Create;
            actRuby19.Checked := true;
            actRun.Enabled := true;
            stbMain.Panels[0].text := fldRuby.Description;
+           memOutput.Lines.Add('---');
+           memOutput.Lines.Add('=== Load: ' + fldRuby.Description);
+           memOutput.Lines.add('---');
          except
            on ERubyInitError do
               begin
