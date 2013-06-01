@@ -27,6 +27,8 @@ type
 
   TRubyClass = class of TRubyEngine;
 
+  { TRubyEngine }
+
   TRubyEngine = class(TObject)
   protected
     fldLib : THandle;
@@ -54,7 +56,8 @@ type
     function Inspect (v : VALUE) : VALUE; virtual;
     function ValueToString (v : VALUE) : UTF8String; virtual;
   public
-    class procedure RegisterClassHook (Cls : TClass; Hook : TRegisterClassHook);
+    class procedure RegisterClassHook (const Classes : array of TClass; Hook : TRegisterClassHook);
+    class procedure UnregisterClassHook (const Classes : array of TClass; Hook : TRegisterClassHook);
     function RegisterClass (Cls : TClass) : VALUE; virtual;
   public
     class function Qfalse : VALUE; virtual;
@@ -278,13 +281,64 @@ function TRubyEngine.ValueToString(v : VALUE) : UTF8String;
  result := UTF8String(rb_string_value_cstr(v)) + ''
  end;
 
-class procedure TRubyEngine.RegisterClassHook(Cls : TClass;
-  Hook : TRegisterClassHook);
+type
+  TClassHookRec = record
+    Cls : TClass;
+    Hook : TRegisterClassHook
+  end;
+
+var
+  ClassHooks : array of TClassHookRec = nil;
+
+const
+  NOT_FOUND = -1;
+
+function FindClassHook (Cls : TClass; Hook : TRegisterClassHook) : Integer;
+ var
+   idx : Integer;
  begin
- //
+ for idx := 0 to High(ClassHooks) do
+     if (ClassHooks[idx].Cls = Cls) and (ClassHooks[idx].Hook = Hook)
+        then begin
+             result := idx;
+             Exit;
+             end;
+ result := NOT_FOUND;
  end;
 
-function TRubyEngine.RegisterClass(Cls : TClass) : VALUE;
+class procedure TRubyEngine.RegisterClassHook (const Classes : array of TClass;
+  Hook : TRegisterClassHook);
+ var
+   cidx, hidx : Integer;
+ begin
+ for cidx := 0 to High(Classes) do
+     begin
+     hidx := FindClassHook(Classes[cidx], Hook);
+     if hidx = NOT_FOUND
+        then begin
+             SetLength(ClassHooks, Length(ClassHooks) + 1);
+             ClassHooks[High(ClassHooks)].Cls := Classes[cidx];
+             ClassHooks[High(ClassHooks)].Hook := Hook;
+             end;
+     end;
+ end;
+
+class procedure TRubyEngine.UnregisterClassHook (const Classes : array of TClass;
+  Hook : TRegisterClassHook);
+ var
+   cidx, hidx : Integer;
+ begin
+ for cidx := 0 to High(Classes) do
+     begin
+     hidx := FindClassHook(Classes[cidx], Hook);
+     if hidx <> NOT_FOUND
+        then begin
+             //
+             end;
+     end;
+ end;
+
+function TRubyEngine.RegisterClass (Cls : TClass) : VALUE;
  begin
  //
  end;
