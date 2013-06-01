@@ -9,7 +9,7 @@ unit RubyEngine;
 interface
 
 uses
-  SysUtils, DynLibs;
+  SysUtils, DynLibs, ctypes, typinfo;
 
 type
   TVersion = record
@@ -19,6 +19,8 @@ type
 type
   VALUE = type PtrUInt;
   PVALUE = ^VALUE;
+
+  ID = type PtrUInt;
 
 type
   TRubyEngine = class;
@@ -40,6 +42,16 @@ type
                                       cdecl;
     rb_string_value_cstr : function (constref v : VALUE) : PChar; cdecl;
     rb_inspect : function (v : VALUE) : VALUE; cdecl;
+    rb_define_module : function (name : PChar) : VALUE; cdecl;
+    rb_define_module_under : function (up : VALUE; name : PChar) : VALUE; cdecl;
+    rb_define_class : function (name : PChar; super : VALUE) : VALUE; cdecl;
+    rb_define_class_under : function (up : VALUE; name : PChar; super : VALUE) : VALUE; cdecl;
+    rb_funcall2 : function (obj : VALUE; meth : ID; cnt : cint; args : PVALUE) : VALUE; cdecl;
+    rb_intern : function (name : PChar) : ID; cdecl;
+    rb_str_new2 : function (s : PChar) : VALUE; cdecl;
+    rb_cObject : VALUE;
+  protected
+    rb_mPascal : VALUE;
   protected
     class function Version : TVersion; virtual; abstract;
     class function DefaultScript : UTF8String; virtual;
@@ -54,11 +66,27 @@ type
     function Description : UTF8String; virtual; abstract;
     function ErrInfo : VALUE; virtual; abstract;
     function Inspect (v : VALUE) : VALUE; virtual;
-    function ValueToString (v : VALUE) : UTF8String; virtual;
+    function VALUE2String (v : VALUE) : UTF8String; virtual;
+    function String2VALUE (const s : UTF8String) : VALUE; virtual;
+    function String2ID (const s : UTF8String) : ID; virtual;
+  protected
+    procedure RegisterRTTI (cls : TClass; rb : VALUE); virtual;
   public
     class procedure RegisterClassHook (const Classes : array of TClass; Hook : TRegisterClassHook);
     class procedure UnregisterClassHook (const Classes : array of TClass; Hook : TRegisterClassHook);
     function RegisterClass (Cls : TClass) : VALUE; virtual;
+    function RegisterUnit (const nm : AnsiString) : VALUE; virtual;
+    function DefaultAncestor : VALUE; virtual; abstract;
+  public
+    property cObject : VALUE read rb_cObject;
+    property mPascal : VALUE read rb_mPascal;
+  public
+    function DefineModule (const Name : UTF8String) : VALUE; virtual;
+    function DefineModule (NS : VALUE; const Name : UTF8String) : VALUE; virtual;
+    function DefineClass (const Name : UTF8String; Super : VALUE) : VALUE; virtual;
+    function DefineClass (const Name : UTF8String) : VALUE; virtual;
+    function DefineClass (NS : VALUE; const Name : UTF8String; Super : VALUE) : VALUE; cdecl;
+    function DefineClass (NS : VALUE; const Name : UTF8String) : VALUE; cdecl;
   public
     class function Qfalse : VALUE; virtual;
     class function Qtrue : VALUE; virtual;
@@ -83,6 +111,7 @@ type
   public
     function Description : UTF8String; override;
     function ErrInfo : VALUE; override;
+    function DefaultAncestor : VALUE; override;
   public
     constructor Create (const Lib : UTF8String; const Scr : UTF8String = '');
                                       override;
@@ -95,6 +124,7 @@ type
     rb_errinfo : function : VALUE; cdecl;
     rb_set_errinfo : procedure (v : VALUE); cdecl;
     ruby_description : PChar;
+    rb_cData : VALUE;
   protected
     class function Version : TVersion; override;
     procedure SetupUTF8; override;
@@ -102,6 +132,9 @@ type
     function Description : UTF8String; override;
     function ErrInfo : VALUE; override;
     function Execute (const Str : UTF8String) : VALUE; override;
+    function DefaultAncestor : VALUE; override;
+  public
+    property cData : VALUE read rb_cData;
   public
     constructor Create (const Lib : UTF8String; const Scr : UTF8String = '');
                                       override;
@@ -197,12 +230,18 @@ function TRuby19.Execute (const Str : UTF8String) : VALUE;
  result := inherited Execute(Str);
  end;
 
+function TRuby19.DefaultAncestor : VALUE;
+ begin
+ result := rb_cData
+ end;
+
 constructor TRuby19.Create (const Lib : UTF8String; const Scr : UTF8String);
  begin
  inherited Create(Lib, Scr);
  Pointer(rb_errinfo) := GetProcedureAddress(fldLib, 'rb_errinfo');
  Pointer(rb_set_errinfo) := GetProcedureAddress(fldLib, 'rb_set_errinfo');
  ruby_description := PChar(GetProcedureAddress(fldLib, 'ruby_description'));
+ rb_cData := PVALUE(GetProcedureAddress(fldLib, 'rb_cData'))^;
  end;
 
 { TRubyEngine }
@@ -263,7 +302,7 @@ function TRubyEngine.Execute (const Str : UTF8String) : VALUE;
  begin
  result := rb_eval_string_protect(PChar(Str), res);
  if res <> 0
-    then raise ERubyExecError.Create(ValueToString(Inspect(ErrInfo)));
+    then raise ERubyExecError.Create(VALUE2String(Inspect(ErrInfo)));
  end;
 
 function TRubyEngine.Inspect(v : VALUE) : VALUE;
@@ -276,9 +315,61 @@ function TRuby18.ErrInfo : VALUE;
  result := p_ruby_errinfo^;
  end;
 
-function TRubyEngine.ValueToString(v : VALUE) : UTF8String;
+function TRuby18.DefaultAncestor : VALUE;
+ begin
+ result := rb_cObject
+ end;
+
+function TRubyEngine.VALUE2String(v : VALUE) : UTF8String;
  begin
  result := UTF8String(rb_string_value_cstr(v)) + ''
+ end;
+
+function TRubyEngine.String2VALUE(const s : UTF8String) : VALUE;
+ begin
+ result := rb_str_new2(PChar(s));
+ end;
+
+function TRubyEngine.String2ID(const s : UTF8String) : ID;
+ begin
+ result := rb_intern(PChar(s))
+ end;
+
+function MethName (const nm : UTF8String) : UTF8String;
+ begin
+ result := nm;
+ result[1] := LowerCase(nm[1]);
+ end;
+
+procedure TRubyEngine.RegisterRTTI (cls : TClass; rb : VALUE);
+ var
+   info : PTypeInfo;
+   data : PTypeData;
+   list : PPropList;
+   prop : PPropInfo;
+   idx : Integer;
+   cmd : UTF8String;
+   nmm : UTF8String;
+   param : VALUE;
+ begin
+ info := cls.ClassInfo;
+ data := GetTypeData(info);
+ GetPropList(cls, list);
+ for idx := 0 to data^.PropCount - 1 do
+     begin
+     prop := list^[idx];
+     nmm := MethName(prop^.Name);
+     cmd := 'attr_accessor :' + nmm + LineEnding;
+     cmd := cmd + 'def ' + nmm + LineEnding +
+                  '  pascal_get_prop(:' + prop^.Name + ')' + LineEnding +
+                  'end' + LineEnding;
+     cmd := cmd + 'def ' + nmm + '=(value)' + LineEnding +
+                  '  pascal_set_prop(:' + prop^.Name + ', value)' + LineEnding +
+                  'end';
+     param := String2VALUE(cmd);
+     rb_funcall2(rb, String2ID('class_eval'), 1, @param);
+     end;
+ //
  end;
 
 type
@@ -290,20 +381,18 @@ type
 var
   ClassHooks : array of TClassHookRec = nil;
 
-const
-  NOT_FOUND = -1;
-
-function FindClassHook (Cls : TClass; Hook : TRegisterClassHook) : Integer;
+function FindClassHook (Cls : TClass; Hook : TRegisterClassHook; out found : Integer) : Boolean;
  var
    idx : Integer;
  begin
  for idx := 0 to High(ClassHooks) do
      if (ClassHooks[idx].Cls = Cls) and (ClassHooks[idx].Hook = Hook)
         then begin
-             result := idx;
+             found := idx;
+             result := true;
              Exit;
              end;
- result := NOT_FOUND;
+ result := false;
  end;
 
 class procedure TRubyEngine.RegisterClassHook (const Classes : array of TClass;
@@ -312,35 +401,148 @@ class procedure TRubyEngine.RegisterClassHook (const Classes : array of TClass;
    cidx, hidx : Integer;
  begin
  for cidx := 0 to High(Classes) do
-     begin
-     hidx := FindClassHook(Classes[cidx], Hook);
-     if hidx = NOT_FOUND
+     if not FindClassHook(Classes[cidx], Hook, hidx)
         then begin
              SetLength(ClassHooks, Length(ClassHooks) + 1);
              ClassHooks[High(ClassHooks)].Cls := Classes[cidx];
              ClassHooks[High(ClassHooks)].Hook := Hook;
              end;
-     end;
  end;
 
 class procedure TRubyEngine.UnregisterClassHook (const Classes : array of TClass;
   Hook : TRegisterClassHook);
  var
-   cidx, hidx : Integer;
+   cidx, hidx, didx : Integer;
  begin
  for cidx := 0 to High(Classes) do
-     begin
-     hidx := FindClassHook(Classes[cidx], Hook);
-     if hidx <> NOT_FOUND
+     if FindClassHook(Classes[cidx], Hook, hidx)
         then begin
-             //
+             for didx := hidx to High(ClassHooks) - 1 do
+                 ClassHooks[didx] := ClassHooks[didx + 1];
+             SetLength(ClassHooks, Length(ClassHooks) - 1);
              end;
-     end;
+ end;
+
+type
+  TRegClassRec = record
+                 Cls : TClass;
+                 Rb : VALUE;
+                 end;
+
+var
+  RegisteredClasses : array of TRegClassRec = nil;
+
+function FindRegisteredClass (Cls : TClass; out v : VALUE) : Boolean;
+ var
+   idx : Integer;
+ begin
+ for idx := 0 to High(RegisteredClasses) do
+     if RegisteredClasses[idx].Cls = Cls
+        then begin
+             v := RegisteredClasses[idx].Rb;
+             result := true;
+             Exit;
+             end;
+ result := false;
+ end;
+
+function ConstName (const nm : AnsiString) : AnsiString;
+ begin
+ result := nm;
+ result[1] := UpCase(nm[1]);
  end;
 
 function TRubyEngine.RegisterClass (Cls : TClass) : VALUE;
+ var
+   rb_u : VALUE;
+   rb_s : VALUE;
+   idx : Integer;
  begin
- //
+ if FindRegisteredClass(Cls, result)
+    then Exit;
+ if Cls.UnitName = ''
+    then rb_u := rb_mPascal
+    else rb_u := RegisterUnit(Cls.UnitName);
+ if Cls = TObject
+    then rb_s := DefaultAncestor
+    else rb_s := RegisterClass(Cls.ClassParent);
+ result := rb_define_class_under(rb_u, PChar(ConstName(cls.ClassName)), rb_s);
+ SetLength(RegisteredClasses, Length(RegisteredClasses) + 1);
+ RegisteredClasses[High(RegisteredClasses)].Cls := Cls;
+ RegisteredClasses[High(RegisteredClasses)].Rb := result;
+ RegisterRTTI(Cls, result);
+ for idx := 0 to High(ClassHooks) do
+     if ClassHooks[idx].Cls = Cls
+        then ClassHooks[idx].Hook(self, Cls, result);
+ end;
+
+type
+  TRegUnitRec = record
+                nm : AnsiString;
+                v : VALUE
+                end;
+
+var
+  RegisteredUnits : array of TRegUnitRec = nil;
+
+function FindRegisteredUnit (const nm : AnsiString; out v : VALUE) : Boolean;
+ var
+   idx : Integer;
+ begin
+ for idx := 0 to High(RegisteredUnits) do
+     if RegisteredUnits[idx].nm = nm
+        then begin
+             v := RegisteredUnits[idx].v;
+             result := true;
+             Exit;
+             end;
+ result := false;
+ end;
+
+function TRubyEngine.RegisterUnit(const nm : AnsiString) : VALUE;
+ var
+   nmm : AnsiString;
+ begin
+ nmm := ConstName(nm);
+ if FindRegisteredUnit(nmm, result)
+    then Exit;
+ result := rb_define_module_under(rb_mPascal, PChar(nmm));
+ SetLength(RegisteredUnits, Length(RegisteredUnits) + 1);
+ RegisteredUnits[High(RegisteredUnits)].nm := nmm;
+ RegisteredUnits[High(RegisteredUnits)].v := result;
+ end;
+
+function TRubyEngine.DefineModule (const Name : UTF8String) : VALUE;
+ begin
+ result := rb_define_module(PChar(Name))
+ end;
+
+function TRubyEngine.DefineModule (NS : VALUE; const Name : UTF8String) : VALUE;
+ begin
+ result := rb_define_module_under(NS, PChar(Name))
+ end;
+
+function TRubyEngine.DefineClass (const Name : UTF8String;
+  Super : VALUE) : VALUE;
+ begin
+ result := rb_define_class(PChar(Name), Super);
+ end;
+
+function TRubyEngine.DefineClass (const Name : UTF8String) : VALUE;
+ begin
+ result := rb_define_class(PChar(Name), rb_cObject);
+ end;
+
+function TRubyEngine.DefineClass (NS : VALUE; const Name : UTF8String;
+  Super : VALUE) : VALUE; cdecl;
+ begin
+ result := rb_define_class_under(NS, PChar(Name), Super);
+ end;
+
+function TRubyEngine.DefineClass (NS : VALUE; const Name : UTF8String) : VALUE;
+  cdecl;
+ begin
+ result := rb_define_class_under(NS, PChar(Name), rb_cObject);
  end;
 
 class function TRubyEngine.Qfalse : VALUE;
@@ -382,12 +584,22 @@ constructor TRubyEngine.Create (
  Pointer(rb_string_value_cstr) := GetProcedureAddress(fldLib,
                                     'rb_string_value_cstr');
  Pointer(rb_inspect) := GetProcedureAddress(fldLib, 'rb_inspect');
+ Pointer(rb_define_module) := GetProcedureAddress(fldLib, 'rb_define_module');
+ Pointer(rb_define_module_under) := GetProcedureAddress(fldLib,
+                                      'rb_define_module_under');
+ Pointer(rb_define_class) := GetProcedureAddress(fldLib, 'rb_define_class');
+ Pointer(rb_define_class_under) := GetProcedureAddress(fldLib, 'rb_define_class_under');
+ Pointer(rb_funcall2) := GetProcedureAddress(fldLib, 'rb_funcall2');
+ Pointer(rb_intern) := GetProcedureAddress(fldLib, 'rb_intern');
+ Pointer(rb_str_new2) := GetProcedureAddress(fldLib, 'rb_str_new2');
+ rb_cObject := PVALUE(GetProcedureAddress(fldLib, 'rb_cObject'))^;
  ruby_init();
  ruby_init_loadpath();
  if Scr = ''
     then ruby_script(PChar(DefaultScript))
     else ruby_script(PChar(Scr));
  SetupUTF8;
+ rb_mPascal := DefineModule('Pascal');
  end;
 
 constructor TRubyEngine.DefaultCreate;

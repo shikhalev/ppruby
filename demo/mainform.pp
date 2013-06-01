@@ -193,7 +193,7 @@ procedure TfrmMain.actRuby19Execute(Sender : TObject);
 procedure TfrmMain.actRunExecute(Sender : TObject);
  begin
  try
-   stbMain.Panels[2].Text := '= ' + fldRuby.ValueToString(fldRuby.Inspect(fldRuby.Execute(synMain.Text)));
+   stbMain.Panels[2].Text := '= ' + fldRuby.VALUE2String(fldRuby.Inspect(fldRuby.Execute(synMain.Text)));
    stbMain.Panels[1].Text := 'OK';
  except
    on e : ERubyExecError do
