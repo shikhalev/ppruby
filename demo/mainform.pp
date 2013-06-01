@@ -89,7 +89,7 @@ type
     procedure actRunExecute(Sender : TObject);
 
   private
-    fldRuby : TRubyEngine;
+(*    fldRuby : TRubyEngine; *)
   public
     { public declarations }
   end;
@@ -105,7 +105,7 @@ implementation
 
 procedure TfrmMain.actRuby18Execute(Sender : TObject);
  begin
- if actRuby19.Checked
+(* if actRuby19.Checked
     then begin
          fldRuby.Destroy;
          fldRuby := nil;
@@ -141,7 +141,7 @@ procedure TfrmMain.actRuby18Execute(Sender : TObject);
               actRuby18.Enabled := false;
               raise;
               end;
-         end;
+         end;       *)
  end;
 
 procedure TfrmMain.actCleanOutputExecute(Sender : TObject);
@@ -151,7 +151,7 @@ procedure TfrmMain.actCleanOutputExecute(Sender : TObject);
 
 procedure TfrmMain.actRuby19Execute(Sender : TObject);
  begin
- if actRuby18.Checked
+(* if actRuby18.Checked
     then begin
          fldRuby.Destroy;
          fldRuby := nil;
@@ -175,6 +175,7 @@ procedure TfrmMain.actRuby19Execute(Sender : TObject);
          end
     else try
            fldRuby := TRuby19.DefaultCreate;
+           fldRuby.RegisterClass(TForm);
            actRuby19.Checked := true;
            actRun.Enabled := true;
            stbMain.Panels[0].text := fldRuby.Description;
@@ -187,12 +188,12 @@ procedure TfrmMain.actRuby19Execute(Sender : TObject);
               actRuby19.Enabled := false;
               raise;
               end;
-         end;
+         end;   *)
  end;
 
 procedure TfrmMain.actRunExecute(Sender : TObject);
  begin
- try
+(* try
    stbMain.Panels[2].Text := '= ' + fldRuby.VALUE2String(fldRuby.Inspect(fldRuby.Execute(synMain.Text)));
    stbMain.Panels[1].Text := 'OK';
  except
@@ -202,7 +203,7 @@ procedure TfrmMain.actRunExecute(Sender : TObject);
       stbMain.Panels[1].Text := 'Error!';
       raise;
       end;
- end;
+ end;      *)
  end;
 
 end.
