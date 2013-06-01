@@ -128,7 +128,7 @@ procedure TfrmMain.actRuby18Execute(Sender : TObject);
          memOutput.Lines.Add('---');
          end
     else try
-           fldRuby := TRuby18.Create;
+           fldRuby := TRuby18.DefaultCreate;
            actRuby18.Checked := true;
            actRun.Enabled := true;
            stbMain.Panels[0].text := fldRuby.Description;
@@ -174,7 +174,7 @@ procedure TfrmMain.actRuby19Execute(Sender : TObject);
          memOutput.Lines.Add('---');
          end
     else try
-           fldRuby := TRuby19.Create;
+           fldRuby := TRuby19.DefaultCreate;
            actRuby19.Checked := true;
            actRun.Enabled := true;
            stbMain.Panels[0].text := fldRuby.Description;

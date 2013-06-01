@@ -9,7 +9,7 @@ unit RubyEngine;
 interface
 
 uses
-  SysUtils, DynLibs, RubyTypes;
+  SysUtils, DynLibs;
 
 type
   TVersion = record
@@ -17,9 +17,15 @@ type
   end;
 
 type
-  TRubyClass = class of TRubyEngine;
+  VALUE = type PtrUInt;
+  PVALUE = ^VALUE;
 
-  { TRubyEngine }
+type
+  TRubyEngine = class;
+
+  TRegisterClassHook = procedure (Engine : TRubyEngine; Cls : TClass; Rb : VALUE);
+
+  TRubyClass = class of TRubyEngine;
 
   TRubyEngine = class(TObject)
   protected
@@ -48,6 +54,9 @@ type
     function Inspect (v : VALUE) : VALUE; virtual;
     function ValueToString (v : VALUE) : UTF8String; virtual;
   public
+    class procedure RegisterClassHook (Cls : TClass; Hook : TRegisterClassHook);
+    function RegisterClass (Cls : TClass) : VALUE; virtual;
+  public
     class function Qfalse : VALUE; virtual;
     class function Qtrue : VALUE; virtual;
     class function Qnil : VALUE; virtual;
@@ -55,7 +64,7 @@ type
   public
     constructor Create (const Lib : UTF8String; const Scr : UTF8String = '');
                                       virtual;
-    constructor Create; virtual;
+    constructor DefaultCreate; virtual;
     destructor Destroy; override;
   end;
 
@@ -74,7 +83,6 @@ type
   public
     constructor Create (const Lib : UTF8String; const Scr : UTF8String = '');
                                       override;
-    constructor Create; override;
   end;
 
   { TRuby19 }
@@ -94,7 +102,6 @@ type
   public
     constructor Create (const Lib : UTF8String; const Scr : UTF8String = '');
                                       override;
-    constructor Create; override;
   end;
 
   { TRuby20 }
@@ -154,11 +161,6 @@ constructor TRuby18.Create (const Lib : UTF8String; const Scr : UTF8String);
  ruby_description := PPChar(GetProcedureAddress(fldLib, 'ruby_description'))^;
  end;
 
-constructor TRuby18.Create;
- begin
- inherited Create;
- end;
-
 { TRuby19 }
 
 class function TRuby19.Version : TVersion;
@@ -198,11 +200,6 @@ constructor TRuby19.Create (const Lib : UTF8String; const Scr : UTF8String);
  Pointer(rb_errinfo) := GetProcedureAddress(fldLib, 'rb_errinfo');
  Pointer(rb_set_errinfo) := GetProcedureAddress(fldLib, 'rb_set_errinfo');
  ruby_description := PChar(GetProcedureAddress(fldLib, 'ruby_description'));
- end;
-
-constructor TRuby19.Create;
- begin
- inherited Create;
  end;
 
 { TRubyEngine }
@@ -281,6 +278,17 @@ function TRubyEngine.ValueToString(v : VALUE) : UTF8String;
  result := UTF8String(rb_string_value_cstr(v)) + ''
  end;
 
+class procedure TRubyEngine.RegisterClassHook(Cls : TClass;
+  Hook : TRegisterClassHook);
+ begin
+ //
+ end;
+
+function TRubyEngine.RegisterClass(Cls : TClass) : VALUE;
+ begin
+ //
+ end;
+
 class function TRubyEngine.Qfalse : VALUE;
  begin
  result := VALUE(0)
@@ -328,7 +336,7 @@ constructor TRubyEngine.Create (
  SetupUTF8;
  end;
 
-constructor TRubyEngine.Create;
+constructor TRubyEngine.DefaultCreate;
  begin
  Create(DefaultLibrary, DefaultScript)
  end;

@@ -7,7 +7,7 @@ unit ppruby;
 interface
 
 uses
-  RubyEngine, RubyTypes, LazarusPackageIntf;
+  RubyEngine, LazarusPackageIntf;
 
 implementation
 
