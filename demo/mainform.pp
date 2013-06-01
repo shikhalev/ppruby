@@ -110,6 +110,7 @@ procedure TfrmMain.actRuby18Execute(Sender : TObject);
          fldRuby := nil;
          actRuby19.Checked := false;
          actRun.Enabled := false;
+         stbMain.Panels[0].Text := '[not loaded]';
          end;
  if actRuby18.Checked
     then begin
@@ -117,11 +118,19 @@ procedure TfrmMain.actRuby18Execute(Sender : TObject);
          fldRuby := nil;
          actRuby18.Checked := false;
          actRun.Enabled := false;
+         stbMain.Panels[0].Text := '[not loaded]';
          end
-    else begin
-         fldRuby := TRuby18.Create;
-         actRuby18.Checked := true;
-         actRun.Enabled := true;
+    else try
+           fldRuby := TRuby18.Create;
+           actRuby18.Checked := true;
+           actRun.Enabled := true;
+           stbMain.Panels[0].text := fldRuby.Description;
+         except
+           on ERubyInitError do
+              begin
+              actRuby18.Enabled := false;
+              raise;
+              end;
          end;
  end;
 
@@ -133,6 +142,7 @@ procedure TfrmMain.actRuby19Execute(Sender : TObject);
          fldRuby := nil;
          actRuby18.Checked := false;
          actRun.Enabled := false;
+         stbMain.Panels[0].Text := '[not loaded]';
          end;
  if actRuby19.Checked
     then begin
@@ -140,17 +150,35 @@ procedure TfrmMain.actRuby19Execute(Sender : TObject);
          fldRuby := nil;
          actRuby19.Checked := false;
          actRun.Enabled := false;
+         stbMain.Panels[0].Text := '[not loaded]';
          end
-    else begin
-         fldRuby := TRuby19.Create;
-         actRuby19.Checked := true;
-         actRun.Enabled := true;
+    else try
+           fldRuby := TRuby19.Create;
+           actRuby19.Checked := true;
+           actRun.Enabled := true;
+           stbMain.Panels[0].text := fldRuby.Description;
+         except
+           on ERubyInitError do
+              begin
+              actRuby19.Enabled := false;
+              raise;
+              end;
          end;
  end;
 
 procedure TfrmMain.actRunExecute(Sender : TObject);
  begin
- fldRuby.Execute(synMain.Text);
+ try
+   stbMain.Panels[2].Text := '= ' + fldRuby.ValueToString(fldRuby.Inspect(fldRuby.Execute(synMain.Text)));
+   stbMain.Panels[1].Text := 'OK';
+ except
+   on e : ERubyExecError do
+      begin
+      stbMain.Panels[2].Text := e.Message;
+      stbMain.Panels[1].Text := 'Error!';
+      raise;
+      end;
+ end;
  end;
 
 end.

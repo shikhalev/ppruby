@@ -5,15 +5,10 @@ unit RubyTypes;
 interface
 
 type
+  VALUE = type PtrUInt;
   PVALUE = ^VALUE;
-  VALUE = record
-    value : PtrUInt
-  end;
 
-  PID = ^ID;
-  ID = record
-    value : PtrUInt;
-  end;
+  ID = type PtrUInt;
 
 implementation
 

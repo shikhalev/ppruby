@@ -28,6 +28,8 @@ type
   end;
   rb_method_entry_t = rb_method_entry_struct;
 
+  rb_thread_id_t = culong;
+
   rb_thread_struct = record
     _self : VALUE;
     vm : ^rb_vm_t;
@@ -46,6 +48,9 @@ type
     base_block : ^rb_block_t;
     local_lfp : ^VALUE;
     local_svar : VALUE;
+    thread_id : rb_thread_id_t;
+    status : cint; // TODO: change to enum
+    priority : cint;
     // TODO
   end;
 
