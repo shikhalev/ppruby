@@ -7,7 +7,7 @@ interface
 uses
   Classes, SysUtils, FileUtil, SynMemo, SynHighlighterAny, SynUniHighlighter,
   Forms, Controls, Graphics, Dialogs, StdCtrls, ComCtrls, ActnList, Menus,
-  RubyEngine;
+  Ruby;
 
 type
 

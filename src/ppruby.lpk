@@ -19,8 +19,8 @@
     <Version Minor="10"/>
     <Files Count="1">
       <Item1>
-        <Filename Value="rubyengine.pas"/>
-        <UnitName Value="RubyEngine"/>
+        <Filename Value="ruby.pas"/>
+        <UnitName Value="ruby"/>
       </Item1>
     </Files>
     <Type Value="RunAndDesignTime"/>
