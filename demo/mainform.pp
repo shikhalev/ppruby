@@ -89,7 +89,7 @@ type
     procedure actRunExecute(Sender : TObject);
 
   private
-(*    fldRuby : TRubyEngine; *)
+    fldRuby : TRuby;
   public
     { public declarations }
   end;
@@ -105,7 +105,7 @@ implementation
 
 procedure TfrmMain.actRuby18Execute(Sender : TObject);
  begin
-(* if actRuby19.Checked
+ if actRuby19.Checked
     then begin
          fldRuby.Destroy;
          fldRuby := nil;
@@ -128,7 +128,8 @@ procedure TfrmMain.actRuby18Execute(Sender : TObject);
          memOutput.Lines.Add('---');
          end
     else try
-           fldRuby := TRuby18.DefaultCreate;
+           fldRuby := TRuby18.Auto;
+           fldRuby.RegisterClass(TForm);
            actRuby18.Checked := true;
            actRun.Enabled := true;
            stbMain.Panels[0].text := fldRuby.Description;
@@ -136,12 +137,12 @@ procedure TfrmMain.actRuby18Execute(Sender : TObject);
            memOutput.Lines.Add('=== Load: ' + fldRuby.Description);
            memOutput.Lines.add('---');
          except
-           on ERubyInitError do
+           on ERuby do
               begin
               actRuby18.Enabled := false;
               raise;
               end;
-         end;       *)
+         end;
  end;
 
 procedure TfrmMain.actCleanOutputExecute(Sender : TObject);
@@ -151,7 +152,7 @@ procedure TfrmMain.actCleanOutputExecute(Sender : TObject);
 
 procedure TfrmMain.actRuby19Execute(Sender : TObject);
  begin
-(* if actRuby18.Checked
+ if actRuby18.Checked
     then begin
          fldRuby.Destroy;
          fldRuby := nil;
@@ -174,7 +175,7 @@ procedure TfrmMain.actRuby19Execute(Sender : TObject);
          memOutput.Lines.Add('---');
          end
     else try
-           fldRuby := TRuby19.DefaultCreate;
+           fldRuby := TRuby19.Auto;
            fldRuby.RegisterClass(TForm);
            actRuby19.Checked := true;
            actRun.Enabled := true;
@@ -183,27 +184,27 @@ procedure TfrmMain.actRuby19Execute(Sender : TObject);
            memOutput.Lines.Add('=== Load: ' + fldRuby.Description);
            memOutput.Lines.add('---');
          except
-           on ERubyInitError do
+           on ERuby do
               begin
               actRuby19.Enabled := false;
               raise;
               end;
-         end;   *)
+         end;
  end;
 
 procedure TfrmMain.actRunExecute(Sender : TObject);
  begin
-(* try
-   stbMain.Panels[2].Text := '= ' + fldRuby.VALUE2String(fldRuby.Inspect(fldRuby.Execute(synMain.Text)));
+ try
+   stbMain.Panels[2].Text := '= ' + fldRuby.StringValue2String(fldRuby.Inspect(fldRuby.EvalString(synMain.Text)));
    stbMain.Panels[1].Text := 'OK';
  except
-   on e : ERubyExecError do
+   on e : ERubyEval do
       begin
       stbMain.Panels[2].Text := e.Message;
       stbMain.Panels[1].Text := 'Error!';
       raise;
       end;
- end;      *)
+ end;
  end;
 
 end.

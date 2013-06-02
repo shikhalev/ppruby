@@ -19,13 +19,63 @@ type
 
 type
 
+  TRuby = class;
+
+  FRegisterClassHook = procedure (ruby : TRuby; cls : TClass; value : VALUE);
+
+  FRubyDataFunc = procedure (p : Pointer); cdecl;
+  FRubyFunc = function (value : VALUE) : VALUE; cdecl;
+
+  FRubyMethod0   = function (obj : VALUE) : VALUE; cdecl;
+  FRubyMethod1   = function (obj : VALUE; a : VALUE) : VALUE; cdecl;
+  FRubyMethod2   = function (obj : VALUE; a, b : VALUE) : VALUE; cdecl;
+  FRubyMethod3   = function (obj : VALUE; a, b, c : VALUE) : VALUE; cdecl;
+  FRubyMethod4   = function (obj : VALUE; a, b, c, d : VALUE) : VALUE; cdecl;
+  FRubyMethod5   = function (obj : VALUE; a, b, c, d, e : VALUE) : VALUE; cdecl;
+  FRubyMethod6   = function (obj : VALUE; a, b, c, d, e, f : VALUE) : VALUE; cdecl;
+  FRubyMethod7   = function (obj : VALUE; a, b, c, d, e, f, g : VALUE) : VALUE; cdecl;
+  FRubyMethod8   = function (obj : VALUE; a, b, c, d, e, f, g, h : VALUE) : VALUE; cdecl;
+  FRubyMethod9   = function (obj : VALUE; a, b, c, d, e, f, g, h, i : VALUE) : VALUE; cdecl;
+  FRubyMethod10  = function (obj : VALUE; a, b, c, d, e, f, g, h, i, j : VALUE) : VALUE; cdecl;
+  FRubyMethod11  = function (obj : VALUE; a, b, c, d, e, f, g, h, i, j, k : VALUE) : VALUE; cdecl;
+  FRubyMethod12  = function (obj : VALUE; a, b, c, d, e, f, g, h, i, j, k, l : VALUE) : VALUE; cdecl;
+  FRubyMethod13  = function (obj : VALUE; a, b, c, d, e, f, g, h, i, j, k, l, m : VALUE) : VALUE; cdecl;
+  FRubyMethod14  = function (obj : VALUE; a, b, c, d, e, f, g, h, i, j, k, l, m, n : VALUE) : VALUE; cdecl;
+  FRubyMethod15  = function (obj : VALUE; a, b, c, d, e, f, g, h, i, j, k, l, m, n, o : VALUE) : VALUE; cdecl;
+  FRubyMethod16  = function (obj : VALUE; a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p : VALUE) : VALUE; cdecl;
+  FRubyMethod17  = function (obj : VALUE; a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q : VALUE) : VALUE; cdecl;
+  FRubyMethodArr = function (argc : LongInt; argv : PVALUE; obj : VALUE) : VALUE; cdecl;
+
   TRubyClass = class of TRuby;
 
   { TRuby }
 
   TRuby = class
   private
-    // methods
+    class var
+      listHooks : array of record
+          cls : TClass;
+          hook : FRegisterClassHook;
+        end;
+    class function findHook (cls : TClass; hook : FRegisterClassHook; out idx : Integer) : Boolean;
+    var
+      cacheClasses : array of record
+          cls : TClass;
+          value : VALUE;
+        end;
+    function findClass (cls : TClass; out value : VALUE) : Boolean;
+    var
+      cacheUnits : array of record
+          name : AnsiString;
+          value : VALUE;
+        end;
+    function findUnit (const name : AnsiString; out value : VALUE) : Boolean;
+    var
+      cacheObjects : array of record
+          obj : TObject;
+          value : VALUE;
+        end;
+    function findObject (obj : TObject; out value : VALUE) : Boolean;
   protected
     // fields: lib
     libHandle : THandle;
@@ -38,12 +88,19 @@ type
     rb_define_class_under : function (ns : VALUE; name : PChar; super : VALUE) : VALUE; cdecl;
     rb_define_const : procedure (ns : VALUE; name : PChar; value : VALUE); cdecl;
     rb_define_global_const : procedure (name : PChar; value : VALUE); cdecl;
-    rb_eval_string_protect : function (str : PChar; out res : cint) : VALUE; cdecl;
+    rb_define_method, rb_define_module_function  : procedure (module : VALUE; name : PChar; func : Pointer; argc : cint);
+    rb_define_singleton_method : procedure (obj : VALUE; name : PChar; func : Pointer; argc : cint);
+    rb_define_global_function : procedure (name : PChar; func : Pointer; argc : cint);
+    rb_eval_string_protect : function (str : PChar; out state : cint) : VALUE; cdecl;
     rb_string_value_cstr : function (constref v : VALUE) : PChar; cdecl;
     rb_inspect : function (value : VALUE) : VALUE; cdecl;
     rb_funcall2, rb_funcall3 : function (obj : VALUE; method : ID; argc : cint; argv : PVALUE) : VALUE; cdecl;
     rb_intern : function (name : PChar) : ID; cdecl;
-    rb_str_new2 : function (str : PChar) : VALUE; cdecl;                                            // fields: ruby objects
+    rb_str_new2 : function (str : PChar) : VALUE; cdecl;
+    rb_data_object_alloc : function (cls : VALUE; data : Pointer; mark, free : FRubyDataFunc) : VALUE; cdecl;
+    rb_protect : function (func : FRubyFunc; data : VALUE; out state : cint) : VALUE; cdecl;
+    rb_check_type : procedure (value : VALUE; t : cint); cdecl;
+    // fields: ruby objects
     rb_mKernel, rb_mComparable, rb_mEnumerable, rb_mErrno, rb_mFileTest, rb_mGC,
       rb_mMath, rb_mProcess : VALUE;
     rb_cObject, rb_cArray, rb_cBignum, rb_cBinding, rb_cClass, rb_cCont,
@@ -60,6 +117,8 @@ type
       rb_eLocalJumpError, rb_eSysStackError, rb_eRegexpError, rb_eScriptError,
       rb_eNameError, rb_eSyntaxError, rb_eLoadError : VALUE;
     rb_stdin, rb_stdout, rb_stderr : PVALUE;
+    // fields: other ruby vars
+    ruby_description : Pointer;
     // fields: own ruby objects
     rb_mPascal : VALUE;
     // methods
@@ -70,6 +129,11 @@ type
     procedure init (const script : UTF8String); virtual;
     procedure setup; virtual;
     procedure done; virtual;
+    function defaultSuperclass : VALUE; virtual;
+    procedure registerProperties (cls : TClass; value : VALUE); virtual;
+    procedure check_type (value : VALUE; t : Integer); virtual;
+    procedure check_data (value : VALUE); virtual; abstract;
+    function get_data (value : VALUE) : Pointer; virtual;
     // property access
     function getErrInfo : VALUE; virtual; abstract;
     function getStdIn : VALUE; virtual;
@@ -82,6 +146,8 @@ type
     // class methods
     class function defaultLibrary : UTF8String; virtual; abstract;
     class function defaultScript : UTF8String; virtual;
+    class function constName (const name : AnsiString) : AnsiString;
+    class function methodName (const name : AnsiString) : AnsiString;
   public
     // constants
     const
@@ -92,6 +158,8 @@ type
     // class methods
     class function Auto : TRuby;
     class function Auto (const vers : array of TRubyClass) : TRuby;
+    class procedure AddRegisterClassHook (cls : TClass; hook : FRegisterClassHook);
+    class procedure DelRegisterClassHook (cls : TClass; hook : FRegisterClassHook);
     // constructor & destructor
     constructor Create (const lib, script : UTF8String); virtual;
     destructor Destroy; override;
@@ -100,6 +168,7 @@ type
     property StdIn : VALUE read getStdIn write setStdIn;
     property StdOut : VALUE read getStdOut write setStdOut;
     property StdErr : VALUE read getStdErr write setStdErr;
+    function Description : UTF8String; virtual;
     // properties (wrappers: modules)
     property mKernel : VALUE read rb_mKernel;
     property mComparable : VALUE read rb_mComparable;
@@ -193,13 +262,96 @@ type
     function Call (obj : VALUE; name : UTF8String; const args : array of VALUE) : VALUE;
     function Send (obj : VALUE; method : ID; const args : array of VALUE) : VALUE;
     function Send (obj : VALUE; name : UTF8String; const args : array of VALUE) : VALUE;
+    procedure DefineMethod (module : VALUE; const name : UTF8String; func : FRubyMethod0);
+    procedure DefineMethod (module : VALUE; const name : UTF8String; func : FRubyMethod1);
+    procedure DefineMethod (module : VALUE; const name : UTF8String; func : FRubyMethod2);
+    procedure DefineMethod (module : VALUE; const name : UTF8String; func : FRubyMethod3);
+    procedure DefineMethod (module : VALUE; const name : UTF8String; func : FRubyMethod4);
+    procedure DefineMethod (module : VALUE; const name : UTF8String; func : FRubyMethod5);
+    procedure DefineMethod (module : VALUE; const name : UTF8String; func : FRubyMethod6);
+    procedure DefineMethod (module : VALUE; const name : UTF8String; func : FRubyMethod7);
+    procedure DefineMethod (module : VALUE; const name : UTF8String; func : FRubyMethod8);
+    procedure DefineMethod (module : VALUE; const name : UTF8String; func : FRubyMethod9);
+    procedure DefineMethod (module : VALUE; const name : UTF8String; func : FRubyMethod10);
+    procedure DefineMethod (module : VALUE; const name : UTF8String; func : FRubyMethod11);
+    procedure DefineMethod (module : VALUE; const name : UTF8String; func : FRubyMethod12);
+    procedure DefineMethod (module : VALUE; const name : UTF8String; func : FRubyMethod13);
+    procedure DefineMethod (module : VALUE; const name : UTF8String; func : FRubyMethod14);
+    procedure DefineMethod (module : VALUE; const name : UTF8String; func : FRubyMethod15);
+    procedure DefineMethod (module : VALUE; const name : UTF8String; func : FRubyMethod16);
+    procedure DefineMethod (module : VALUE; const name : UTF8String; func : FRubyMethod17);
+    procedure DefineMethod (module : VALUE; const name : UTF8String; func : FRubyMethodArr);
+    procedure DefineModuleFunction (module : VALUE; const name : UTF8String; func : FRubyMethod0);
+    procedure DefineModuleFunction (module : VALUE; const name : UTF8String; func : FRubyMethod1);
+    procedure DefineModuleFunction (module : VALUE; const name : UTF8String; func : FRubyMethod2);
+    procedure DefineModuleFunction (module : VALUE; const name : UTF8String; func : FRubyMethod3);
+    procedure DefineModuleFunction (module : VALUE; const name : UTF8String; func : FRubyMethod4);
+    procedure DefineModuleFunction (module : VALUE; const name : UTF8String; func : FRubyMethod5);
+    procedure DefineModuleFunction (module : VALUE; const name : UTF8String; func : FRubyMethod6);
+    procedure DefineModuleFunction (module : VALUE; const name : UTF8String; func : FRubyMethod7);
+    procedure DefineModuleFunction (module : VALUE; const name : UTF8String; func : FRubyMethod8);
+    procedure DefineModuleFunction (module : VALUE; const name : UTF8String; func : FRubyMethod9);
+    procedure DefineModuleFunction (module : VALUE; const name : UTF8String; func : FRubyMethod10);
+    procedure DefineModuleFunction (module : VALUE; const name : UTF8String; func : FRubyMethod11);
+    procedure DefineModuleFunction (module : VALUE; const name : UTF8String; func : FRubyMethod12);
+    procedure DefineModuleFunction (module : VALUE; const name : UTF8String; func : FRubyMethod13);
+    procedure DefineModuleFunction (module : VALUE; const name : UTF8String; func : FRubyMethod14);
+    procedure DefineModuleFunction (module : VALUE; const name : UTF8String; func : FRubyMethod15);
+    procedure DefineModuleFunction (module : VALUE; const name : UTF8String; func : FRubyMethod16);
+    procedure DefineModuleFunction (module : VALUE; const name : UTF8String; func : FRubyMethod17);
+    procedure DefineModuleFunction (module : VALUE; const name : UTF8String; func : FRubyMethodArr);
+    procedure DefineSingletonMethod (obj : VALUE; const name : UTF8String; func : FRubyMethod0);
+    procedure DefineSingletonMethod (obj : VALUE; const name : UTF8String; func : FRubyMethod1);
+    procedure DefineSingletonMethod (obj : VALUE; const name : UTF8String; func : FRubyMethod2);
+    procedure DefineSingletonMethod (obj : VALUE; const name : UTF8String; func : FRubyMethod3);
+    procedure DefineSingletonMethod (obj : VALUE; const name : UTF8String; func : FRubyMethod4);
+    procedure DefineSingletonMethod (obj : VALUE; const name : UTF8String; func : FRubyMethod5);
+    procedure DefineSingletonMethod (obj : VALUE; const name : UTF8String; func : FRubyMethod6);
+    procedure DefineSingletonMethod (obj : VALUE; const name : UTF8String; func : FRubyMethod7);
+    procedure DefineSingletonMethod (obj : VALUE; const name : UTF8String; func : FRubyMethod8);
+    procedure DefineSingletonMethod (obj : VALUE; const name : UTF8String; func : FRubyMethod9);
+    procedure DefineSingletonMethod (obj : VALUE; const name : UTF8String; func : FRubyMethod10);
+    procedure DefineSingletonMethod (obj : VALUE; const name : UTF8String; func : FRubyMethod11);
+    procedure DefineSingletonMethod (obj : VALUE; const name : UTF8String; func : FRubyMethod12);
+    procedure DefineSingletonMethod (obj : VALUE; const name : UTF8String; func : FRubyMethod13);
+    procedure DefineSingletonMethod (obj : VALUE; const name : UTF8String; func : FRubyMethod14);
+    procedure DefineSingletonMethod (obj : VALUE; const name : UTF8String; func : FRubyMethod15);
+    procedure DefineSingletonMethod (obj : VALUE; const name : UTF8String; func : FRubyMethod16);
+    procedure DefineSingletonMethod (obj : VALUE; const name : UTF8String; func : FRubyMethod17);
+    procedure DefineSingletonMethod (obj : VALUE; const name : UTF8String; func : FRubyMethodArr);
+    procedure DefineGlobalFunction (const name : UTF8String; func : FRubyMethod0);
+    procedure DefineGlobalFunction (const name : UTF8String; func : FRubyMethod1);
+    procedure DefineGlobalFunction (const name : UTF8String; func : FRubyMethod2);
+    procedure DefineGlobalFunction (const name : UTF8String; func : FRubyMethod3);
+    procedure DefineGlobalFunction (const name : UTF8String; func : FRubyMethod4);
+    procedure DefineGlobalFunction (const name : UTF8String; func : FRubyMethod5);
+    procedure DefineGlobalFunction (const name : UTF8String; func : FRubyMethod6);
+    procedure DefineGlobalFunction (const name : UTF8String; func : FRubyMethod7);
+    procedure DefineGlobalFunction (const name : UTF8String; func : FRubyMethod8);
+    procedure DefineGlobalFunction (const name : UTF8String; func : FRubyMethod9);
+    procedure DefineGlobalFunction (const name : UTF8String; func : FRubyMethod10);
+    procedure DefineGlobalFunction (const name : UTF8String; func : FRubyMethod11);
+    procedure DefineGlobalFunction (const name : UTF8String; func : FRubyMethod12);
+    procedure DefineGlobalFunction (const name : UTF8String; func : FRubyMethod13);
+    procedure DefineGlobalFunction (const name : UTF8String; func : FRubyMethod14);
+    procedure DefineGlobalFunction (const name : UTF8String; func : FRubyMethod15);
+    procedure DefineGlobalFunction (const name : UTF8String; func : FRubyMethod16);
+    procedure DefineGlobalFunction (const name : UTF8String; func : FRubyMethod17);
+    procedure DefineGlobalFunction (const name : UTF8String; func : FRubyMethodArr);
     // properties (self)
     // methods (self)
+    function RegisterClass (cls : TClass) : VALUE;
+    function RegisterUnit (const name : AnsiString) : VALUE;
+    function WrapObject (obj : TObject) : VALUE;
+    function GetObject (value : VALUE) : TObject;
   end;
 
   { TRuby18 }
 
   TRuby18 = class(TRuby)
+  protected
+    const
+      T_DATA = $22;
   protected
     // fields: error
     ruby_errinfo : PVALUE;
@@ -208,6 +360,7 @@ type
     // overrided methods
     procedure load; override;
     procedure setup; override;
+    procedure check_data(value : VALUE); override;
     // property access
     function getErrInfo : VALUE; override;
     procedure setErrInfo(value : VALUE); override;
@@ -216,11 +369,15 @@ type
   public
     // properties (wrappers)
     property mPrecision : VALUE read rb_mPrecision;
+    function Description : UTF8String; override;
   end;
 
   { TRuby19 }
 
   TRuby19 = class(TRuby)
+  protected
+    const
+      T_DATA = $0C;
   protected
     // fields: rb_ functions
     rb_errinfo : function : VALUE; cdecl;
@@ -233,6 +390,7 @@ type
     // overrided methods
     procedure load; override;
     procedure setup; override;
+    procedure check_data(value : VALUE); override;
     // property access
     function getErrInfo : VALUE; override;
     procedure setErrInfo(value : VALUE); override;
@@ -260,166 +418,6 @@ type
     class function defaultLibrary : UTF8String; override;
   end;
 
-(*
-type
-  TVersion = record
-    major, minor : Integer
-  end;
-
-
-type
-  TRubyEngine = class;
-
-  TRegisterClassHook = procedure (ruby : TRubyEngine; fpc_class : TClass; rb_class : VALUE);
-
-  TRubyClass = class of TRubyEngine;
-
-  { TRubyEngine }
-
-  TRubyEngine = class(TObject)
-  protected
-    fldLib : THandle;
-    ruby_init : procedure (); cdecl;
-    ruby_init_loadpath : procedure (); cdecl;
-    ruby_script : procedure (script : PChar); cdecl;
-    ruby_finalize : procedure (); cdecl;
-    rb_eval_string_protect : function (Str : PChar; out Err : Integer) : VALUE;
-                                      cdecl;
-    rb_string_value_cstr : function (constref v : VALUE) : PChar; cdecl;
-    rb_inspect : function (v : VALUE) : VALUE; cdecl;
-    rb_define_module : function (name : PChar) : VALUE; cdecl;
-    rb_define_module_under : function (up : VALUE; name : PChar) : VALUE; cdecl;
-    rb_define_class : function (name : PChar; super : VALUE) : VALUE; cdecl;
-    rb_define_class_under : function (up : VALUE; name : PChar; super : VALUE) : VALUE; cdecl;
-    rb_define_const : procedure (ns : VALUE; name : PChar; v : VALUE); cdecl;
-    rb_define_global_const : procedure (name : PChar; v : VALUE); cdecl;
-    rb_funcall2 : function (obj : VALUE; meth : ID; cnt : cint; args : PVALUE) : VALUE; cdecl;
-    rb_intern : function (name : PChar) : ID; cdecl;
-    rb_str_new2 : function (s : PChar) : VALUE; cdecl;
-    rb_cObject : VALUE;
-  protected
-    rb_mPascal : VALUE;
-  protected
-    class function Version : TVersion; virtual; abstract;
-    class function DefaultScript : UTF8String; virtual;
-    procedure SetupUTF8; virtual; abstract;
-  public
-    class function DefaultLibrary : UTF8String; virtual;
-    class function AutoCreate (
-                   const Vers : array of TRubyClass;
-                   const Scr : UTF8String = ''
-                   ) : TRubyEngine;
-    function Execute (const Str : UTF8String) : VALUE; virtual;
-    function Description : UTF8String; virtual; abstract;
-    function ErrInfo : VALUE; virtual; abstract;
-    function Inspect (v : VALUE) : VALUE; virtual;
-    function VALUE2String (v : VALUE) : UTF8String; virtual;
-    function String2VALUE (const s : UTF8String) : VALUE; virtual;
-    function String2ID (const s : UTF8String) : ID; virtual;
-  protected
-    procedure RegisterRTTI (cls : TClass; rb : VALUE); virtual;
-  public
-    class procedure RegisterClassHook (const Classes : array of TClass; Hook : TRegisterClassHook);
-    class procedure UnregisterClassHook (const Classes : array of TClass; Hook : TRegisterClassHook);
-    function RegisterClass (Cls : TClass) : VALUE; virtual;
-    function RegisterUnit (const nm : AnsiString) : VALUE; virtual;
-    function DefaultAncestor : VALUE; virtual; abstract;
-  public
-    property cObject : VALUE read rb_cObject;
-    property mPascal : VALUE read rb_mPascal;
-  public
-    function DefineModule (const Name : UTF8String) : VALUE; virtual;
-    function DefineModule (NS : VALUE; const Name : UTF8String) : VALUE; virtual;
-    function DefineClass (const Name : UTF8String; Super : VALUE) : VALUE; virtual;
-    function DefineClass (const Name : UTF8String) : VALUE; virtual;
-    function DefineClass (NS : VALUE; const Name : UTF8String; Super : VALUE) : VALUE; virtual;
-    function DefineClass (NS : VALUE; const Name : UTF8String) : VALUE; virtual;
-    procedure DefineConstant (ns : VALUE; const name : UTF8String; v : VALUE); virtual;
-    procedure DefineConstant (const name : UTF8String; v : VALUE); virtual;
-    function Call (obj : VALUE; msg : ID; const args : array of VALUE) : VALUE; virtual;
-    function Call (obj : VALUE; const method : UTF8String; const args : array of VALUE) : VALUE; virtual;
-  public
-    const
-      Qfalse = VALUE(0);
-      Qtrue  = VALUE(2);
-    class function Qnil : VALUE; virtual;
-    class function Qundef : VALUE; virtual;
-  public
-    constructor Create (const Lib : UTF8String; const Scr : UTF8String = '');
-                                      virtual;
-    constructor DefaultCreate; virtual;
-    destructor Destroy; override;
-  end;
-
-  { TRuby18 }
-
-  TRuby18 = class(TRubyEngine)
-  protected
-    p_ruby_errinfo : PVALUE;
-    ruby_description : PChar;
-  protected
-    class function Version : TVersion; override;
-    procedure SetupUTF8; override;
-  public
-    function Description : UTF8String; override;
-    function ErrInfo : VALUE; override;
-    function DefaultAncestor : VALUE; override;
-  public
-    constructor Create (const Lib : UTF8String; const Scr : UTF8String = '');
-                                      override;
-  end;
-
-  { TRuby19 }
-
-  TRuby19 = class(TRubyEngine)
-  protected
-    rb_errinfo : function : VALUE; cdecl;
-    rb_set_errinfo : procedure (v : VALUE); cdecl;
-    ruby_description : PChar;
-    rb_cData : VALUE;
-  protected
-    class function Version : TVersion; override;
-    procedure SetupUTF8; override;
-  public
-    function Description : UTF8String; override;
-    function ErrInfo : VALUE; override;
-    function Execute (const Str : UTF8String) : VALUE; override;
-    function DefaultAncestor : VALUE; override;
-  public
-    property cData : VALUE read rb_cData;
-  public
-    constructor Create (const Lib : UTF8String; const Scr : UTF8String = '');
-                                      override;
-  end;
-
-  { TRuby20 }
-
-  TRuby20 = class(TRuby19)
-  protected
-    class function Version : TVersion; override;
-  end;
-
-type
-  ERubyError = class(Exception);
-
-  ERubyLibraryNotFound = class(ERubyError);
-  ERubyInitError = class(ERubyError);
-
-  { ERubyExecError }
-
-  ERubyExecError = class(ERubyError)
-  private
-    fldErrInfo : VALUE;
-  public
-    property ErrInfo : VALUE read fldErrInfo;
-  public
-    constructor Create(info : VALUE; const msg : UTF8String);
-  end;
-
-const
-  msgRubyLibraryNotFound = 'Ruby Library "%s" not found (or is not a library).';
-  msgRubyInitError = 'Error #%d while initialization (%s).';    *)
-
 type
   ERuby = class(Exception);
 
@@ -435,6 +433,8 @@ type
     constructor Create (info : VALUE; const msg : UTF8String);
   end;
 
+  ERubyType = class(ERubyEval);
+
 implementation
 
 const
@@ -449,6 +449,65 @@ constructor ERubyEval.Create(info : VALUE; const msg : UTF8String);
  end;
 
 { TRuby }
+
+class function TRuby.findHook(cls : TClass; hook : FRegisterClassHook; out
+  idx : Integer) : Boolean;
+ var
+   i : Integer;
+ begin
+ for i := 0 to High(listHooks) do
+     if (listHooks[i].cls = cls) and (listHooks[i].hook = hook)
+        then begin
+             idx := i;
+             result := true;
+             Exit;
+             end;
+ result := false;
+ end;
+
+function TRuby.findClass(cls : TClass; out value : VALUE) : Boolean;
+ var
+   i : Integer;
+ begin
+ for i := 0 to High(cacheClasses) do
+     if cacheClasses[i].cls = cls
+        then begin
+             value := cacheClasses[i].value;
+             result := true;
+             Exit;
+             end;
+ result := false;
+ end;
+
+function TRuby.findUnit(const name : AnsiString; out value : VALUE) : Boolean;
+ var
+   i : Integer;
+   nm : AnsiString;
+ begin
+ nm := UpCase(name);
+ for i := 0 to High(cacheUnits) do
+     if cacheUnits[i].name = nm
+        then begin
+             value := cacheUnits[i].value;
+             result := true;
+             Exit;
+             end;
+ result := false;
+ end;
+
+function TRuby.findObject(obj : TObject; out value : VALUE) : Boolean;
+ var
+   i : Integer;
+ begin
+ for i := 0 to High(cacheObjects) do
+     if cacheObjects[i].obj = obj
+        then begin
+             value := cacheObjects[i].value;
+             result := true;
+             Exit;
+             end;
+ result := false;
+ end;
 
 procedure TRuby.loadFunc (out field; const name : UTF8String);
  begin
@@ -473,19 +532,26 @@ procedure TRuby.load;
  loadFunc(ruby_script,        'ruby_script');
  loadFunc(ruby_finalize,      'ruby_finalize');
  // rb_ functions
- loadFunc(rb_define_module,       'rb_define_module');
- loadFunc(rb_define_module_under, 'rb_define_module_under');
- loadFunc(rb_define_class,        'rb_define_class');
- loadFunc(rb_define_class_under,  'rb_define_class_under');
- loadFunc(rb_define_const,        'rb_define_const');
- loadFunc(rb_define_global_const, 'rb_define_global_const');
- loadFunc(rb_eval_string_protect, 'rb_eval_string_protect');
- loadFunc(rb_string_value_cstr,   'rb_string_value_cstr');
- loadFunc(rb_inspect,             'rb_inspect');
- loadFunc(rb_funcall2,            'rb_funcall2');
- loadFunc(rb_funcall3,            'rb_funcall3');
- loadFunc(rb_intern,              'rb_intern');
- loadFunc(rb_str_new2,            'rb_str_new2');
+ loadFunc(rb_define_module,           'rb_define_module');
+ loadFunc(rb_define_module_under,     'rb_define_module_under');
+ loadFunc(rb_define_class,            'rb_define_class');
+ loadFunc(rb_define_class_under,      'rb_define_class_under');
+ loadFunc(rb_define_const,            'rb_define_const');
+ loadFunc(rb_define_global_const,     'rb_define_global_const');
+ loadFunc(rb_define_method,           'rb_define_method');
+ loadFunc(rb_define_module_function,  'rb_define_module_function');
+ loadFunc(rb_define_singleton_method, 'rb_define_singleton_method');
+ loadFunc(rb_define_global_function,  'rb_define_global_function');
+ loadFunc(rb_eval_string_protect,     'rb_eval_string_protect');
+ loadFunc(rb_string_value_cstr,       'rb_string_value_cstr');
+ loadFunc(rb_inspect,                 'rb_inspect');
+ loadFunc(rb_funcall2,                'rb_funcall2');
+ loadFunc(rb_funcall3,                'rb_funcall3');
+ loadFunc(rb_intern,                  'rb_intern');
+ loadFunc(rb_str_new2,                'rb_str_new2');
+ loadFunc(rb_data_object_alloc,       'rb_data_object_alloc');
+ loadFunc(rb_protect,                 'rb_protect');
+ loadFunc(rb_check_type,              'rb_check_type');
  // modules
  loadValue(rb_mKernel,     'rb_mKernel');
  loadValue(rb_mComparable, 'rb_mComparable');
@@ -501,7 +567,7 @@ procedure TRuby.load;
  loadValue(rb_cBignum,        'rb_cBignum');
  loadValue(rb_cBinding,       'rb_cBinding');
  loadValue(rb_cClass,         'rb_cClass');
- loadValue(rb_cCont,          'rb_cCont');
+// loadValue(rb_cCont,          'rb_cCont');
  loadValue(rb_cData,          'rb_cData');
  loadValue(rb_cDir,           'rb_cDir');
  loadValue(rb_cEnumerator,    'rb_cEnumerator');
@@ -561,6 +627,8 @@ procedure TRuby.load;
  loadPtr(rb_stdin,  'rb_stdin');
  loadPtr(rb_stdout, 'rb_stdout');
  loadPtr(rb_stderr, 'rb_stderr');
+ // other
+ loadPtr(ruby_description, 'ruby_description');
  end;
 
 procedure TRuby.init(const script : UTF8String);
@@ -579,6 +647,99 @@ procedure TRuby.setup;
 procedure TRuby.done;
  begin
  ruby_finalize;
+ UnloadLibrary(libHandle);
+ end;
+
+function TRuby.defaultSuperclass : VALUE;
+ begin
+ result := cData;
+ end;
+
+procedure TRuby.registerProperties (cls : TClass; value : VALUE);
+ var
+   data : PTypeData;
+   list : PPropList;
+   prop : PPropInfo;
+   i : Integer;
+   nm : AnsiString;
+   code : UTF8String;
+ begin
+ data := GetTypeData(cls.ClassInfo);
+ GetPropList(cls, list);
+ for i := 0 to data^.PropCount - 1 do
+     begin
+     prop := list^[i];
+     nm := methodName(prop^.Name);
+     code := 'attr_accessor :' + nm + LineEnding +
+             'def ' + nm + LineEnding +
+             '  pascal_get_prop("' + prop^.Name + '")' + LineEnding +
+             'end' + LineEnding +
+             'def ' + nm + '=(value)' + LineEnding +
+             '  pascal_set_prop("' + prop^.Name + '", value)' + LineEnding +
+             'end';
+     Send(value, 'class_eval', [StrNew(code)]);
+     end;
+ end;
+
+type
+  TCheckTypeRec = record
+    func : procedure (value : VALUE; t : cint); cdecl;
+    value : VALUE;
+    t : Integer;
+  end;
+  PCheckTypeRec = ^TCheckTypeRec;
+
+function check_type_wrapper (value : VALUE) : VALUE; cdecl;
+ var
+   p : PCheckTypeRec;
+ begin
+{$hints off}
+ p := PCheckTypeRec(value);
+{$hints on}
+ p^.func(p^.value, p^.t);
+ result := TRuby.Qtrue
+ end;
+
+procedure TRuby.check_type(value : VALUE; t : Integer);
+ var
+   rec : TCheckTypeRec;
+   val : VALUE;
+   res : Integer;
+   err : VALUE;
+ begin
+ rec.func := rb_check_type;
+ rec.value := value;
+ rec.t := t;
+{$hints off}
+ val := PtrUInt(@rec);
+{$hints on}
+ rb_protect(@check_type_wrapper, val, res);
+ if res <> 0
+    then begin
+         err := getErrInfo;
+         raise ERubyType.Create(err, StringValue2String(Inspect(err)));
+         end;
+ end;
+
+type
+  RBasic = record
+    flags : VALUE;
+    klass : VALUE;
+  end;
+
+  RData = record
+    basic : RBasic;
+    dmark, dfree : FRubyDataFunc;
+    data : Pointer;
+  end;
+  PRData = ^RData;
+
+function TRuby.get_data (value : VALUE) : Pointer;
+ begin
+ check_data(value);
+{$hints off}
+ result := PRData(value)^.data;
+{$hints on}
  end;
 
 function TRuby.getStdIn : VALUE;
@@ -616,6 +777,18 @@ class function TRuby.defaultScript : UTF8String;
  result := ParamStr(0);
  end;
 
+class function TRuby.constName(const name : AnsiString) : AnsiString;
+ begin
+ result := name;
+ result[1] := UpCase(name[1]);
+ end;
+
+class function TRuby.methodName(const name : AnsiString) : AnsiString;
+ begin
+ result := name;
+ result[1] := LowerCase(name[1]);
+ end;
+
 class function TRuby.Auto : TRuby;
  begin
  result := Create(defaultLibrary, defaultScript)
@@ -635,6 +808,34 @@ class function TRuby.Auto(const vers : array of TRubyClass) : TRuby;
  result := nil;
  end;
 
+class procedure TRuby.AddRegisterClassHook(cls : TClass;
+  hook : FRegisterClassHook);
+ var
+   i, l : Integer;
+ begin
+ if not findHook(cls, hook, i)
+    then begin
+         l := Length(listHooks);
+         SetLength(listHooks, l + 1);
+         listHooks[l].cls := cls;
+         listHooks[l].hook := hook;
+         end;
+ end;
+
+class procedure TRuby.DelRegisterClassHook(cls : TClass;
+  hook : FRegisterClassHook);
+ var
+   i, h, d : Integer;
+ begin
+ if findHook(cls, hook, i)
+    then begin
+         h := High(listHooks);
+         for d := i to h - 1 do
+             listHooks[d] := listHooks[d + 1];
+         SetLength(listHooks, h);
+         end;
+ end;
+
 constructor TRuby.Create(const lib, script : UTF8String);
  begin
  inherited Create;
@@ -650,6 +851,11 @@ destructor TRuby.Destroy;
  begin
  done;
  inherited Destroy;
+ end;
+
+function TRuby.Description : UTF8String;
+ begin
+ result := UTF8String(PChar(ruby_description)) + '';
  end;
 
 function TRuby.EvalString(const str : UTF8String) : VALUE;
@@ -752,6 +958,522 @@ function TRuby.Send(obj : VALUE; name : UTF8String;
  result := Send(obj, Intern(name), args);
  end;
 
+procedure TRuby.DefineMethod(module : VALUE; const name : UTF8String;
+  func : FRubyMethod0);
+ begin
+ rb_define_method(module, PChar(name), func, 0);
+ end;
+
+procedure TRuby.DefineMethod(module : VALUE; const name : UTF8String;
+  func : FRubyMethod1);
+ begin
+ rb_define_method(module, PChar(name), func, 1);
+ end;
+
+procedure TRuby.DefineMethod(module : VALUE; const name : UTF8String;
+  func : FRubyMethod2);
+ begin
+ rb_define_method(module, PChar(name), func, 2);
+ end;
+
+procedure TRuby.DefineMethod(module : VALUE; const name : UTF8String;
+  func : FRubyMethod3);
+ begin
+ rb_define_method(module, PChar(name), func, 3);
+ end;
+
+procedure TRuby.DefineMethod(module : VALUE; const name : UTF8String;
+  func : FRubyMethod4);
+ begin
+ rb_define_method(module, PChar(name), func, 4);
+ end;
+
+procedure TRuby.DefineMethod(module : VALUE; const name : UTF8String;
+  func : FRubyMethod5);
+ begin
+ rb_define_method(module, PChar(name), func, 5);
+ end;
+
+procedure TRuby.DefineMethod(module : VALUE; const name : UTF8String;
+  func : FRubyMethod6);
+ begin
+ rb_define_method(module, PChar(name), func, 6);
+ end;
+
+procedure TRuby.DefineMethod(module : VALUE; const name : UTF8String;
+  func : FRubyMethod7);
+ begin
+ rb_define_method(module, PChar(name), func, 7);
+ end;
+
+procedure TRuby.DefineMethod(module : VALUE; const name : UTF8String;
+  func : FRubyMethod8);
+ begin
+ rb_define_method(module, PChar(name), func, 8);
+ end;
+
+procedure TRuby.DefineMethod(module : VALUE; const name : UTF8String;
+  func : FRubyMethod9);
+ begin
+ rb_define_method(module, PChar(name), func, 9);
+ end;
+
+procedure TRuby.DefineMethod(module : VALUE; const name : UTF8String;
+  func : FRubyMethod10);
+ begin
+ rb_define_method(module, PChar(name), func, 10);
+ end;
+
+procedure TRuby.DefineMethod(module : VALUE; const name : UTF8String;
+  func : FRubyMethod11);
+ begin
+ rb_define_method(module, PChar(name), func, 11);
+ end;
+
+procedure TRuby.DefineMethod(module : VALUE; const name : UTF8String;
+  func : FRubyMethod12);
+ begin
+ rb_define_method(module, PChar(name), func, 12);
+ end;
+
+procedure TRuby.DefineMethod(module : VALUE; const name : UTF8String;
+  func : FRubyMethod13);
+ begin
+ rb_define_method(module, PChar(name), func, 13);
+ end;
+
+procedure TRuby.DefineMethod(module : VALUE; const name : UTF8String;
+  func : FRubyMethod14);
+ begin
+ rb_define_method(module, PChar(name), func, 14);
+ end;
+
+procedure TRuby.DefineMethod(module : VALUE; const name : UTF8String;
+  func : FRubyMethod15);
+ begin
+ rb_define_method(module, PChar(name), func, 15);
+ end;
+
+procedure TRuby.DefineMethod(module : VALUE; const name : UTF8String;
+  func : FRubyMethod16);
+ begin
+ rb_define_method(module, PChar(name), func, 16);
+ end;
+
+procedure TRuby.DefineMethod(module : VALUE; const name : UTF8String;
+  func : FRubyMethod17);
+ begin
+ rb_define_method(module, PChar(name), func, 17);
+ end;
+
+procedure TRuby.DefineMethod(module : VALUE; const name : UTF8String;
+  func : FRubyMethodArr);
+ begin
+ rb_define_method(module, PChar(name), func, -1);
+ end;
+
+procedure TRuby.DefineModuleFunction(module : VALUE; const name : UTF8String;
+  func : FRubyMethod0);
+ begin
+ rb_define_module_function(module, PChar(name), func, 0);
+ end;
+
+procedure TRuby.DefineModuleFunction(module : VALUE; const name : UTF8String;
+  func : FRubyMethod1);
+ begin
+ rb_define_module_function(module, PChar(name), func, 1);
+ end;
+
+procedure TRuby.DefineModuleFunction(module : VALUE; const name : UTF8String;
+  func : FRubyMethod2);
+ begin
+ rb_define_module_function(module, PChar(name), func, 2);
+ end;
+
+procedure TRuby.DefineModuleFunction(module : VALUE; const name : UTF8String;
+  func : FRubyMethod3);
+ begin
+ rb_define_module_function(module, PChar(name), func, 3);
+ end;
+
+procedure TRuby.DefineModuleFunction(module : VALUE; const name : UTF8String;
+  func : FRubyMethod4);
+ begin
+ rb_define_module_function(module, PChar(name), func, 4);
+ end;
+
+procedure TRuby.DefineModuleFunction(module : VALUE; const name : UTF8String;
+  func : FRubyMethod5);
+ begin
+ rb_define_module_function(module, PChar(name), func, 5);
+ end;
+
+procedure TRuby.DefineModuleFunction(module : VALUE; const name : UTF8String;
+  func : FRubyMethod6);
+ begin
+ rb_define_module_function(module, PChar(name), func, 6);
+ end;
+
+procedure TRuby.DefineModuleFunction(module : VALUE; const name : UTF8String;
+  func : FRubyMethod7);
+ begin
+ rb_define_module_function(module, PChar(name), func, 7);
+ end;
+
+procedure TRuby.DefineModuleFunction(module : VALUE; const name : UTF8String;
+  func : FRubyMethod8);
+ begin
+ rb_define_module_function(module, PChar(name), func, 8);
+ end;
+
+procedure TRuby.DefineModuleFunction(module : VALUE; const name : UTF8String;
+  func : FRubyMethod9);
+ begin
+ rb_define_module_function(module, PChar(name), func, 9);
+ end;
+
+procedure TRuby.DefineModuleFunction(module : VALUE; const name : UTF8String;
+  func : FRubyMethod10);
+ begin
+ rb_define_module_function(module, PChar(name), func, 10);
+ end;
+
+procedure TRuby.DefineModuleFunction(module : VALUE; const name : UTF8String;
+  func : FRubyMethod11);
+ begin
+ rb_define_module_function(module, PChar(name), func, 11);
+ end;
+
+procedure TRuby.DefineModuleFunction(module : VALUE; const name : UTF8String;
+  func : FRubyMethod12);
+ begin
+ rb_define_module_function(module, PChar(name), func, 12);
+ end;
+
+procedure TRuby.DefineModuleFunction(module : VALUE; const name : UTF8String;
+  func : FRubyMethod13);
+ begin
+ rb_define_module_function(module, PChar(name), func, 13);
+ end;
+
+procedure TRuby.DefineModuleFunction(module : VALUE; const name : UTF8String;
+  func : FRubyMethod14);
+ begin
+ rb_define_module_function(module, PChar(name), func, 14);
+ end;
+
+procedure TRuby.DefineModuleFunction(module : VALUE; const name : UTF8String;
+  func : FRubyMethod15);
+ begin
+ rb_define_module_function(module, PChar(name), func, 15);
+ end;
+
+procedure TRuby.DefineModuleFunction(module : VALUE; const name : UTF8String;
+  func : FRubyMethod16);
+ begin
+ rb_define_module_function(module, PChar(name), func, 16);
+ end;
+
+procedure TRuby.DefineModuleFunction(module : VALUE; const name : UTF8String;
+  func : FRubyMethod17);
+ begin
+ rb_define_module_function(module, PChar(name), func, 17);
+ end;
+
+procedure TRuby.DefineModuleFunction(module : VALUE; const name : UTF8String;
+  func : FRubyMethodArr);
+ begin
+ rb_define_module_function(module, PChar(name), func, -1);
+ end;
+
+procedure TRuby.DefineSingletonMethod(obj : VALUE; const name : UTF8String;
+  func : FRubyMethod0);
+ begin
+ rb_define_singleton_method(obj, PChar(name), func, 0);
+ end;
+
+procedure TRuby.DefineSingletonMethod(obj : VALUE; const name : UTF8String;
+  func : FRubyMethod1);
+ begin
+ rb_define_singleton_method(obj, PChar(name), func, 1);
+ end;
+
+procedure TRuby.DefineSingletonMethod(obj : VALUE; const name : UTF8String;
+  func : FRubyMethod2);
+ begin
+ rb_define_singleton_method(obj, PChar(name), func, 2);
+ end;
+
+procedure TRuby.DefineSingletonMethod(obj : VALUE; const name : UTF8String;
+  func : FRubyMethod3);
+ begin
+ rb_define_singleton_method(obj, PChar(name), func, 3);
+ end;
+
+procedure TRuby.DefineSingletonMethod(obj : VALUE; const name : UTF8String;
+  func : FRubyMethod4);
+ begin
+ rb_define_singleton_method(obj, PChar(name), func, 4);
+ end;
+
+procedure TRuby.DefineSingletonMethod(obj : VALUE; const name : UTF8String;
+  func : FRubyMethod5);
+ begin
+ rb_define_singleton_method(obj, PChar(name), func, 5);
+ end;
+
+procedure TRuby.DefineSingletonMethod(obj : VALUE; const name : UTF8String;
+  func : FRubyMethod6);
+ begin
+ rb_define_singleton_method(obj, PChar(name), func, 6);
+ end;
+
+procedure TRuby.DefineSingletonMethod(obj : VALUE; const name : UTF8String;
+  func : FRubyMethod7);
+ begin
+ rb_define_singleton_method(obj, PChar(name), func, 7);
+ end;
+
+procedure TRuby.DefineSingletonMethod(obj : VALUE; const name : UTF8String;
+  func : FRubyMethod8);
+ begin
+ rb_define_singleton_method(obj, PChar(name), func, 8);
+ end;
+
+procedure TRuby.DefineSingletonMethod(obj : VALUE; const name : UTF8String;
+  func : FRubyMethod9);
+ begin
+ rb_define_singleton_method(obj, PChar(name), func, 9);
+ end;
+
+procedure TRuby.DefineSingletonMethod(obj : VALUE; const name : UTF8String;
+  func : FRubyMethod10);
+ begin
+ rb_define_singleton_method(obj, PChar(name), func, 10);
+ end;
+
+procedure TRuby.DefineSingletonMethod(obj : VALUE; const name : UTF8String;
+  func : FRubyMethod11);
+ begin
+ rb_define_singleton_method(obj, PChar(name), func, 11);
+ end;
+
+procedure TRuby.DefineSingletonMethod(obj : VALUE; const name : UTF8String;
+  func : FRubyMethod12);
+ begin
+ rb_define_singleton_method(obj, PChar(name), func, 12);
+ end;
+
+procedure TRuby.DefineSingletonMethod(obj : VALUE; const name : UTF8String;
+  func : FRubyMethod13);
+ begin
+ rb_define_singleton_method(obj, PChar(name), func, 13);
+ end;
+
+procedure TRuby.DefineSingletonMethod(obj : VALUE; const name : UTF8String;
+  func : FRubyMethod14);
+ begin
+ rb_define_singleton_method(obj, PChar(name), func, 14);
+ end;
+
+procedure TRuby.DefineSingletonMethod(obj : VALUE; const name : UTF8String;
+  func : FRubyMethod15);
+ begin
+ rb_define_singleton_method(obj, PChar(name), func, 15);
+ end;
+
+procedure TRuby.DefineSingletonMethod(obj : VALUE; const name : UTF8String;
+  func : FRubyMethod16);
+ begin
+ rb_define_singleton_method(obj, PChar(name), func, 16);
+ end;
+
+procedure TRuby.DefineSingletonMethod(obj : VALUE; const name : UTF8String;
+  func : FRubyMethod17);
+ begin
+ rb_define_singleton_method(obj, PChar(name), func, 17);
+ end;
+
+procedure TRuby.DefineSingletonMethod(obj : VALUE; const name : UTF8String;
+  func : FRubyMethodArr);
+ begin
+ rb_define_singleton_method(obj, PChar(name), func, -1);
+ end;
+
+procedure TRuby.DefineGlobalFunction(const name : UTF8String;
+  func : FRubyMethod0);
+ begin
+ rb_define_global_function(PChar(name), func, 0);
+ end;
+
+procedure TRuby.DefineGlobalFunction(const name : UTF8String;
+  func : FRubyMethod1);
+ begin
+ rb_define_global_function(PChar(name), func, 1);
+ end;
+
+procedure TRuby.DefineGlobalFunction(const name : UTF8String;
+  func : FRubyMethod2);
+ begin
+ rb_define_global_function(PChar(name), func, 2);
+ end;
+
+procedure TRuby.DefineGlobalFunction(const name : UTF8String;
+  func : FRubyMethod3);
+ begin
+ rb_define_global_function(PChar(name), func, 3);
+ end;
+
+procedure TRuby.DefineGlobalFunction(const name : UTF8String;
+  func : FRubyMethod4);
+ begin
+ rb_define_global_function(PChar(name), func, 4);
+ end;
+
+procedure TRuby.DefineGlobalFunction(const name : UTF8String;
+  func : FRubyMethod5);
+ begin
+ rb_define_global_function(PChar(name), func, 5);
+ end;
+
+procedure TRuby.DefineGlobalFunction(const name : UTF8String;
+  func : FRubyMethod6);
+ begin
+ rb_define_global_function(PChar(name), func, 6);
+ end;
+
+procedure TRuby.DefineGlobalFunction(const name : UTF8String;
+  func : FRubyMethod7);
+ begin
+ rb_define_global_function(PChar(name), func, 7);
+ end;
+
+procedure TRuby.DefineGlobalFunction(const name : UTF8String;
+  func : FRubyMethod8);
+ begin
+ rb_define_global_function(PChar(name), func, 8);
+ end;
+
+procedure TRuby.DefineGlobalFunction(const name : UTF8String;
+  func : FRubyMethod9);
+ begin
+ rb_define_global_function(PChar(name), func, 9);
+ end;
+
+procedure TRuby.DefineGlobalFunction(const name : UTF8String;
+  func : FRubyMethod10);
+ begin
+ rb_define_global_function(PChar(name), func, 10);
+ end;
+
+procedure TRuby.DefineGlobalFunction(const name : UTF8String;
+  func : FRubyMethod11);
+ begin
+ rb_define_global_function(PChar(name), func, 11);
+ end;
+
+procedure TRuby.DefineGlobalFunction(const name : UTF8String;
+  func : FRubyMethod12);
+ begin
+ rb_define_global_function(PChar(name), func, 12);
+ end;
+
+procedure TRuby.DefineGlobalFunction(const name : UTF8String;
+  func : FRubyMethod13);
+ begin
+ rb_define_global_function(PChar(name), func, 13);
+ end;
+
+procedure TRuby.DefineGlobalFunction(const name : UTF8String;
+  func : FRubyMethod14);
+ begin
+ rb_define_global_function(PChar(name), func, 14);
+ end;
+
+procedure TRuby.DefineGlobalFunction(const name : UTF8String;
+  func : FRubyMethod15);
+ begin
+ rb_define_global_function(PChar(name), func, 15);
+ end;
+
+procedure TRuby.DefineGlobalFunction(const name : UTF8String;
+  func : FRubyMethod16);
+ begin
+ rb_define_global_function(PChar(name), func, 16);
+ end;
+
+procedure TRuby.DefineGlobalFunction(const name : UTF8String;
+  func : FRubyMethod17);
+ begin
+ rb_define_global_function(PChar(name), func, 17);
+ end;
+
+procedure TRuby.DefineGlobalFunction(const name : UTF8String;
+  func : FRubyMethodArr);
+ begin
+ rb_define_global_function(PChar(name), func, -1);
+ end;
+
+function TRuby.RegisterClass(cls : TClass) : VALUE;
+ var
+   rb_unit : VALUE;
+   rb_parent : VALUE;
+   l, i : Integer;
+ begin
+ if findClass(cls, result)
+    then Exit;
+ if cls.UnitName = ''
+    then rb_unit := rb_mPascal
+    else rb_unit := RegisterUnit(cls.UnitName);
+ // todo: nested classes support
+ if cls.ClassParent = nil
+    then rb_parent := defaultSuperclass
+    else rb_parent := RegisterClass(cls.ClassParent);
+ result := DefineClass(rb_unit, constName(cls.ClassName), rb_parent);
+ registerProperties(cls, result);
+ l := Length(cacheClasses);
+ SetLength(cacheClasses, l + 1);
+ cacheClasses[l].cls := cls;
+ cacheClasses[l].value := result;
+ for i := 0 to High(listHooks) do
+     if listHooks[i].cls = cls
+        then listHooks[i].hook(self, cls, result);
+ end;
+
+function TRuby.RegisterUnit(const name : AnsiString) : VALUE;
+ var
+   l : Integer;
+ begin
+ if findUnit(name, result)
+    then Exit;
+ result := DefineModule(rb_mPascal, constName(name));
+ l := Length(cacheUnits);
+ SetLength(cacheUnits, l + 1);
+ cacheUnits[l].name := UpCase(name);
+ cacheUnits[l].value := result;
+ end;
+
+function TRuby.WrapObject(obj : TObject) : VALUE;
+ var
+   l : Integer;
+ begin
+ if not findObject(obj, result)
+    then begin
+         result := rb_data_object_alloc(RegisterClass(obj.ClassType), obj, nil, nil);
+         l := Length(cacheObjects);
+         SetLength(cacheObjects, l + 1);
+         cacheObjects[l].obj := obj;
+         cacheObjects[l].value := result;
+         end;
+ end;
+
+function TRuby.GetObject(value : VALUE) : TObject;
+ begin
+ if value = Qnil
+    then result := nil
+    else result := TObject(get_data(value));
+ end;
+
 { TRuby18 }
 
 procedure TRuby18.load;
@@ -765,6 +1487,11 @@ procedure TRuby18.setup;
  begin
  EvalString('$-K = "UTF-8"');
  inherited setup;
+ end;
+
+procedure TRuby18.check_data(value : VALUE);
+ begin
+ check_type(value, T_DATA);
  end;
 
 function TRuby18.getErrInfo : VALUE;
@@ -790,6 +1517,11 @@ class function TRuby18.defaultLibrary : UTF8String;
 {$endif}
  end;
 
+function TRuby18.Description : UTF8String;
+ begin
+ result := UTF8String(PPChar(ruby_description)^) + '';
+ end;
+
 { TRuby19 }
 
 procedure TRuby19.load;
@@ -807,12 +1539,18 @@ procedure TRuby19.load;
  loadValue(rb_eKeyError,       'rb_eKeyError');
  loadValue(rb_eEncodingError,  'rb_eEncodingError');
  loadValue(rb_eEncCompatError, 'rb_eEncCompatError');
+ loadPtr(ruby_description, 'ruby_description');
  end;
 
 procedure TRuby19.setup;
  begin
  EvalString('Encoding.default_internal = "UTF-8"');
  inherited setup;
+ end;
+
+procedure TRuby19.check_data(value : VALUE);
+ begin
+ check_type(value, T_DATA);
  end;
 
 function TRuby19.getErrInfo : VALUE;
@@ -853,479 +1591,5 @@ class function TRuby20.defaultLibrary : UTF8String;
 {$endif}
  end;
 
-(*
-
-{ TRuby18 }
-
-class function TRuby18.Version : TVersion;
- begin
- result.major := 1;
- result.minor := 8;
- end;
-
-procedure TRuby18.SetupUTF8;
- var
-   res : Integer;
- begin
- rb_eval_string_protect('$-K = "UTF-8"', res);
- if res <> 0
-    then raise ERubyInitError.CreateFmt(msgRubyInitError, [res, 'SetupUTF8']);
- end;
-
-function TRuby18.Description : UTF8String;
- begin
- result := UTF8String(ruby_description) + '';
- end;
-
-constructor TRuby18.Create (const Lib : UTF8String; const Scr : UTF8String);
- begin
- inherited Create(Lib, Scr);
- Pointer(p_ruby_errinfo) := GetProcedureAddress(fldLib, 'ruby_errinfo');
- ruby_description := PPChar(GetProcedureAddress(fldLib, 'ruby_description'))^;
- end;
-
-{ TRuby19 }
-
-class function TRuby19.Version : TVersion;
- begin
- result.major := 1;
- result.minor := 9;
- end;
-
-procedure TRuby19.SetupUTF8;
- var
-   res : Integer;
- begin
- rb_eval_string_protect('Encoding.default_internal = "UTF-8"', res);
- if res <> 0
-    then raise ERubyInitError.CreateFmt(msgRubyInitError, [res, 'SetupUTF8']);
- end;
-
-function TRuby19.Description : UTF8String;
- begin
- result := UTF8String(ruby_description) + '';
- end;
-
-function TRuby19.ErrInfo : VALUE;
- begin
- result := rb_errinfo();
- end;
-
-function TRuby19.Execute (const Str : UTF8String) : VALUE;
- begin
- rb_set_errinfo(Qnil);
- result := inherited Execute(Str);
- end;
-
-function TRuby19.DefaultAncestor : VALUE;
- begin
- result := rb_cData
- end;
-
-constructor TRuby19.Create (const Lib : UTF8String; const Scr : UTF8String);
- begin
- inherited Create(Lib, Scr);
- Pointer(rb_errinfo) := GetProcedureAddress(fldLib, 'rb_errinfo');
- Pointer(rb_set_errinfo) := GetProcedureAddress(fldLib, 'rb_set_errinfo');
- ruby_description := PChar(GetProcedureAddress(fldLib, 'ruby_description'));
- rb_cData := PVALUE(GetProcedureAddress(fldLib, 'rb_cData'))^;
- end;
-
-{ TRubyEngine }
-
-class function TRubyEngine.DefaultLibrary : UTF8String;
- var
-   ver : TVersion;
- begin
- ver := Version;
-{$ifdef UNIX}
- {$ifdef DARWIN}
- // Mac OS X
- result := '/System/Library/Frameworks/Ruby.framework/Versions/' +
-           IntToStr(ver.major) + '.' + IntToStr(ver.minor) + '/Ruby'
- {$else}
- // Linux or BSD
- result := 'libruby' + IntToStr(ver.major) + IntToStr(ver.minor) + '.so'
- {$endif}
-{$else}
- {$ifdef WINDOWS}
- // MS Windows
- result := 'msvcrt-ruby' + IntToStr(ver.major) + IntToStr(ver.minor) + '.dll'
- {$else}
- // Unknown OS
-  {$error Unknown Ruby Target!}
- {$endif}
-{$endif}
- end;
-
-class function TRubyEngine.DefaultScript : UTF8String;
- begin
- result := ParamStr(0);
- end;
-
-class function TRubyEngine.AutoCreate (
-               const Vers : array of TRubyClass;
-               const Scr : UTF8String = ''
-               ) : TRubyEngine;
- var
-   idx : Integer;
- begin
- for idx := 0 to High(Vers) do
-     try
-       result := Vers[idx].Create(Vers[idx].DefaultLibrary, Scr);
-       Exit;
-     except
-       on ERubyError do
-          Continue;
-       on Exception do
-          raise
-     end;
- result := nil
- end;
-
-function TRubyEngine.Execute (const Str : UTF8String) : VALUE;
- var
-   res : Integer;
- begin
- result := rb_eval_string_protect(PChar(Str), res);
- if res <> 0
-    then raise ERubyExecError.Create(ErrInfo, VALUE2String(Inspect(ErrInfo)));
- end;
-
-function TRubyEngine.Inspect(v : VALUE) : VALUE;
- begin
- result := rb_inspect(v);
- end;
-
-function TRuby18.ErrInfo : VALUE;
- begin
- result := p_ruby_errinfo^;
- end;
-
-function TRuby18.DefaultAncestor : VALUE;
- begin
- result := rb_cObject
- end;
-
-function TRubyEngine.VALUE2String(v : VALUE) : UTF8String;
- begin
- result := UTF8String(rb_string_value_cstr(v)) + ''
- end;
-
-function TRubyEngine.String2VALUE(const s : UTF8String) : VALUE;
- begin
- result := rb_str_new2(PChar(s));
- end;
-
-function TRubyEngine.String2ID(const s : UTF8String) : ID;
- begin
- result := rb_intern(PChar(s))
- end;
-
-function MethName (const nm : UTF8String) : UTF8String;
- begin
- result := nm;
- result[1] := LowerCase(nm[1]);
- end;
-
-procedure TRubyEngine.RegisterRTTI (cls : TClass; rb : VALUE);
- var
-   data : PTypeData;
-   list : PPropList;
-   prop : PPropInfo;
-   idx : Integer;
-   cmd : UTF8String;
-   nmm : UTF8String;
-   param : VALUE;
- begin
- data := GetTypeData(cls.ClassInfo);
- GetPropList(cls, list);
- for idx := 0 to data^.PropCount - 1 do
-     begin
-     prop := list^[idx];
-     nmm := MethName(prop^.Name);
-     cmd := 'attr_accessor :' + nmm + LineEnding;
-     cmd := cmd + 'def ' + nmm + LineEnding +
-                  '  pascal_get_prop(:' + prop^.Name + ')' + LineEnding +
-                  'end' + LineEnding;
-     cmd := cmd + 'def ' + nmm + '=(value)' + LineEnding +
-                  '  pascal_set_prop(:' + prop^.Name + ', value)' + LineEnding +
-                  'end';
-     param := String2VALUE(cmd);
-     rb_funcall2(rb, String2ID('class_eval'), 1, @param);
-     end;
- FreeMem(list)
- end;
-
-type
-  TClassHookRec = record
-    Cls : TClass;
-    Hook : TRegisterClassHook
-  end;
-
-var
-  ClassHooks : array of TClassHookRec = nil;
-
-function FindClassHook (Cls : TClass; Hook : TRegisterClassHook; out found : Integer) : Boolean;
- var
-   idx : Integer;
- begin
- for idx := 0 to High(ClassHooks) do
-     if (ClassHooks[idx].Cls = Cls) and (ClassHooks[idx].Hook = Hook)
-        then begin
-             found := idx;
-             result := true;
-             Exit;
-             end;
- result := false;
- end;
-
-class procedure TRubyEngine.RegisterClassHook (const Classes : array of TClass;
-  Hook : TRegisterClassHook);
- var
-   cidx, hidx : Integer;
- begin
- for cidx := 0 to High(Classes) do
-     if not FindClassHook(Classes[cidx], Hook, hidx)
-        then begin
-             SetLength(ClassHooks, Length(ClassHooks) + 1);
-             ClassHooks[High(ClassHooks)].Cls := Classes[cidx];
-             ClassHooks[High(ClassHooks)].Hook := Hook;
-             end;
- end;
-
-class procedure TRubyEngine.UnregisterClassHook (const Classes : array of TClass;
-  Hook : TRegisterClassHook);
- var
-   cidx, hidx, didx : Integer;
- begin
- for cidx := 0 to High(Classes) do
-     if FindClassHook(Classes[cidx], Hook, hidx)
-        then begin
-             for didx := hidx to High(ClassHooks) - 1 do
-                 ClassHooks[didx] := ClassHooks[didx + 1];
-             SetLength(ClassHooks, Length(ClassHooks) - 1);
-             end;
- end;
-
-type
-  TRegClassRec = record
-                 Cls : TClass;
-                 Rb : VALUE;
-                 end;
-
-var
-  RegisteredClasses : array of TRegClassRec = nil;
-
-function FindRegisteredClass (Cls : TClass; out v : VALUE) : Boolean;
- var
-   idx : Integer;
- begin
- for idx := 0 to High(RegisteredClasses) do
-     if RegisteredClasses[idx].Cls = Cls
-        then begin
-             v := RegisteredClasses[idx].Rb;
-             result := true;
-             Exit;
-             end;
- result := false;
- end;
-
-function ConstName (const nm : AnsiString) : AnsiString;
- begin
- result := nm;
- result[1] := UpCase(nm[1]);
- end;
-
-function TRubyEngine.RegisterClass (Cls : TClass) : VALUE;
- var
-   rb_u : VALUE;
-   rb_s : VALUE;
-   idx : Integer;
- begin
- if FindRegisteredClass(Cls, result)
-    then Exit;
- if Cls.UnitName = ''
-    then rb_u := rb_mPascal
-    else rb_u := RegisterUnit(Cls.UnitName);
- if Cls = TObject
-    then rb_s := DefaultAncestor
-    else rb_s := RegisterClass(Cls.ClassParent);
- result := rb_define_class_under(rb_u, PChar(ConstName(cls.ClassName)), rb_s);
- SetLength(RegisteredClasses, Length(RegisteredClasses) + 1);
- RegisteredClasses[High(RegisteredClasses)].Cls := Cls;
- RegisteredClasses[High(RegisteredClasses)].Rb := result;
- RegisterRTTI(Cls, result);
- rb_define_const(rb_mPascal, PChar(ConstName(cls.ClassName)), result);
- for idx := 0 to High(ClassHooks) do
-     if ClassHooks[idx].Cls = Cls
-        then ClassHooks[idx].Hook(self, Cls, result);
- end;
-
-type
-  TRegUnitRec = record
-                nm : AnsiString;
-                v : VALUE
-                end;
-
-var
-  RegisteredUnits : array of TRegUnitRec = nil;
-
-function FindRegisteredUnit (const nm : AnsiString; out v : VALUE) : Boolean;
- var
-   idx : Integer;
- begin
- for idx := 0 to High(RegisteredUnits) do
-     if RegisteredUnits[idx].nm = nm
-        then begin
-             v := RegisteredUnits[idx].v;
-             result := true;
-             Exit;
-             end;
- result := false;
- end;
-
-function TRubyEngine.RegisterUnit(const nm : AnsiString) : VALUE;
- var
-   nmm : AnsiString;
- begin
- nmm := ConstName(nm);
- if FindRegisteredUnit(nmm, result)
-    then Exit;
- result := rb_define_module_under(rb_mPascal, PChar(nmm));
- SetLength(RegisteredUnits, Length(RegisteredUnits) + 1);
- RegisteredUnits[High(RegisteredUnits)].nm := nmm;
- RegisteredUnits[High(RegisteredUnits)].v := result;
- end;
-
-function TRubyEngine.DefineModule (const Name : UTF8String) : VALUE;
- begin
- result := rb_define_module(PChar(Name))
- end;
-
-function TRubyEngine.DefineModule (NS : VALUE; const Name : UTF8String) : VALUE;
- begin
- result := rb_define_module_under(NS, PChar(Name))
- end;
-
-function TRubyEngine.DefineClass (const Name : UTF8String;
-  Super : VALUE) : VALUE;
- begin
- result := rb_define_class(PChar(Name), Super);
- end;
-
-function TRubyEngine.DefineClass (const Name : UTF8String) : VALUE;
- begin
- result := rb_define_class(PChar(Name), rb_cObject);
- end;
-
-function TRubyEngine.DefineClass (NS : VALUE; const Name : UTF8String;
-  Super : VALUE) : VALUE;
- begin
- result := rb_define_class_under(NS, PChar(Name), Super);
- end;
-
-function TRubyEngine.DefineClass (NS : VALUE; const Name : UTF8String) : VALUE;
- begin
- result := rb_define_class_under(NS, PChar(Name), rb_cObject);
- end;
-
-procedure TRubyEngine.DefineConstant (ns : VALUE; const name : UTF8String;
-  v : VALUE);
- begin
- rb_define_const(ns, PChar(name), v);
- end;
-
-procedure TRubyEngine.DefineConstant (const name : UTF8String; v : VALUE);
- begin
- rb_define_global_const(PChar(name), v);
- end;
-
-function TRubyEngine.Call(obj : VALUE; msg : ID;
-  const args : array of VALUE) : VALUE;
- begin
- result := rb_funcall2(obj, msg, Length(args), @args[0]);
- end;
-
-function TRubyEngine.Call(obj : VALUE; const method : UTF8String;
-  const args : array of VALUE) : VALUE;
- begin
- result := Call(obj, String2ID(method), args)
- end;
-
- class function TRubyEngine.Qfalse : VALUE;
- begin
- result := VALUE(0)
- end;
-
-class function TRubyEngine.Qtrue : VALUE;
- begin
- result := VALUE(2)
- end;
-
-class function TRubyEngine.Qnil : VALUE;
- begin
- result := VALUE(4)
- end;
-
-class function TRubyEngine.Qundef : VALUE;
- begin
- result := VALUE(6)
- end;
-
-constructor TRubyEngine.Create (
-               const Lib : UTF8String;
-               const Scr : UTF8String = ''
-               );
- begin
- inherited Create;
- fldLib := LoadLibrary(Lib);
- if fldLib = 0
-    then raise ERubyLibraryNotFound.CreateFmt(msgRubyLibraryNotFound, [Lib]);
- Pointer(ruby_init) := GetProcedureAddress(fldLib, 'ruby_init');
- Pointer(ruby_init_loadpath) := GetProcedureAddress(fldLib,
-                                  'ruby_init_loadpath');
- Pointer(ruby_script) := GetProcedureAddress(fldLib, 'ruby_script');
- Pointer(rb_eval_string_protect) := GetProcedureAddress(fldLib,
-                                      'rb_eval_string_protect');
- Pointer(ruby_finalize) := GetProcedureAddress(fldLib, 'ruby_finalize');
- Pointer(rb_string_value_cstr) := GetProcedureAddress(fldLib,
-                                    'rb_string_value_cstr');
- Pointer(rb_inspect) := GetProcedureAddress(fldLib, 'rb_inspect');
- Pointer(rb_define_module) := GetProcedureAddress(fldLib, 'rb_define_module');
- Pointer(rb_define_module_under) := GetProcedureAddress(fldLib,
-                                      'rb_define_module_under');
- Pointer(rb_define_class) := GetProcedureAddress(fldLib, 'rb_define_class');
- Pointer(rb_define_class_under) := GetProcedureAddress(fldLib, 'rb_define_class_under');
- Pointer(rb_define_const) := GetProcAddress(fldLib, 'rb_define_const');
- pointer(rb_define_global_const) := GetProcAddress(fldLib, 'rb_define_global_const');
- Pointer(rb_funcall2) := GetProcedureAddress(fldLib, 'rb_funcall2');
- Pointer(rb_intern) := GetProcedureAddress(fldLib, 'rb_intern');
- Pointer(rb_str_new2) := GetProcedureAddress(fldLib, 'rb_str_new2');
- rb_cObject := PVALUE(GetProcedureAddress(fldLib, 'rb_cObject'))^;
- ruby_init();
- ruby_init_loadpath();
- if Scr = ''
-    then ruby_script(PChar(DefaultScript))
-    else ruby_script(PChar(Scr));
- SetupUTF8;
- rb_mPascal := DefineModule('Pascal');
- end;
-
-constructor TRubyEngine.DefaultCreate;
- begin
- Create(DefaultLibrary, DefaultScript)
- end;
-
-destructor TRubyEngine.Destroy;
- begin
- if fldLib <> 0
-    then begin
-         ruby_finalize;
-         FreeLibrary(fldLib);
-         end;
- inherited Destroy;
- end;
-*)
 end.
 
