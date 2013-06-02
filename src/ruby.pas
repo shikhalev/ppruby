@@ -9,7 +9,7 @@ unit Ruby;
 interface
 
 uses
-  Classes, SysUtils, DynLibs, ctypes, typinfo;
+  SysUtils, DynLibs, ctypes, typinfo;
 
 type
   VALUE = type PtrUInt;
@@ -117,6 +117,8 @@ type
     rb_to_id : function (value : VALUE) : ID; cdecl;
     rb_id2name : function (id : ID) : PChar; cdecl;
     rb_num2dbl : function (value : VALUE) : Double; cdecl;
+    rb_include_module : procedure (target, source : VALUE); cdecl;
+    rb_define_alias : procedure (module : VALUE; target, source : PChar); cdecl;
     // fields: ruby objects
     rb_mKernel, rb_mComparable, rb_mEnumerable, rb_mErrno, rb_mFileTest, rb_mGC,
       rb_mMath, rb_mProcess : VALUE;
@@ -358,6 +360,8 @@ type
     procedure DefineGlobalFunction (const name : UTF8String; func : FRubyMethod16);
     procedure DefineGlobalFunction (const name : UTF8String; func : FRubyMethod17);
     procedure DefineGlobalFunction (const name : UTF8String; func : FRubyMethodArr);
+    procedure DefineAlias (module : VALUE; const target, source : UTF8String);
+    procedure Include (target, source : VALUE);
     // methods (coversions)
     function Int2Val (n : PtrInt) : VALUE;
     function QInt2Val (const n : Int64) : VALUE;
@@ -602,6 +606,8 @@ procedure TRuby.load;
  loadFunc(rb_to_id,                   'rb_to_id');
  loadFunc(rb_id2name,                 'rb_id2name');
  loadFunc(rb_num2dbl,                 'rb_num2dbl');
+ loadFunc(rb_include_module,          'rb_include_module');
+ loadFunc(rb_define_alias,            'rb_define_alias');
  // modules
  loadValue(rb_mKernel,     'rb_mKernel');
  loadValue(rb_mComparable, 'rb_mComparable');
@@ -706,6 +712,13 @@ function TRuby.defaultSuperclass : VALUE;
  result := cData;
  end;
 
+const
+  RubifiedProperties = [tkInteger, tkInt64, tkQWord, tkEnumeration, tkSet,
+                        tkFloat, tkSString, tkLString, tkAString, tkUString,
+                        tkWString, tkUChar, tkChar, tkWChar, tkBool, tkClass];
+  // todo: events support
+  // RubifiedEvents = [tkMethod];
+
 procedure TRuby.registerProperties (cls : TClass; value : VALUE);
  var
    data : PTypeData;
@@ -720,15 +733,18 @@ procedure TRuby.registerProperties (cls : TClass; value : VALUE);
  for i := 0 to data^.PropCount - 1 do
      begin
      prop := list^[i];
-     nm := methodName(prop^.Name);
-     code := 'attr_accessor :' + nm + LineEnding +
-             'def ' + nm + LineEnding +
-             '  pascal_get_prop("' + prop^.Name + '")' + LineEnding +
-             'end' + LineEnding +
-             'def ' + nm + '=(value)' + LineEnding +
-             '  pascal_set_prop("' + prop^.Name + '", value)' + LineEnding +
-             'end';
-     Send(value, 'class_eval', [StrNew(code)]);
+     if prop^.PropType^.Kind in RubifiedProperties
+        then begin
+             nm := methodName(prop^.Name);
+             code := 'attr_accessor :' + nm + LineEnding +
+                     'def ' + nm + LineEnding +
+                     '  pascal_get_prop("' + prop^.Name + '")' + LineEnding +
+                     'end' + LineEnding +
+                     'def ' + nm + '=(value)' + LineEnding +
+                     '  pascal_set_prop("' + prop^.Name + '", value)' + LineEnding +
+                     'end';
+             Send(value, 'class_eval', [StrNew(code)]);
+             end;
      end;
  end;
 
@@ -1470,6 +1486,16 @@ procedure TRuby.DefineGlobalFunction(const name : UTF8String;
  rb_define_global_function(PChar(name), func, -1);
  end;
 
+procedure TRuby.DefineAlias(module : VALUE; const target, source : UTF8String);
+ begin
+ rb_define_alias(module, PChar(target), PChar(source));
+ end;
+
+procedure TRuby.Include(target, source : VALUE);
+ begin
+ rb_include_module(target, source);
+ end;
+
 function TRuby.Int2Val(n : PtrInt) : VALUE;
  begin
  result := rb_int2inum(n)
@@ -1843,7 +1869,7 @@ function pascal_set_prop (obj : VALUE; prop, value : VALUE) : VALUE; cdecl;
  result := value;
  end;
 
-function pascal_equals (obj : VALUE; other : VALUE) : VALUE; cdecl;
+function object_equals (obj : VALUE; other : VALUE) : VALUE; cdecl;
  var
    pack, otherpack : TObjectPack;
  begin
@@ -1852,7 +1878,7 @@ function pascal_equals (obj : VALUE; other : VALUE) : VALUE; cdecl;
  result := pack.ruby.Bool2Val(pack.obj.Equals(otherpack.obj));
  end;
 
-function pascal_to_s (obj : VALUE) : VALUE; cdecl;
+function object_to_s (obj : VALUE) : VALUE; cdecl;
  var
    pack : TObjectPack;
  begin
@@ -1861,17 +1887,19 @@ function pascal_to_s (obj : VALUE) : VALUE; cdecl;
                             pack.obj.ClassName + ']>');
  end;
 
+{$hints off}
 procedure HookTObject (ruby : TRuby; cls : TClass; value : VALUE);
  begin
  ruby.DefineMethod(value, 'pascal_get_prop', @pascal_get_prop);
  ruby.DefineMethod(value, 'pascal_set_prop', @pascal_set_prop);
  ruby.Send(value, 'private', [ruby.Str2SymVal('pascal_get_prop'),
                               ruby.Str2SymVal('pascal_set_prop')]);
- ruby.DefineMethod(value, '==', @pascal_equals);
- ruby.DefineMethod(value, 'to_s', @pascal_to_s);
+ ruby.DefineMethod(value, '==', @object_equals);
+ ruby.DefineMethod(value, 'to_s', @object_to_s);
  end;
+{$hints on}
 
 initialization
- TRuby.AddRegisterClassHook(TObject, @HookTObject);
+ TRuby.AddRegisterClassHook(TObject, @hookTObject);
 end.
 
