@@ -19,6 +19,8 @@ type
 
 type
 
+  TRubyClass = class of TRuby;
+
   { TRuby }
 
   TRuby = class
@@ -31,12 +33,43 @@ type
     ruby_init, ruby_init_loadpath, ruby_finalize : procedure; cdecl;
     ruby_script : procedure (script : PChar); cdecl;
     rb_define_module : function (name : PChar) : VALUE; cdecl;
+    rb_define_module_under : function (ns : VALUE; name : PChar) : VALUE; cdecl;
+    rb_define_class : function (name : PChar; super : VALUE) : VALUE; cdecl;
+    rb_define_class_under : function (ns : VALUE; name : PChar; super : VALUE) : VALUE; cdecl;
+    rb_define_const : procedure (ns : VALUE; name : PChar; value : VALUE); cdecl;
+    rb_define_global_const : procedure (name : PChar; value : VALUE); cdecl;
+    rb_eval_string_protect : function (str : PChar; out res : cint) : VALUE; cdecl;
+    rb_string_value_cstr : function (constref v : VALUE) : PChar; cdecl;
+    rb_inspect : function (v : VALUE) : VALUE; cdecl;
+    // fields: ruby objects
+    rb_mKernel, rb_mComparable, rb_mEnumerable, rb_mErrno, rb_mFileTest, rb_mGC,
+      rb_mMath, rb_mProcess : VALUE;
+    rb_cObject, rb_cArray, rb_cBignum, rb_cBinding, rb_cClass, rb_cCont,
+      rb_cDir, rb_cData, rb_cEnumerator, rb_cFalseClass, rb_cFile, rb_cFixnum,
+      rb_cFloat, rb_cHash, rb_cInteger, rb_cIO, rb_cMatch, rb_cMethod,
+      rb_cModule, rb_cNameErrorMesg, rb_cNilClass, rb_cNumeric, rb_cProc,
+      rb_cRange, rb_cRegexp, rb_cStat, rb_cString, rb_cStruct, rb_cSymbol,
+      rb_cThread, rb_cTime, rb_cTrueClass, rb_cUnboundMethod : VALUE;
+    rb_eException, rb_eStandardError, rb_eSystemExit, rb_eInterrupt, rb_eSignal,
+      rb_eFatal, rb_eArgError, rb_eEOFError, rb_eIndexError, rb_eStopIteration,
+      rb_eRangeError, rb_eIOError, rb_eRuntimeError, rb_eSecurityError,
+      rb_eSystemCallError : VALUE;
     // fields: own ruby objects
     rb_mPascal : VALUE;
     // methods
     procedure loadFunc (out field; const name : UTF8String);
+    procedure loadPtr (out field; const name : UTF8String);
+    procedure loadValue (out field; const name : UTF8String);
     procedure load; virtual;
+    procedure init (const script : UTF8String); virtual;
     procedure setup; virtual;
+    procedure done; virtual;
+    // property access
+    function getErrInfo : VALUE; virtual; abstract;
+    procedure setErrInfo (value : VALUE); virtual; abstract;
+    // class methods
+    class function defaultLibrary : UTF8String; virtual; abstract;
+    class function defaultScript : UTF8String; virtual;
   public
     // constants
     const
@@ -45,19 +78,149 @@ type
       Qnil   = VALUE(4);
       Qundef = VALUE(6);
     // class methods
+    class function Auto : TRuby;
+    class function Auto (const vers : array of TRubyClass) : TRuby;
     // constructor & destructor
     constructor Create (const lib, script : UTF8String); virtual;
+    destructor Destroy; override;
     // properties (wrappers)
+    property ErrInfo : VALUE read getErrInfo write setErrInfo;
+    // properties (wrappers: modules)
+    property mKernel : VALUE read rb_mKernel;
+    property mComparable : VALUE read rb_mComparable;
+    property mEnumerable : VALUE read rb_mEnumerable;
+    property mErrno : VALUE read rb_mErrno;
+    property mFileTest : VALUE read rb_mFileTest;
+    property mGC : VALUE read rb_mGC;
+    property mMath : VALUE read rb_mMath;
+    property mProcess : VALUE read rb_mProcess;
+    // properties (wrappers: classes)
+    property cObject : VALUE read rb_cObject;
+    property cArray : VALUE read rb_cArray;
+    property cBignum : VALUE read rb_cBignum;
+    property cBinding : VALUE read rb_cBinding;
+    property cClass : VALUE read rb_cClass;
+    property cCont : VALUE read rb_cCont;
+    property cData : VALUE read rb_cData;
+    property cDir : VALUE read rb_cDir;
+    property cEnumerator : VALUE read rb_cEnumerator;
+    property cFalseClass : VALUE read rb_cFalseClass;
+    property cFile : VALUE read rb_cFile;
+    property cFixnum : VALUE read rb_cFixnum;
+    property cFloat : VALUE read rb_cFloat;
+    property cHash : VALUE read rb_cHash;
+    property cInteger : VALUE read rb_cInteger;
+    property cIO : VALUE read rb_cIO;
+    property cMatch : VALUE read rb_cMatch;
+    property cMethod : VALUE read rb_cMethod;
+    property cModule : VALUE read rb_cModule;
+    property cNameErrorMesg : VALUE read rb_cNameErrorMesg;
+    property cNilClass : VALUE read rb_cNilClass;
+    property cNumeric : VALUE read rb_cNumeric;
+    property cProc : VALUE read rb_cProc;
+    property cRange : VALUE read rb_cRange;
+    property cRegexp : VALUE read rb_cRegexp;
+    property cStat : VALUE read rb_cStat;
+    property cString : VALUE read rb_cString;
+    property cStruct : VALUE read rb_cStruct;
+    property cSymbol : VALUE read rb_cSymbol;
+    property cThread : VALUE read rb_cThread;
+    property cTime : VALUE read rb_cTime;
+    property cTrueClass : VALUE read rb_cTrueClass;
+    property cUnboundMethod : VALUE read rb_cUnboundMethod;
+    // properties (wrappers: exceptions)
+    property eException : VALUE read rb_eException;
+    property eStandardError : VALUE read rb_eStandardError;
+    property eSystemExit : VALUE read rb_eSystemExit;
+    property eInterrupt : VALUE read rb_eInterrupt;
+    property eSignal : VALUE read rb_eSignal;
+    property eFatal : VALUE read rb_eFatal;
+    property eArgError : VALUE read rb_eArgError;
+    property eEOFError : VALUE read rb_eEOFError;
+    property eIndexError : VALUE read rb_eIndexError;
+    property eStopIteration : VALUE read rb_eStopIteration;
+    property eRangeError : VALUE read rb_eRangeError;
+    property eIOError : VALUE read rb_eIOError;
+    property eRuntimeError : VALUE read rb_eRuntimeError;
+    property eSecurityError : VALUE read rb_eSecurityError;
+    property eSystemCallError : VALUE read rb_eSystemCallError;
+    // properties (wrap own)
     property mPascal : VALUE read rb_mPascal;
     // methods (wrappers)
+    function EvalString (const str : UTF8String) : VALUE;
     function DefineModule (const name : UTF8String) : VALUE;
+    function DefineModule (ns : VALUE; const name : UTF8String) : VALUE;
+    function DefineClass (const name : UTF8String; super : VALUE) : VALUE;
+    function DefineClass (ns : VALUE; const name : UTF8String; super : VALUE) : VALUE;
+    function DefineClass (const name : UTF8String) : VALUE;
+    function DefineClass (ns : VALUE; const name : UTF8String) : VALUE;
+    procedure DefineConstant (const name : UTF8String; value : VALUE);
+    procedure DefineConstant (ns : VALUE; const name : UTF8String; value : VALUE);
+    function Inspect (value : VALUE) : VALUE;
+    function StringValue2String (value : VALUE) : UTF8String;
     // properties (self)
     // methods (self)
   end;
 
+  { TRuby18 }
+
   TRuby18 = class(TRuby)
   protected
+    // fields: error
+    ruby_errinfo : PVALUE;
+    // fields: ruby objects
+    rb_mPrecision : VALUE;
+    // overrided methods
+    procedure load; override;
+    procedure setup; override;
+    // property access
+    function getErrInfo : VALUE; override;
+    procedure setErrInfo(value : VALUE); override;
+    // class methods
+    class function defaultLibrary : UTF8String; override;
   public
+    // properties (wrappers)
+    property mPrecision : VALUE read rb_mPrecision;
+  end;
+
+  { TRuby19 }
+
+  TRuby19 = class(TRuby)
+  protected
+    // fields: rb_ functions
+    rb_errinfo : function : VALUE; cdecl;
+    rb_set_errinfo : procedure (value : VALUE); cdecl;
+    // fields: ruby objects
+    rb_mWaitReadable, rb_mWaitWritable : VALUE;
+    rb_cBasicObject, rb_cEncoding, rb_cRandom, rb_cRational,
+      rb_cComplex : VALUE;
+    rb_eKeyError : VALUE;
+    // overrided methods
+    procedure load; override;
+    procedure setup; override;
+    // property access
+    function getErrInfo : VALUE; override;
+    procedure setErrInfo(value : VALUE); override;
+    // class methods
+    class function defaultLibrary : UTF8String; override;
+  public
+    // properties (wrappers)
+    property mWaitReadable : VALUE read rb_mWaitReadable;
+    property mWaitWritable : VALUE read rb_mWaitWritable;
+    property cBasicObject : VALUE read rb_cBasicObject;
+    property cEncoding : VALUE read rb_cEncoding;
+    property cRandom : VALUE read rb_cRandom;
+    property cRational : VALUE read rb_cRational;
+    property cComplex : VALUE read rb_cComplex;
+    property eKeyError : VALUE read rb_eKeyError;
+  end;
+
+  { TRuby20 }
+
+  TRuby20 = class(TRuby19)
+  protected
+    // class methods
+    class function defaultLibrary : UTF8String; override;
   end;
 
 (*
@@ -225,16 +388,44 @@ type
 
   ENoRuby = class(ERuby);
 
+  { ERubyEval }
+
+  ERubyEval = class(Exception)
+  private
+    fldErrInfo : VALUE;
+  public
+    property ErrInfo : VALUE read fldErrInfo;
+    constructor Create (info : VALUE; const msg : UTF8String);
+  end;
+
 implementation
 
 const
   msgNoRuby = 'The file "%s" not found or not a ruby library.';
 
+{ ERubyEval }
+
+constructor ERubyEval.Create(info : VALUE; const msg : UTF8String);
+ begin
+ fldErrInfo := info;
+ inherited Create(msg)
+ end;
+
 { TRuby }
 
-procedure TRuby.loadFunc(out field; const name : UTF8String);
+procedure TRuby.loadFunc (out field; const name : UTF8String);
  begin
- Pointer(field) := GetProcAddress(libHandle, name);
+ Pointer(field) := GetProcedureAddress(libHandle, name);
+ end;
+
+procedure TRuby.loadPtr (out field; const name : UTF8String);
+ begin
+ Pointer(field) := GetProcedureAddress(libHandle, name);
+ end;
+
+procedure TRuby.loadValue (out field; const name : UTF8String);
+ begin
+ VALUE(field) := PVALUE(GetProcedureAddress(libHandle, name))^;
  end;
 
 procedure TRuby.load;
@@ -244,12 +435,115 @@ procedure TRuby.load;
  loadFunc(ruby_init_loadpath, 'ruby_init_loadpath');
  loadFunc(ruby_script,        'ruby_script');
  loadFunc(ruby_finalize,      'ruby_finalize');
+ // rb_ functions
+ loadFunc(rb_define_module,       'rb_define_module');
+ loadFunc(rb_define_module_under, 'rb_define_module_under');
+ loadFunc(rb_define_class,        'rb_define_class');
+ loadFunc(rb_define_class_under,  'rb_define_class_under');
+ loadFunc(rb_define_const,        'rb_define_const');
+ loadFunc(rb_define_global_const, 'rb_define_global_const');
+ loadFunc(rb_eval_string_protect, 'rb_eval_string_protect');
+ loadFunc(rb_string_value_cstr,   'rb_string_value_cstr');
+ loadFunc(rb_inspect,             'rb_inspect');
+ // modules
+ loadValue(rb_mKernel,     'rb_mKernel');
+ loadValue(rb_mComparable, 'rb_mComparable');
+ loadValue(rb_mEnumerable, 'rb_mEnumerable');
+ loadValue(rb_mErrno,      'rb_mErrno');
+ loadValue(rb_mFileTest,   'rb_mFileTest');
+ loadValue(rb_mGC,         'rb_mGC');
+ loadValue(rb_mMath,       'rb_mMath');
+ loadValue(rb_mProcess,    'rb_mProcess');
+ // classes
+ loadValue(rb_cObject,        'rb_cObject');
+ loadValue(rb_cArray,         'rb_cArray');
+ loadValue(rb_cBignum,        'rb_cBignum');
+ loadValue(rb_cBinding,       'rb_cBinding');
+ loadValue(rb_cClass,         'rb_cClass');
+ loadValue(rb_cCont,          'rb_cCont');
+ loadValue(rb_cData,          'rb_cData');
+ loadValue(rb_cDir,           'rb_cDir');
+ loadValue(rb_cEnumerator,    'rb_cEnumerator');
+ loadValue(rb_cFalseClass,    'rb_cFalseClass');
+ loadValue(rb_cFile,          'rb_cFile');
+ loadValue(rb_cFixnum,        'rb_cFixnum');
+ loadValue(rb_cFloat,         'rb_cFloat');
+ loadValue(rb_cHash,          'rb_cHash');
+ loadValue(rb_cInteger,       'rb_cInteger');
+ loadValue(rb_cIO,            'rb_cIO');
+ loadValue(rb_cMatch,         'rb_cMatch');
+ loadValue(rb_cMethod,        'rb_cMethod');
+ loadValue(rb_cModule,        'rb_cModule');
+ loadValue(rb_cNameErrorMesg, 'rb_cNameErrorMesg');
+ loadValue(rb_cProc,          'rb_cProc');
+ loadValue(rb_cRange,         'rb_cRange');
+ loadValue(rb_cRegexp,        'rb_cRegexp');
+ loadValue(rb_cStat,          'rb_cStat');
+ loadValue(rb_cString,        'rb_cString');
+ loadValue(rb_cStruct,        'rb_cStruct');
+ loadValue(rb_cSymbol,        'rb_cSymbol');
+ loadValue(rb_cThread,        'rb_cThread');
+ loadValue(rb_cTime,          'rb_cTime');
+ loadValue(rb_cTrueClass,     'rb_cTrueClass');
+ loadValue(rb_cUnboundMethod, 'rb_cUnboundMethod');
+ // exceptions
+ loadValue(rb_eException,       'rb_eException');
+ loadValue(rb_eStandardError,   'rb_eStandardError');
+ loadValue(rb_eSystemExit,      'rb_eSystemExit');
+ loadValue(rb_eInterrupt,       'rb_eInterrupt');
+ loadValue(rb_eSignal,          'rb_eSignal');
+ loadValue(rb_eFatal,           'rb_eFatal');
+ loadValue(rb_eArgError,        'rb_eArgError');
+ loadValue(rb_eEOFError,        'rb_eEOFError');
+ loadValue(rb_eIndexError,      'rb_eIndexError');
+ loadValue(rb_eStopIteration,   'rb_eStopIteration');
+ loadValue(rb_eRangeError,      'rb_eRangeError');
+ loadValue(rb_eIOError,         'rb_eIOError');
+ loadValue(rb_eRuntimeError,    'rb_eRuntimeError');
+ loadValue(rb_eSecurityError,   'rb_eSecurityError');
+ loadValue(rb_eSystemCallError, 'rb_eSystemCallError');
+ end;
+
+procedure TRuby.init(const script : UTF8String);
+ begin
+ ruby_init;
+ ruby_init_loadpath;
+ ruby_script(PChar(script));
  end;
 
 procedure TRuby.setup;
  begin
  // namespace
- rb_mPascal := rb_define_module('Pascal');
+ rb_mPascal := DefineModule('Pascal');
+ end;
+
+procedure TRuby.done;
+ begin
+ ruby_finalize;
+ end;
+
+class function TRuby.defaultScript : UTF8String;
+ begin
+ result := ParamStr(0);
+ end;
+
+class function TRuby.Auto : TRuby;
+ begin
+ result := Create(defaultLibrary, defaultScript)
+ end;
+
+class function TRuby.Auto(const vers : array of TRubyClass) : TRuby;
+ var
+   idx : Integer;
+ begin
+ for idx := 0 to High(vers) do
+     try
+       result := vers[idx].Auto;
+     except
+       on ENoRuby do
+          Continue;
+     end;
+ result := nil;
  end;
 
 constructor TRuby.Create(const lib, script : UTF8String);
@@ -259,10 +553,28 @@ constructor TRuby.Create(const lib, script : UTF8String);
  if libHandle = 0
     then raise ENoRuby.CreateFmt(msgNoRuby, [lib]);
  load;
- ruby_init;
- ruby_init_loadpath;
- ruby_script(PChar(script));
+ init(script);
  setup;
+ end;
+
+destructor TRuby.Destroy;
+ begin
+ done;
+ inherited Destroy;
+ end;
+
+function TRuby.EvalString(const str : UTF8String) : VALUE;
+ var
+   res : Integer;
+   err : VALUE;
+ begin
+ setErrInfo(Qnil);
+ result := rb_eval_string_protect(PChar(str), res);
+ if res <> 0
+    then begin
+         err := getErrInfo;
+         raise ERubyEval.Create(err, StringValue2String(Inspect(err)));
+         end;
  end;
 
 function TRuby.DefineModule(const name : UTF8String) : VALUE;
@@ -270,21 +582,153 @@ function TRuby.DefineModule(const name : UTF8String) : VALUE;
  result := rb_define_module(PChar(name));
  end;
 
-{ ERubyExecError }
-(*
-constructor ERubyExecError.Create(info : VALUE; const msg : UTF8String);
+function TRuby.DefineModule(ns : VALUE; const name : UTF8String) : VALUE;
  begin
- inherited Create(msg);
- fldErrInfo := info;
+ result := rb_define_module_under(ns, PChar(name));
+ end;
+
+function TRuby.DefineClass(const name : UTF8String; super : VALUE) : VALUE;
+ begin
+ result := rb_define_class(PChar(name), super);
+ end;
+
+function TRuby.DefineClass(ns : VALUE; const name : UTF8String;
+  super : VALUE) : VALUE;
+ begin
+ result := rb_define_class_under(ns, PChar(name), super);
+ end;
+
+function TRuby.DefineClass(const name : UTF8String) : VALUE;
+ begin
+ result := rb_define_class(PChar(name), rb_cObject);
+ end;
+
+function TRuby.DefineClass(ns : VALUE; const name : UTF8String) : VALUE;
+ begin
+ result := rb_define_class_under(ns, PChar(name), rb_cObject);
+ end;
+
+procedure TRuby.DefineConstant(const name : UTF8String; value : VALUE);
+ begin
+ rb_define_global_const(PChar(name), value);
+ end;
+
+procedure TRuby.DefineConstant(ns : VALUE; const name : UTF8String;
+  value : VALUE);
+ begin
+ rb_define_const(ns, PChar(name), value);
+ end;
+
+function TRuby.Inspect(value : VALUE) : VALUE;
+ begin
+ result := rb_inspect(value);
+ end;
+
+function TRuby.StringValue2String(value : VALUE) : UTF8String;
+ begin
+ result := UTF8String(rb_string_value_cstr(value)) + '';
+ end;
+
+{ TRuby18 }
+
+procedure TRuby18.load;
+ begin
+ inherited load;
+ loadPtr(ruby_errinfo, 'ruby_errinfo');
+ loadValue(rb_mPrecision, 'rb_mPrecision');
+ end;
+
+procedure TRuby18.setup;
+ begin
+ EvalString('$-K = "UTF-8"');
+ inherited setup;
+ end;
+
+function TRuby18.getErrInfo : VALUE;
+ begin
+ result := ruby_errinfo^;
+ end;
+
+procedure TRuby18.setErrInfo(value : VALUE);
+ begin
+ ruby_errinfo^ := value;
+ end;
+
+class function TRuby18.defaultLibrary : UTF8String;
+ begin
+{$if defined(DARWIN)}
+ result := '/System/Library/Frameworks/Ruby.framework/Versions/1.8/Ruby'
+{$elseif defined(UNIX)}
+ result := 'libruby18.so'
+{$elseif defined(WINDOWS)}
+ result := 'msvcrt-ruby18.dll'
+{$else}
+ {$error Unsupported OS!}
+{$endif}
+ end;
+
+{ TRuby19 }
+
+procedure TRuby19.load;
+ begin
+ inherited load;
+ loadFunc(rb_errinfo,     'rb_errinfo');
+ loadFunc(rb_set_errinfo, 'rb_set_errinfo');
+ loadValue(rb_mWaitReadable, 'rb_mWaitReadable');
+ loadValue(rb_mWaitWritable, 'rb_mWaitWritable');
+ loadValue(rb_cBasicObject, 'rb_cBasicObject');
+ loadValue(rb_cEncoding,    'rb_cEncoding');
+ loadValue(rb_cRandom,      'rb_cRandom');
+ loadValue(rb_cRational,    'rb_cRational');
+ loadValue(rb_cComplex,     'rb_cComplex');
+ loadValue(rb_eKeyError, 'rb_eKeyError');
+ end;
+
+procedure TRuby19.setup;
+ begin
+ EvalString('Encoding.default_internal = "UTF-8"');
+ inherited setup;
+ end;
+
+function TRuby19.getErrInfo : VALUE;
+ begin
+ result := rb_errinfo();
+ end;
+
+procedure TRuby19.setErrInfo(value : VALUE);
+ begin
+ rb_set_errinfo(value);
+ end;
+
+class function TRuby19.defaultLibrary : UTF8String;
+ begin
+{$if defined(DARWIN)}
+ result := '/System/Library/Frameworks/Ruby.framework/Versions/1.9/Ruby'
+{$elseif defined(UNIX)}
+ result := 'libruby19.so'
+{$elseif defined(WINDOWS)}
+ result := 'msvcrt-ruby19.dll'
+{$else}
+ {$error Unsupported OS!}
+{$endif}
  end;
 
 { TRuby20 }
 
-class function TRuby20.Version: TVersion;
+class function TRuby20.defaultLibrary : UTF8String;
  begin
- result.major := 2;
- result.minor := 0;
+{$if defined(DARWIN)}
+ result := '/System/Library/Frameworks/Ruby.framework/Versions/2.0/Ruby'
+{$elseif defined(UNIX)}
+ result := 'libruby20.so'
+{$elseif defined(WINDOWS)}
+ result := 'msvcrt-ruby20.dll'
+{$else}
+ {$error Unsupported OS!}
+{$endif}
  end;
+
+(*
 
 { TRuby18 }
 
@@ -684,7 +1128,7 @@ function TRubyEngine.Call(obj : VALUE; const method : UTF8String;
  result := Call(obj, String2ID(method), args)
  end;
 
-(* class function TRubyEngine.Qfalse : VALUE;
+ class function TRubyEngine.Qfalse : VALUE;
  begin
  result := VALUE(0)
  end;
@@ -692,7 +1136,7 @@ function TRubyEngine.Call(obj : VALUE; const method : UTF8String;
 class function TRubyEngine.Qtrue : VALUE;
  begin
  result := VALUE(2)
- end;   *)
+ end;
 
 class function TRubyEngine.Qnil : VALUE;
  begin
