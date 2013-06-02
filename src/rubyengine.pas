@@ -53,7 +53,10 @@ type
     rb_eException, rb_eStandardError, rb_eSystemExit, rb_eInterrupt, rb_eSignal,
       rb_eFatal, rb_eArgError, rb_eEOFError, rb_eIndexError, rb_eStopIteration,
       rb_eRangeError, rb_eIOError, rb_eRuntimeError, rb_eSecurityError,
-      rb_eSystemCallError : VALUE;
+      rb_eSystemCallError, rb_eThreadError, rb_eTypeError, rb_eZeroDivError,
+      rb_eNotImpError, rb_eNoMemError, rb_eNoMethodError, rb_eFloatDomainError,
+      rb_eLocalJumpError, rb_eSysStackError, rb_eRegexpError, rb_eScriptError,
+      rb_eNameError, rb_eSyntaxError, rb_eLoadError : VALUE;
     // fields: own ruby objects
     rb_mPascal : VALUE;
     // methods
@@ -144,6 +147,20 @@ type
     property eRuntimeError : VALUE read rb_eRuntimeError;
     property eSecurityError : VALUE read rb_eSecurityError;
     property eSystemCallError : VALUE read rb_eSystemCallError;
+    property eThreadError : VALUE read rb_eThreadError;
+    property eTypeError : VALUE read rb_eTypeError;
+    property eZeroDivError : VALUE read rb_eZeroDivError;
+    property eNotImpError : VALUE read rb_eNotImpError;
+    property eNoMemError : VALUE read rb_eNoMemError;
+    property eNoMethodError : VALUE read rb_eNoMethodError;
+    property eFloatDomainError : VALUE read rb_eFloatDomainError;
+    property eLocalJumpError : VALUE read rb_eLocalJumpError;
+    property eSysStackError : VALUE read rb_eSysStackError;
+    property eRegexpError : VALUE read rb_eRegexpError;
+    property eScriptError : VALUE read rb_eScriptError;
+    property eNameError : VALUE read rb_eNameError;
+    property eSyntaxError : VALUE read rb_eSyntaxError;
+    property eLoadError : VALUE read rb_eLoadError;
     // properties (wrap own)
     property mPascal : VALUE read rb_mPascal;
     // methods (wrappers)
@@ -194,7 +211,7 @@ type
     rb_mWaitReadable, rb_mWaitWritable : VALUE;
     rb_cBasicObject, rb_cEncoding, rb_cRandom, rb_cRational,
       rb_cComplex : VALUE;
-    rb_eKeyError : VALUE;
+    rb_eKeyError, rb_eEncodingError, rb_eEncCompatError : VALUE;
     // overrided methods
     procedure load; override;
     procedure setup; override;
@@ -213,6 +230,8 @@ type
     property cRational : VALUE read rb_cRational;
     property cComplex : VALUE read rb_cComplex;
     property eKeyError : VALUE read rb_eKeyError;
+    property eEncodingError : VALUE read rb_eEncodingError;
+    property eEncCompatError : VALUE read rb_eEncCompatError;
   end;
 
   { TRuby20 }
@@ -487,21 +506,35 @@ procedure TRuby.load;
  loadValue(rb_cTrueClass,     'rb_cTrueClass');
  loadValue(rb_cUnboundMethod, 'rb_cUnboundMethod');
  // exceptions
- loadValue(rb_eException,       'rb_eException');
- loadValue(rb_eStandardError,   'rb_eStandardError');
- loadValue(rb_eSystemExit,      'rb_eSystemExit');
- loadValue(rb_eInterrupt,       'rb_eInterrupt');
- loadValue(rb_eSignal,          'rb_eSignal');
- loadValue(rb_eFatal,           'rb_eFatal');
- loadValue(rb_eArgError,        'rb_eArgError');
- loadValue(rb_eEOFError,        'rb_eEOFError');
- loadValue(rb_eIndexError,      'rb_eIndexError');
- loadValue(rb_eStopIteration,   'rb_eStopIteration');
- loadValue(rb_eRangeError,      'rb_eRangeError');
- loadValue(rb_eIOError,         'rb_eIOError');
- loadValue(rb_eRuntimeError,    'rb_eRuntimeError');
- loadValue(rb_eSecurityError,   'rb_eSecurityError');
- loadValue(rb_eSystemCallError, 'rb_eSystemCallError');
+ loadValue(rb_eException,        'rb_eException');
+ loadValue(rb_eStandardError,    'rb_eStandardError');
+ loadValue(rb_eSystemExit,       'rb_eSystemExit');
+ loadValue(rb_eInterrupt,        'rb_eInterrupt');
+ loadValue(rb_eSignal,           'rb_eSignal');
+ loadValue(rb_eFatal,            'rb_eFatal');
+ loadValue(rb_eArgError,         'rb_eArgError');
+ loadValue(rb_eEOFError,         'rb_eEOFError');
+ loadValue(rb_eIndexError,       'rb_eIndexError');
+ loadValue(rb_eStopIteration,    'rb_eStopIteration');
+ loadValue(rb_eRangeError,       'rb_eRangeError');
+ loadValue(rb_eIOError,          'rb_eIOError');
+ loadValue(rb_eRuntimeError,     'rb_eRuntimeError');
+ loadValue(rb_eSecurityError,    'rb_eSecurityError');
+ loadValue(rb_eSystemCallError,  'rb_eSystemCallError');
+ loadValue(rb_eThreadError,      'rb_eThreadError');
+ loadValue(rb_eTypeError,        'rb_eTypeError');
+ loadValue(rb_eZeroDivError,     'rb_eZeroDivError');
+ loadValue(rb_eNotImpError,      'rb_eNotImpError');
+ loadValue(rb_eNoMemError,       'rb_eNoMemError');
+ loadValue(rb_eNoMethodError,    'rb_eNoMethodError');
+ loadValue(rb_eFloatDomainError, 'rb_eFloatDomainError');
+ loadValue(rb_eLocalJumpError,   'rb_eLocalJumpError');
+ loadValue(rb_eSysStackError,    'rb_eSysStackError');
+ loadValue(rb_eRegexpError,      'rb_eRegexpError');
+ loadValue(rb_eScriptError,      'rb_eScriptError');
+ loadValue(rb_eNameError,        'rb_eNameError');
+ loadValue(rb_eSyntaxError,      'rb_eSyntaxError');
+ loadValue(rb_eLoadError,        'rb_eLoadError');
  end;
 
 procedure TRuby.init(const script : UTF8String);
@@ -681,7 +714,9 @@ procedure TRuby19.load;
  loadValue(rb_cRandom,      'rb_cRandom');
  loadValue(rb_cRational,    'rb_cRational');
  loadValue(rb_cComplex,     'rb_cComplex');
- loadValue(rb_eKeyError, 'rb_eKeyError');
+ loadValue(rb_eKeyError,       'rb_eKeyError');
+ loadValue(rb_eEncodingError,  'rb_eEncodingError');
+ loadValue(rb_eEncCompatError, 'rb_eEncCompatError');
  end;
 
 procedure TRuby19.setup;
