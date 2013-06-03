@@ -129,7 +129,7 @@ procedure TfrmMain.actRuby18Execute(Sender : TObject);
          end
     else try
            fldRuby := TRuby18.Auto;
-           fldRuby.RegisterClass(TForm);
+           fldRuby.Cls2Val(TForm);
            actRuby18.Checked := true;
            actRun.Enabled := true;
            stbMain.Panels[0].text := fldRuby.Description;
@@ -151,6 +151,8 @@ procedure TfrmMain.actCleanOutputExecute(Sender : TObject);
  end;
 
 procedure TfrmMain.actRuby19Execute(Sender : TObject);
+ var
+   tmp : VALUE;
  begin
  if actRuby18.Checked
     then begin
@@ -176,7 +178,7 @@ procedure TfrmMain.actRuby19Execute(Sender : TObject);
          end
     else try
            fldRuby := TRuby19.Auto;
-           fldRuby.RegisterClass(TForm);
+           fldRuby['frmMain'] := fldRuby.Obj2Val(frmMain);
            actRuby19.Checked := true;
            actRun.Enabled := true;
            stbMain.Panels[0].text := fldRuby.Description;
@@ -195,7 +197,7 @@ procedure TfrmMain.actRuby19Execute(Sender : TObject);
 procedure TfrmMain.actRunExecute(Sender : TObject);
  begin
  try
-   stbMain.Panels[2].Text := '= ' + fldRuby.StringValue2String(fldRuby.Inspect(fldRuby.EvalString(synMain.Text)));
+   stbMain.Panels[2].Text := '= ' + fldRuby.Val2Str(fldRuby.Inspect(fldRuby.EvalString(synMain.Text)));
    stbMain.Panels[1].Text := 'OK';
  except
    on e : ERubyEval do

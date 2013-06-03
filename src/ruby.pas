@@ -119,6 +119,14 @@ type
     rb_num2dbl : function (value : VALUE) : Double; cdecl;
     rb_include_module : procedure (target, source : VALUE); cdecl;
     rb_define_alias : procedure (module : VALUE; target, source : PChar); cdecl;
+    rb_gv_get : function (name : PChar) : VALUE; cdecl;
+    rb_gv_set : function (name : PChar; value : VALUE) : VALUE; cdecl;
+    rb_block_given_p : function : cint; cdecl;
+    rb_yield : function (arg : VALUE) : VALUE; cdecl;
+    rb_ary_new4 : function (size : clong; data : PVALUE) : VALUE; cdecl;
+    rb_hash_new : function : VALUE; cdecl;
+    rb_hash_aref : function (hash : VALUE; key : VALUE) : VALUE; cdecl;
+    rb_hash_aset : function (hash : VALUE; key, value : VALUE) : VALUE; cdecl;
     // fields: ruby objects
     rb_mKernel, rb_mComparable, rb_mEnumerable, rb_mErrno, rb_mFileTest, rb_mGC,
       rb_mMath, rb_mProcess : VALUE;
@@ -145,6 +153,7 @@ type
     procedure loadPtr (out field; const name : UTF8String);
     procedure loadValue (out field; const name : UTF8String);
     procedure load; virtual;
+    procedure loadVals; virtual;
     procedure init (const script : UTF8String); virtual;
     procedure setup; virtual;
     procedure done; virtual;
@@ -175,6 +184,7 @@ type
       Qnil   = VALUE(4);
       Qundef = VALUE(6);
       RUBY_SPECIAL_SHIFT = 8;
+      FIXNUM_FLAG = $01;
       SYMBOL_FLAG = $0E;
     // class methods
     class function Auto : TRuby;
@@ -278,8 +288,8 @@ type
     procedure DefineConstant (ns : VALUE; const name : UTF8String; value : VALUE);
     function Inspect (value : VALUE) : VALUE;
     function Intern (const str : UTF8String) : ID;
-    function StringValue2String (value : VALUE) : UTF8String;
-    function StrNew (const str : UTF8String) : VALUE;
+    function Val2Str (value : VALUE) : UTF8String;
+    function Str2Val (const str : UTF8String) : VALUE;
     function Call (obj : VALUE; method : ID; const args : array of VALUE) : VALUE;
     function Call (obj : VALUE; name : UTF8String; const args : array of VALUE) : VALUE;
     function Send (obj : VALUE; method : ID; const args : array of VALUE) : VALUE;
@@ -362,27 +372,39 @@ type
     procedure DefineGlobalFunction (const name : UTF8String; func : FRubyMethodArr);
     procedure DefineAlias (module : VALUE; const target, source : UTF8String);
     procedure Include (target, source : VALUE);
+    function GlobalVarGet (const name : UTF8String) : VALUE;
+    procedure GlobalVarSet (const name : UTF8String; value : VALUE);
+    function BlockGiven : Boolean;
+    function Yield (arg : VALUE) : VALUE;
+    function MkArray (const data : array of VALUE) : VALUE;
+    function HashNew : VALUE;
+    function HashGet (hash : VALUE; key : VALUE) : VALUE;
+    function HashSet (hash : VALUE; key, value : VALUE) : VALUE;
     // methods (coversions)
     function Int2Val (n : PtrInt) : VALUE;
-    function QInt2Val (const n : Int64) : VALUE;
-    function QWord2Val (const n : QWord) : VALUE;
-    function Str2SymVal (const str : UTF8String) : VALUE;
-    function SetStr2Val (const str : UTF8String) : VALUE;
-    function Float2Val (const x : Double) : VALUE;
-    function Bool2Val (b : Boolean) : VALUE;
+    function SLL2Val (const n : Int64) : VALUE;
+    function ULL2Val (const n : QWord) : VALUE;
+    function Str2Sym (const str : UTF8String) : VALUE;
+    function Str2Set (const str : UTF8String) : VALUE;
+    function Flt2Val (const x : Double) : VALUE;
+    function Bln2Val (b : Boolean) : VALUE;
     function Val2Int (value : VALUE) : PtrInt;
-    function Val2QInt (value : VALUE) : Int64;
-    function Val2QWord (value : VALUE) : QWord;
-    function SymVal2Str (value : VALUE) : UTF8String;
-    function Val2SetStr (value : VALUE) : UTF8String;
-    function Val2Float (value : VALUE) : Double;
-    function Val2Bool (value : VALUE) : Boolean;
+    function Val2SLL (value : VALUE) : Int64;
+    function Val2ULL (value : VALUE) : QWord;
+    function Sym2Str (value : VALUE) : UTF8String;
+    function Set2Str (value : VALUE) : UTF8String;
+    function Val2Flt (value : VALUE) : Double;
+    function Val2Bln (value : VALUE) : Boolean;
+    function IsSymbol (value : VALUE) : Boolean;
+    function IsFixnum (value : VALUE) : Boolean;
     // properties (self)
+    property GlobalVars [const name : UTF8String] : VALUE read GlobalVarGet write GlobalVarSet; default;
     // methods (self)
-    function RegisterClass (cls : TClass) : VALUE;
+    function Cls2Val (cls : TClass) : VALUE;
+    function Val2Cls (value : VALUE) : TClass;
     function RegisterUnit (const name : AnsiString) : VALUE;
-    function WrapObject (obj : TObject) : VALUE;
-    function GetObject (value : VALUE) : TObject;
+    function Obj2Val (obj : TObject) : VALUE;
+    function Val2Obj (value : VALUE) : TObject;
   end;
 
   { TRuby18 }
@@ -398,6 +420,7 @@ type
     rb_mPrecision : VALUE;
     // overrided methods
     procedure load; override;
+    procedure loadVals; override;
     procedure setup; override;
     procedure check_data(value : VALUE); override;
     // property access
@@ -428,6 +451,7 @@ type
     rb_eKeyError, rb_eEncodingError, rb_eEncCompatError : VALUE;
     // overrided methods
     procedure load; override;
+    procedure loadVals; override;
     procedure setup; override;
     procedure check_data(value : VALUE); override;
     // property access
@@ -608,6 +632,24 @@ procedure TRuby.load;
  loadFunc(rb_num2dbl,                 'rb_num2dbl');
  loadFunc(rb_include_module,          'rb_include_module');
  loadFunc(rb_define_alias,            'rb_define_alias');
+ loadFunc(rb_gv_get,                  'rb_gv_get');
+ loadFunc(rb_gv_set,                  'rb_gv_set');
+ loadFunc(rb_block_given_p,           'rb_block_given_p');
+ loadFunc(rb_yield,                   'rb_yield');
+ loadFunc(rb_ary_new4,                'rb_ary_new4');
+ loadFunc(rb_hash_new,                'rb_hash_new');
+ loadFunc(rb_hash_aref,               'rb_hash_aref');
+ loadFunc(rb_hash_aset,               'rb_hash_aset');
+ // io
+ loadPtr(rb_stdin,  'rb_stdin');
+ loadPtr(rb_stdout, 'rb_stdout');
+ loadPtr(rb_stderr, 'rb_stderr');
+ // other
+ loadPtr(ruby_description, 'ruby_description');
+ end;
+
+procedure TRuby.loadVals;
+ begin
  // modules
  loadValue(rb_mKernel,     'rb_mKernel');
  loadValue(rb_mComparable, 'rb_mComparable');
@@ -679,12 +721,6 @@ procedure TRuby.load;
  loadValue(rb_eNameError,        'rb_eNameError');
  loadValue(rb_eSyntaxError,      'rb_eSyntaxError');
  loadValue(rb_eLoadError,        'rb_eLoadError');
- // io
- loadPtr(rb_stdin,  'rb_stdin');
- loadPtr(rb_stdout, 'rb_stdout');
- loadPtr(rb_stderr, 'rb_stderr');
- // other
- loadPtr(ruby_description, 'ruby_description');
  end;
 
 procedure TRuby.init(const script : UTF8String);
@@ -743,7 +779,7 @@ procedure TRuby.registerProperties (cls : TClass; value : VALUE);
                      'def ' + nm + '=(value)' + LineEnding +
                      '  pascal_set_prop("' + prop^.Name + '", value)' + LineEnding +
                      'end';
-             Send(value, 'class_eval', [StrNew(code)]);
+             Send(value, 'class_eval', [Str2Val(code)]);
              end;
      end;
  end;
@@ -784,7 +820,7 @@ procedure TRuby.check_type(value : VALUE; t : Integer);
  if res <> 0
     then begin
          err := getErrInfo;
-         raise ERubyType.Create(err, StringValue2String(Inspect(err)));
+         raise ERubyType.Create(err, Val2Str(Inspect(err)));
          end;
  end;
 
@@ -912,6 +948,7 @@ constructor TRuby.Create(const lib, script : UTF8String);
  load;
  init(script);
  setup;
+ loadVals;
  end;
 
 destructor TRuby.Destroy;
@@ -940,7 +977,7 @@ function TRuby.EvalString(const str : UTF8String) : VALUE;
  if res <> 0
     then begin
          err := getErrInfo;
-         raise ERubyEval.Create(err, StringValue2String(Inspect(err)));
+         raise ERubyEval.Create(err, Val2Str(Inspect(err)));
          end;
  end;
 
@@ -996,12 +1033,12 @@ function TRuby.Intern(const str : UTF8String) : ID;
  result := rb_intern(PChar(str));
  end;
 
-function TRuby.StringValue2String(value : VALUE) : UTF8String;
+function TRuby.Val2Str(value : VALUE) : UTF8String;
  begin
  result := UTF8String(rb_string_value_cstr(value)) + '';
  end;
 
-function TRuby.StrNew(const str : UTF8String) : VALUE;
+function TRuby.Str2Val(const str : UTF8String) : VALUE;
  begin
  result := rb_str_new2(PChar(str));
  end;
@@ -1496,22 +1533,62 @@ procedure TRuby.Include(target, source : VALUE);
  rb_include_module(target, source);
  end;
 
+function TRuby.GlobalVarGet(const name : UTF8String) : VALUE;
+ begin
+ result := rb_gv_get(PChar(name));
+ end;
+
+procedure TRuby.GlobalVarSet(const name : UTF8String; value : VALUE);
+ begin
+ rb_gv_set(PChar(name), value);
+ end;
+
+function TRuby.BlockGiven : Boolean;
+ begin
+ result := rb_block_given_p() <> 0;
+ end;
+
+function TRuby.Yield(arg : VALUE) : VALUE;
+ begin
+ result := rb_yield(arg);
+ end;
+
+function TRuby.MkArray(const data : array of VALUE) : VALUE;
+ begin
+ result := rb_ary_new4(Length(data), @(data[0]));
+ end;
+
+function TRuby.HashNew : VALUE;
+ begin
+ result := rb_hash_new();
+ end;
+
+function TRuby.HashGet(hash : VALUE; key : VALUE) : VALUE;
+ begin
+ result := rb_hash_aref(hash, key);
+ end;
+
+function TRuby.HashSet(hash : VALUE; key, value : VALUE) : VALUE;
+ begin
+ result := rb_hash_aset(hash, key, value);
+ end;
+
 function TRuby.Int2Val(n : PtrInt) : VALUE;
  begin
  result := rb_int2inum(n)
  end;
 
-function TRuby.QInt2Val(const n : Int64) : VALUE;
+function TRuby.SLL2Val(const n : Int64) : VALUE;
  begin
  result := rb_ll2inum(n);
  end;
 
-function TRuby.QWord2Val(const n : QWord) : VALUE;
+function TRuby.ULL2Val(const n : QWord) : VALUE;
  begin
  result := rb_ull2inum(n);
  end;
 
-function TRuby.Str2SymVal(const str : UTF8String) : VALUE;
+function TRuby.Str2Sym(const str : UTF8String) : VALUE;
  var
    id : Ruby.ID;
  begin
@@ -1519,17 +1596,17 @@ function TRuby.Str2SymVal(const str : UTF8String) : VALUE;
  result := (id shl RUBY_SPECIAL_SHIFT) or SYMBOL_FLAG
  end;
 
-function TRuby.SetStr2Val(const str : UTF8String) : VALUE;
+function TRuby.Str2Set(const str : UTF8String) : VALUE;
  begin
  result := EvalString('Set[:' + StringReplace(str, ',', ',:', [rfReplaceAll]) + ']');
  end;
 
-function TRuby.Float2Val(const x : Double) : VALUE;
+function TRuby.Flt2Val(const x : Double) : VALUE;
  begin
  result := rb_float_new(x);
  end;
 
-function TRuby.Bool2Val(b : Boolean) : VALUE;
+function TRuby.Bln2Val(b : Boolean) : VALUE;
  begin
  if b
     then result := Qtrue
@@ -1541,37 +1618,47 @@ function TRuby.Val2Int(value : VALUE) : PtrInt;
  result := rb_num2int(value);
  end;
 
-function TRuby.Val2QInt(value : VALUE) : Int64;
+function TRuby.Val2SLL(value : VALUE) : Int64;
  begin
  result := rb_num2ll(value);
  end;
 
-function TRuby.Val2QWord(value : VALUE) : QWord;
+function TRuby.Val2ULL(value : VALUE) : QWord;
  begin
  result := rb_num2ull(value);
  end;
 
-function TRuby.SymVal2Str(value : VALUE) : UTF8String;
+function TRuby.Sym2Str(value : VALUE) : UTF8String;
  begin
  result := rb_id2name(rb_to_id(value));
  end;
 
-function TRuby.Val2SetStr(value : VALUE) : UTF8String;
+function TRuby.Set2Str(value : VALUE) : UTF8String;
  begin
- result := StringValue2String(Call(Call(value, 'to_a', []), 'join', [StrNew(',')]));
+ result := Val2Str(Call(Call(value, 'to_a', []), 'join', [Str2Val(',')]));
  end;
 
-function TRuby.Val2Float(value : VALUE) : Double;
+function TRuby.Val2Flt(value : VALUE) : Double;
  begin
  result := rb_num2dbl(value);
  end;
 
-function TRuby.Val2Bool(value : VALUE) : Boolean;
+function TRuby.Val2Bln(value : VALUE) : Boolean;
  begin
  result := (value <> Qfalse) and (value <> Qnil)
  end;
 
-function TRuby.RegisterClass(cls : TClass) : VALUE;
+function TRuby.IsSymbol(value : VALUE) : Boolean;
+ begin
+ result := (value and PtrUInt($0FF)) = SYMBOL_FLAG;
+ end;
+
+function TRuby.IsFixnum(value : VALUE) : Boolean;
+ begin
+ result := (value and PtrUInt(FIXNUM_FLAG)) <> 0
+ end;
+
+function TRuby.Cls2Val(cls : TClass) : VALUE;
  var
    rb_unit : VALUE;
    rb_parent : VALUE;
@@ -1585,7 +1672,7 @@ function TRuby.RegisterClass(cls : TClass) : VALUE;
  // todo: nested classes support
  if cls.ClassParent = nil
     then rb_parent := defaultSuperclass
-    else rb_parent := RegisterClass(cls.ClassParent);
+    else rb_parent := Cls2Val(cls.ClassParent);
  result := DefineClass(rb_unit, constName(cls.ClassName), rb_parent);
  registerProperties(cls, result);
  l := Length(cacheClasses);
@@ -1595,6 +1682,19 @@ function TRuby.RegisterClass(cls : TClass) : VALUE;
  for i := 0 to High(listHooks) do
      if listHooks[i].cls = cls
         then listHooks[i].hook(self, cls, result);
+ end;
+
+function TRuby.Val2Cls(value : VALUE) : TClass;
+ var
+   idx : Integer;
+ begin
+ for idx := 0 to High(cacheClasses) do
+     if cacheClasses[idx].value = value
+        then begin
+             result := cacheClasses[idx].cls;
+             Exit;
+             end;
+ result := nil;
  end;
 
 function TRuby.RegisterUnit(const name : AnsiString) : VALUE;
@@ -1610,7 +1710,7 @@ function TRuby.RegisterUnit(const name : AnsiString) : VALUE;
  cacheUnits[l].value := result;
  end;
 
-function TRuby.WrapObject(obj : TObject) : VALUE;
+function TRuby.Obj2Val(obj : TObject) : VALUE;
  var
    l : Integer;
  begin
@@ -1625,12 +1725,13 @@ function TRuby.WrapObject(obj : TObject) : VALUE;
          SetLength(cacheObjects, l + 1);
          cacheObjects[l].obj.obj := obj;
          cacheObjects[l].obj.ruby := self;
-         result := rb_data_object_alloc(RegisterClass(obj.ClassType), @cacheObjects[l].obj, nil, nil);
+         result := rb_data_object_alloc(Cls2Val(obj.ClassType),
+                                        @cacheObjects[l].obj, nil, nil);
          cacheObjects[l].value := result;
          end;
  end;
 
-function TRuby.GetObject(value : VALUE) : TObject;
+function TRuby.Val2Obj(value : VALUE) : TObject;
  begin
  if value = Qnil
     then result := nil
@@ -1643,6 +1744,11 @@ procedure TRuby18.load;
  begin
  inherited load;
  loadPtr(ruby_errinfo, 'ruby_errinfo');
+ end;
+
+procedure TRuby18.loadVals;
+ begin
+ inherited loadVals;
  loadValue(rb_mPrecision, 'rb_mPrecision');
  end;
 
@@ -1692,6 +1798,12 @@ procedure TRuby19.load;
  inherited load;
  loadFunc(rb_errinfo,     'rb_errinfo');
  loadFunc(rb_set_errinfo, 'rb_set_errinfo');
+ loadPtr(ruby_description, 'ruby_description');
+ end;
+
+procedure TRuby19.loadVals;
+ begin
+ inherited loadVals;
  loadValue(rb_mWaitReadable, 'rb_mWaitReadable');
  loadValue(rb_mWaitWritable, 'rb_mWaitWritable');
  loadValue(rb_cBasicObject, 'rb_cBasicObject');
@@ -1702,7 +1814,6 @@ procedure TRuby19.load;
  loadValue(rb_eKeyError,       'rb_eKeyError');
  loadValue(rb_eEncodingError,  'rb_eEncodingError');
  loadValue(rb_eEncCompatError, 'rb_eEncCompatError');
- loadPtr(ruby_description, 'ruby_description');
  end;
 
 procedure TRuby19.setup;
@@ -1780,36 +1891,36 @@ function pascal_get_prop (obj : VALUE; prop : VALUE) : VALUE; cdecl;
    info : PPropInfo;
  begin
  unpack_object(obj, pack);
- name := pack.ruby.StringValue2String(prop);
+ name := pack.ruby.Val2Str(prop);
  info := GetPropInfo(pack.obj, name);
  if info <> nil
     then case info^.PropType^.Kind of
               tkInteger :
                 result := pack.ruby.Int2Val(GetOrdProp(pack.obj, info));
               tkInt64 :
-                result := pack.ruby.QInt2Val(GetInt64Prop(pack.obj, info));
+                result := pack.ruby.SLL2Val(GetInt64Prop(pack.obj, info));
               tkQWord :
-                result := pack.ruby.QWord2Val(QWord(GetInt64Prop(pack.obj,
+                result := pack.ruby.ULL2Val(QWord(GetInt64Prop(pack.obj,
                                                                  info)));
               tkEnumeration :
-                result := pack.ruby.Str2SymVal(GetEnumProp(pack.obj, info));
+                result := pack.ruby.Str2Sym(GetEnumProp(pack.obj, info));
               tkSet :
-                result := pack.ruby.SetStr2Val(GetSetProp(pack.obj, info,
+                result := pack.ruby.Str2Set(GetSetProp(pack.obj, info,
                                                           false));
               tkFloat :
-                result := pack.ruby.Float2Val(GetFloatProp(pack.obj, info));
+                result := pack.ruby.Flt2Val(GetFloatProp(pack.obj, info));
               tkSString, tkLString, tkAString :
-                result := pack.ruby.StrNew(GetStrProp(pack.obj, info));
+                result := pack.ruby.Str2Val(GetStrProp(pack.obj, info));
               tkWString, tkUString :
-                result := pack.ruby.StrNew(GetUnicodeStrProp(pack.obj, info));
+                result := pack.ruby.Str2Val(GetUnicodeStrProp(pack.obj, info));
               tkChar :
-                result := pack.ruby.StrNew(A2A(GetOrdProp(pack.obj, info)));
+                result := pack.ruby.Str2Val(A2A(GetOrdProp(pack.obj, info)));
               tkWChar, tkUChar :
-                result := pack.ruby.StrNew(U2U(GetOrdProp(pack.obj, info)));
+                result := pack.ruby.Str2Val(U2U(GetOrdProp(pack.obj, info)));
               tkBool :
-                result := pack.ruby.Bool2Val(GetOrdProp(pack.obj, info) <> 0);
+                result := pack.ruby.Bln2Val(GetOrdProp(pack.obj, info) <> 0);
               tkClass :
-                result := pack.ruby.WrapObject(GetObjectProp(pack.obj, info));
+                result := pack.ruby.Obj2Val(GetObjectProp(pack.obj, info));
               else
                 result := pack.ruby.Qnil;
          end
@@ -1833,38 +1944,38 @@ function pascal_set_prop (obj : VALUE; prop, value : VALUE) : VALUE; cdecl;
    info : PPropInfo;
  begin
  unpack_object(obj, pack);
- name := pack.ruby.StringValue2String(prop);
+ name := pack.ruby.Val2Str(prop);
  info := GetPropInfo(pack.obj, name);
  if info <> nil
     then case info^.PropType^.Kind of
               tkInteger :
                 SetOrdProp(pack.obj, info, pack.ruby.Val2Int(value));
               tkInt64 :
-                SetInt64Prop(pack.obj, info, pack.ruby.Val2QInt(value));
+                SetInt64Prop(pack.obj, info, pack.ruby.Val2SLL(value));
               tkQWord :
                 SetInt64Prop(pack.obj, info,
-                             Int64(pack.ruby.Val2QWord(value)));
+                             Int64(pack.ruby.Val2ULL(value)));
               tkEnumeration :
-                SetEnumProp(pack.obj, info, pack.ruby.SymVal2Str(value));
+                SetEnumProp(pack.obj, info, pack.ruby.Sym2Str(value));
               tkSet :
-                SetSetProp(pack.obj, info, pack.ruby.Val2SetStr(value));
+                SetSetProp(pack.obj, info, pack.ruby.Set2Str(value));
               tkFloat :
-                SetFloatProp(pack.obj, info, pack.ruby.Val2Float(value));
+                SetFloatProp(pack.obj, info, pack.ruby.Val2Flt(value));
               tkSString, tkLString, tkAString :
-                SetStrProp(pack.obj, info, pack.ruby.StringValue2String(value));
+                SetStrProp(pack.obj, info, pack.ruby.Val2Str(value));
               tkWString, tkUString :
                 SetUnicodeStrProp(pack.obj, info,
-                                  pack.ruby.StringValue2String(value));
+                                  pack.ruby.Val2Str(value));
               tkChar :
                 SetOrdProp(pack.obj, info,
-                           A1(pack.ruby.StringValue2String(value)));
+                           A1(pack.ruby.Val2Str(value)));
               tkUChar, tkWChar :
                 SetOrdProp(pack.obj, info,
-                           U1(pack.ruby.StringValue2String(value)));
+                           U1(pack.ruby.Val2Str(value)));
               tkBool :
-                SetOrdProp(pack.obj, info, Ord(pack.ruby.Val2Bool(value)));
+                SetOrdProp(pack.obj, info, Ord(pack.ruby.Val2Bln(value)));
               tkClass :
-                SetObjectProp(pack.obj, info, pack.ruby.GetObject(value));
+                SetObjectProp(pack.obj, info, pack.ruby.Val2Obj(value));
          end;
  result := value;
  end;
@@ -1875,7 +1986,7 @@ function object_equals (obj : VALUE; other : VALUE) : VALUE; cdecl;
  begin
  unpack_object(obj, pack);
  unpack_object(other, otherpack);
- result := pack.ruby.Bool2Val(pack.obj.Equals(otherpack.obj));
+ result := pack.ruby.Bln2Val(pack.obj.Equals(otherpack.obj));
  end;
 
 function object_to_s (obj : VALUE) : VALUE; cdecl;
@@ -1883,7 +1994,7 @@ function object_to_s (obj : VALUE) : VALUE; cdecl;
    pack : TObjectPack;
  begin
  unpack_object(obj, pack);
- result := pack.ruby.StrNew('#<Pascal: #' + HexStr(Pointer(pack.obj)) + ' [' +
+ result := pack.ruby.Str2Val('#<Pascal: #' + HexStr(Pointer(pack.obj)) + ' [' +
                             pack.obj.ClassName + ']>');
  end;
 
@@ -1892,10 +2003,10 @@ procedure HookTObject (ruby : TRuby; cls : TClass; value : VALUE);
  begin
  ruby.DefineMethod(value, 'pascal_get_prop', @pascal_get_prop);
  ruby.DefineMethod(value, 'pascal_set_prop', @pascal_set_prop);
- ruby.Send(value, 'private', [ruby.Str2SymVal('pascal_get_prop'),
-                              ruby.Str2SymVal('pascal_set_prop')]);
+ ruby.Send(value, 'private', [ruby.Str2Sym('pascal_get_prop'),
+                              ruby.Str2Sym('pascal_set_prop')]);
  ruby.DefineMethod(value, '==', @object_equals);
- ruby.DefineMethod(value, 'to_s', @object_to_s);
+ //ruby.DefineMethod(value, 'to_s', @object_to_s);
  end;
 {$hints on}
 
