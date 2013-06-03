@@ -8,6 +8,8 @@ unit Ruby;
 
 interface
 
+// todo: free from cache
+
 uses
   SysUtils, DynLibs, ctypes, typinfo;
 
@@ -48,11 +50,11 @@ type
 
   TRubyClass = class of TRuby;
 
-  TObjectPack = record
+  TPack = record
     obj : TObject;
-    ruby : TRuby;
+    rb : TRuby;
   end;
-  PObjectPack = ^TObjectPack;
+  PPack = ^TPack;
 
   { TRuby }
 
@@ -78,10 +80,11 @@ type
     function findUnit (const name : AnsiString; out value : VALUE) : Boolean;
     var
       cacheObjects : array of record
-          obj : TObjectPack;
+          obj : TPack;
           value : VALUE;
         end;
     function findObject (obj : TObject; out value : VALUE) : Boolean;
+    procedure freeValue (p : PPack);
   protected
     // fields: lib
     libHandle : THandle;
@@ -127,6 +130,9 @@ type
     rb_hash_new : function : VALUE; cdecl;
     rb_hash_aref : function (hash : VALUE; key : VALUE) : VALUE; cdecl;
     rb_hash_aset : function (hash : VALUE; key, value : VALUE) : VALUE; cdecl;
+    rb_ary_new : function : VALUE; cdecl;
+    rb_ary_new2 : function (size : clong) : VALUE; cdecl;
+    rb_ary_push : function (arr : VALUE; value : VALUE) : VALUE; cdecl;
     // fields: ruby objects
     rb_mKernel, rb_mComparable, rb_mEnumerable, rb_mErrno, rb_mFileTest, rb_mGC,
       rb_mMath, rb_mProcess : VALUE;
@@ -176,6 +182,8 @@ type
     class function defaultScript : UTF8String; virtual;
     class function constName (const name : AnsiString) : AnsiString;
     class function methodName (const name : AnsiString) : AnsiString;
+  public
+    rb_scan_args : function (argc : cint; argv : PVALUE; fmt : PChar) : cint; cdecl; varargs;
   public
     // constants
     const
@@ -376,7 +384,8 @@ type
     procedure GlobalVarSet (const name : UTF8String; value : VALUE);
     function BlockGiven : Boolean;
     function Yield (arg : VALUE) : VALUE;
-    function MkArray (const data : array of VALUE) : VALUE;
+    function ArrayNew : VALUE;
+    function ArrayPush (arr : VALUE; value : VALUE) : VALUE;
     function HashNew : VALUE;
     function HashGet (hash : VALUE; key : VALUE) : VALUE;
     function HashSet (hash : VALUE; key, value : VALUE) : VALUE;
@@ -483,7 +492,7 @@ type
 
 { Common }
 
-procedure unpack_object (value : VALUE; out rec : TObjectPack);
+procedure unpack_object (value : VALUE; out rec : TPack);
 
 type
   ERuby = class(Exception);
@@ -576,6 +585,21 @@ function TRuby.findObject(obj : TObject; out value : VALUE) : Boolean;
  result := false;
  end;
 
+procedure TRuby.freeValue(p : PPack);
+ var
+   i, h, d : Integer;
+ begin
+ h := High(cacheObjects);
+ for i := 0 to h do
+     if @(cacheObjects[i].obj) = p
+        then begin
+             for d := i to h - 1 do
+                 cacheObjects[d] := cacheObjects[d + 1];
+             SetLength(cacheObjects, h);
+             Exit;
+             end;
+ end;
+
 procedure TRuby.loadFunc (out field; const name : UTF8String);
  begin
  Pointer(field) := GetProcedureAddress(libHandle, name);
@@ -640,6 +664,10 @@ procedure TRuby.load;
  loadFunc(rb_hash_new,                'rb_hash_new');
  loadFunc(rb_hash_aref,               'rb_hash_aref');
  loadFunc(rb_hash_aset,               'rb_hash_aset');
+ loadFunc(rb_ary_new,                 'rb_ary_new');
+ loadFunc(rb_ary_new2,                'rb_ary_new2');
+ loadFunc(rb_ary_push,                'rb_ary_push');
+ loadFunc(rb_scan_args,               'rb_scan_args');
  // io
  loadPtr(rb_stdin,  'rb_stdin');
  loadPtr(rb_stdout, 'rb_stdout');
@@ -1553,9 +1581,14 @@ function TRuby.Yield(arg : VALUE) : VALUE;
  result := rb_yield(arg);
  end;
 
-function TRuby.MkArray(const data : array of VALUE) : VALUE;
+function TRuby.ArrayNew : VALUE;
  begin
- result := rb_ary_new4(Length(data), @(data[0]));
+ result := rb_ary_new2(0);
+ end;
+
+function TRuby.ArrayPush(arr : VALUE; value : VALUE) : VALUE;
+ begin
+ result := rb_ary_push(arr, value);
  end;
 
 function TRuby.HashNew : VALUE;
@@ -1710,6 +1743,11 @@ function TRuby.RegisterUnit(const name : AnsiString) : VALUE;
  cacheUnits[l].value := result;
  end;
 
+procedure obj_free (p : Pointer); cdecl;
+ begin
+ PPack(p)^.rb.freeValue(p);
+ end;
+
 function TRuby.Obj2Val(obj : TObject) : VALUE;
  var
    l : Integer;
@@ -1724,9 +1762,9 @@ function TRuby.Obj2Val(obj : TObject) : VALUE;
          l := Length(cacheObjects);
          SetLength(cacheObjects, l + 1);
          cacheObjects[l].obj.obj := obj;
-         cacheObjects[l].obj.ruby := self;
+         cacheObjects[l].obj.rb := self;
          result := rb_data_object_alloc(Cls2Val(obj.ClassType),
-                                        @cacheObjects[l].obj, nil, nil);
+                                        @cacheObjects[l].obj, nil, @obj_free);
          cacheObjects[l].value := result;
          end;
  end;
@@ -1735,7 +1773,7 @@ function TRuby.Val2Obj(value : VALUE) : TObject;
  begin
  if value = Qnil
     then result := nil
-    else result := PObjectPack(get_data(value))^.obj;
+    else result := PPack(get_data(value))^.obj;
  end;
 
 { TRuby18 }
@@ -1867,10 +1905,10 @@ class function TRuby20.defaultLibrary : UTF8String;
 
 { Init related }
 
-procedure unpack_object (value : VALUE; out rec : TObjectPack);
+procedure unpack_object (value : VALUE; out rec : TPack);
  begin
 {$hints off}
- rec := PObjectPack(PRData(value)^.data)^;
+ rec := PPack(PRData(value)^.data)^;
 {$hints on}
  end;
 
@@ -1886,45 +1924,45 @@ function U2U (c : Integer) : UnicodeString; inline;
 
 function pascal_get_prop (obj : VALUE; prop : VALUE) : VALUE; cdecl;
  var
-   pack : TObjectPack;
+   pack : TPack;
    name : UTF8String;
    info : PPropInfo;
  begin
  unpack_object(obj, pack);
- name := pack.ruby.Val2Str(prop);
+ name := pack.rb.Val2Str(prop);
  info := GetPropInfo(pack.obj, name);
  if info <> nil
     then case info^.PropType^.Kind of
               tkInteger :
-                result := pack.ruby.Int2Val(GetOrdProp(pack.obj, info));
+                result := pack.rb.Int2Val(GetOrdProp(pack.obj, info));
               tkInt64 :
-                result := pack.ruby.SLL2Val(GetInt64Prop(pack.obj, info));
+                result := pack.rb.SLL2Val(GetInt64Prop(pack.obj, info));
               tkQWord :
-                result := pack.ruby.ULL2Val(QWord(GetInt64Prop(pack.obj,
+                result := pack.rb.ULL2Val(QWord(GetInt64Prop(pack.obj,
                                                                  info)));
               tkEnumeration :
-                result := pack.ruby.Str2Sym(GetEnumProp(pack.obj, info));
+                result := pack.rb.Str2Sym(GetEnumProp(pack.obj, info));
               tkSet :
-                result := pack.ruby.Str2Set(GetSetProp(pack.obj, info,
+                result := pack.rb.Str2Set(GetSetProp(pack.obj, info,
                                                           false));
               tkFloat :
-                result := pack.ruby.Flt2Val(GetFloatProp(pack.obj, info));
+                result := pack.rb.Flt2Val(GetFloatProp(pack.obj, info));
               tkSString, tkLString, tkAString :
-                result := pack.ruby.Str2Val(GetStrProp(pack.obj, info));
+                result := pack.rb.Str2Val(GetStrProp(pack.obj, info));
               tkWString, tkUString :
-                result := pack.ruby.Str2Val(GetUnicodeStrProp(pack.obj, info));
+                result := pack.rb.Str2Val(GetUnicodeStrProp(pack.obj, info));
               tkChar :
-                result := pack.ruby.Str2Val(A2A(GetOrdProp(pack.obj, info)));
+                result := pack.rb.Str2Val(A2A(GetOrdProp(pack.obj, info)));
               tkWChar, tkUChar :
-                result := pack.ruby.Str2Val(U2U(GetOrdProp(pack.obj, info)));
+                result := pack.rb.Str2Val(U2U(GetOrdProp(pack.obj, info)));
               tkBool :
-                result := pack.ruby.Bln2Val(GetOrdProp(pack.obj, info) <> 0);
+                result := pack.rb.Bln2Val(GetOrdProp(pack.obj, info) <> 0);
               tkClass :
-                result := pack.ruby.Obj2Val(GetObjectProp(pack.obj, info));
+                result := pack.rb.Obj2Val(GetObjectProp(pack.obj, info));
               else
-                result := pack.ruby.Qnil;
+                result := pack.rb.Qnil;
          end
-    else result := pack.ruby.Qnil;
+    else result := pack.rb.Qnil;
  end;
 
 function A1 (const s : ansistring) : Integer; inline;
@@ -1939,62 +1977,62 @@ function U1 (const s : UnicodeString) : Integer; inline;
 
 function pascal_set_prop (obj : VALUE; prop, value : VALUE) : VALUE; cdecl;
  var
-   pack : TObjectPack;
+   pack : TPack;
    name : UTF8String;
    info : PPropInfo;
  begin
  unpack_object(obj, pack);
- name := pack.ruby.Val2Str(prop);
+ name := pack.rb.Val2Str(prop);
  info := GetPropInfo(pack.obj, name);
  if info <> nil
     then case info^.PropType^.Kind of
               tkInteger :
-                SetOrdProp(pack.obj, info, pack.ruby.Val2Int(value));
+                SetOrdProp(pack.obj, info, pack.rb.Val2Int(value));
               tkInt64 :
-                SetInt64Prop(pack.obj, info, pack.ruby.Val2SLL(value));
+                SetInt64Prop(pack.obj, info, pack.rb.Val2SLL(value));
               tkQWord :
                 SetInt64Prop(pack.obj, info,
-                             Int64(pack.ruby.Val2ULL(value)));
+                             Int64(pack.rb.Val2ULL(value)));
               tkEnumeration :
-                SetEnumProp(pack.obj, info, pack.ruby.Sym2Str(value));
+                SetEnumProp(pack.obj, info, pack.rb.Sym2Str(value));
               tkSet :
-                SetSetProp(pack.obj, info, pack.ruby.Set2Str(value));
+                SetSetProp(pack.obj, info, pack.rb.Set2Str(value));
               tkFloat :
-                SetFloatProp(pack.obj, info, pack.ruby.Val2Flt(value));
+                SetFloatProp(pack.obj, info, pack.rb.Val2Flt(value));
               tkSString, tkLString, tkAString :
-                SetStrProp(pack.obj, info, pack.ruby.Val2Str(value));
+                SetStrProp(pack.obj, info, pack.rb.Val2Str(value));
               tkWString, tkUString :
                 SetUnicodeStrProp(pack.obj, info,
-                                  pack.ruby.Val2Str(value));
+                                  pack.rb.Val2Str(value));
               tkChar :
                 SetOrdProp(pack.obj, info,
-                           A1(pack.ruby.Val2Str(value)));
+                           A1(pack.rb.Val2Str(value)));
               tkUChar, tkWChar :
                 SetOrdProp(pack.obj, info,
-                           U1(pack.ruby.Val2Str(value)));
+                           U1(pack.rb.Val2Str(value)));
               tkBool :
-                SetOrdProp(pack.obj, info, Ord(pack.ruby.Val2Bln(value)));
+                SetOrdProp(pack.obj, info, Ord(pack.rb.Val2Bln(value)));
               tkClass :
-                SetObjectProp(pack.obj, info, pack.ruby.Val2Obj(value));
+                SetObjectProp(pack.obj, info, pack.rb.Val2Obj(value));
          end;
  result := value;
  end;
 
 function object_equals (obj : VALUE; other : VALUE) : VALUE; cdecl;
  var
-   pack, otherpack : TObjectPack;
+   pack, otherpack : TPack;
  begin
  unpack_object(obj, pack);
  unpack_object(other, otherpack);
- result := pack.ruby.Bln2Val(pack.obj.Equals(otherpack.obj));
+ result := pack.rb.Bln2Val(pack.obj.Equals(otherpack.obj));
  end;
 
 function object_to_s (obj : VALUE) : VALUE; cdecl;
  var
-   pack : TObjectPack;
+   pack : TPack;
  begin
  unpack_object(obj, pack);
- result := pack.ruby.Str2Val('#<Pascal: #' + HexStr(Pointer(pack.obj)) + ' [' +
+ result := pack.rb.Str2Val('#<Pascal: #' + HexStr(Pointer(pack.obj)) + ' [' +
                             pack.obj.ClassName + ']>');
  end;
 

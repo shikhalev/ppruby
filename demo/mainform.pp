@@ -151,8 +151,6 @@ procedure TfrmMain.actCleanOutputExecute(Sender : TObject);
  end;
 
 procedure TfrmMain.actRuby19Execute(Sender : TObject);
- var
-   tmp : VALUE;
  begin
  if actRuby18.Checked
     then begin
@@ -179,6 +177,7 @@ procedure TfrmMain.actRuby19Execute(Sender : TObject);
     else try
            fldRuby := TRuby19.Auto;
            fldRuby['frmMain'] := fldRuby.Obj2Val(frmMain);
+           fldRuby['panels'] := fldRuby.Obj2Val(stbMain.Panels);
            actRuby19.Checked := true;
            actRun.Enabled := true;
            stbMain.Panels[0].text := fldRuby.Description;

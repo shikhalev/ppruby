@@ -636,8 +636,8 @@ object frmMain: TfrmMain
   end
   object alsMain: TActionList
     Images = ilsMain
-    left = 430
-    top = 154
+    left = 384
+    top = 144
     object actFileNew: TAction
       Category = 'File'
       Caption = 'New'
@@ -1358,8 +1358,8 @@ object frmMain: TfrmMain
   end
   object mnuMain: TMainMenu
     Images = ilsMain
-    left = 296
-    top = 48
+    left = 416
+    top = 144
     object mnuFile: TMenuItem
       Caption = 'File'
       object mnuFileNew: TMenuItem
@@ -2069,7 +2069,7 @@ object frmMain: TfrmMain
     Entity = False
     DollarVariables = True
     ActiveDot = False
-    left = 495
-    top = 100
+    left = 352
+    top = 112
   end
 end
