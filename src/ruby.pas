@@ -379,6 +379,7 @@ type
     procedure DefineGlobalFunction (const name : UTF8String; func : FRubyMethod17);
     procedure DefineGlobalFunction (const name : UTF8String; func : FRubyMethodArr);
     procedure DefineAlias (module : VALUE; const target, source : UTF8String);
+    procedure DefineAttribute(module : VALUE; const name : UTF8String; getter : FRubyMethod0; setter : FRubyMethod1);
     procedure Include (target, source : VALUE);
     function GlobalVarGet (const name : UTF8String) : VALUE;
     procedure GlobalVarSet (const name : UTF8String; value : VALUE);
@@ -802,10 +803,10 @@ procedure TRuby.registerProperties (cls : TClass; value : VALUE);
              nm := methodName(prop^.Name);
              code := 'attr_accessor :' + nm + LineEnding +
                      'def ' + nm + LineEnding +
-                     '  pascal_get_prop("' + prop^.Name + '")' + LineEnding +
+                     '  pascal_get_prop(''' + nm + ''')' + LineEnding +
                      'end' + LineEnding +
                      'def ' + nm + '=(value)' + LineEnding +
-                     '  pascal_set_prop("' + prop^.Name + '", value)' + LineEnding +
+                     '  pascal_set_prop(''' + nm + ''', value)' + LineEnding +
                      'end';
              Send(value, 'class_eval', [Str2Val(code)]);
              end;
@@ -1556,6 +1557,23 @@ procedure TRuby.DefineAlias(module : VALUE; const target, source : UTF8String);
  rb_define_alias(module, PChar(target), PChar(source));
  end;
 
+procedure TRuby.DefineAttribute(module : VALUE; const name : UTF8String;
+  getter : FRubyMethod0; setter : FRubyMethod1);
+ var
+   at : UTF8String;
+ begin
+ if getter = nil
+    then at := 'attr_writer'
+    else if setter = nil
+            then at := 'attr_reader'
+            else at := 'attr_accessor';
+ Send(module, at, [Str2Sym(name)]);
+ if getter <> nil
+    then DefineMethod(module, name, getter);
+ if setter <> nil
+    then DefineMethod(module, name + '=', setter);
+ end;
+
 procedure TRuby.Include(target, source : VALUE);
  begin
  rb_include_module(target, source);
@@ -2044,7 +2062,6 @@ procedure HookTObject (ruby : TRuby; cls : TClass; value : VALUE);
  ruby.Send(value, 'private', [ruby.Str2Sym('pascal_get_prop'),
                               ruby.Str2Sym('pascal_set_prop')]);
  ruby.DefineMethod(value, '==', @object_equals);
- //ruby.DefineMethod(value, 'to_s', @object_to_s);
  end;
 {$hints on}
 

@@ -24,15 +24,19 @@
       </Item1>
       <Item2>
         <Filename Value="rubyclasses.pas"/>
-        <UnitName Value="rubyclasses"/>
+        <UnitName Value="RubyClasses"/>
       </Item2>
     </Files>
     <Type Value="RunAndDesignTime"/>
-    <RequiredPkgs Count="1">
+    <RequiredPkgs Count="2">
       <Item1>
-        <PackageName Value="FCL"/>
+        <PackageName Value="LCL"/>
         <MinVersion Major="1" Valid="True"/>
       </Item1>
+      <Item2>
+        <PackageName Value="FCL"/>
+        <MinVersion Major="1" Valid="True"/>
+      </Item2>
     </RequiredPkgs>
     <UsageOptions>
       <UnitPath Value="$(PkgOutDir)"/>

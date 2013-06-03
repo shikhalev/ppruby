@@ -9,7 +9,7 @@ uses
 
 implementation
 
-function persistent_assign (obj : VALUE; source : VALUE) : VALUE; cdecl;
+function prs_assign (obj : VALUE; source : VALUE) : VALUE; cdecl;
  var
    p, sp : TPack;
  begin
@@ -19,7 +19,7 @@ function persistent_assign (obj : VALUE; source : VALUE) : VALUE; cdecl;
  result := obj;
  end;
 
-function persistent_namepath (obj : VALUE) : VALUE; cdecl;
+function prs_namepath (obj : VALUE) : VALUE; cdecl;
  var
    p : TPack;
  begin
@@ -30,12 +30,12 @@ function persistent_namepath (obj : VALUE) : VALUE; cdecl;
 {$hints off}
 procedure hookTPersistent (ruby : TRuby; cls : TClass; value : VALUE);
  begin
- ruby.DefineMethod(value, 'assign!', @persistent_assign);
- ruby.DefineMethod(value, 'namepath', @persistent_namepath);
+ ruby.DefineMethod(value, 'assign!', @prs_assign);
+ ruby.DefineAttribute(value, 'namepath', @prs_namepath, nil);
  end;
 {$hints on}
 
-function component_name (obj : VALUE) : VALUE; cdecl;
+function cmp_name (obj : VALUE) : VALUE; cdecl;
  var
    p : TPack;
  begin
@@ -43,7 +43,7 @@ function component_name (obj : VALUE) : VALUE; cdecl;
  result := p.rb.Str2Sym((p.obj as TComponent).name);
  end;
 
-function component_setname (obj : VALUE; value : VALUE) : VALUE; cdecl;
+function cmp_name_set (obj : VALUE; value : VALUE) : VALUE; cdecl;
  var
    p : TPack;
    n : UTF8String;
@@ -56,7 +56,7 @@ function component_setname (obj : VALUE; value : VALUE) : VALUE; cdecl;
  result := value;
  end;
 
-function component_get (obj : VALUE; nm_or_i : VALUE) : VALUE; cdecl;
+function cmp_get (obj : VALUE; nm_or_i : VALUE) : VALUE; cdecl;
  var
    p : TPack;
    n : UTF8String;
@@ -78,7 +78,7 @@ function component_get (obj : VALUE; nm_or_i : VALUE) : VALUE; cdecl;
  end;
  end;
 
-function component_each (obj : VALUE) : VALUE; cdecl;
+function cmp_each (obj : VALUE) : VALUE; cdecl;
  var
    p : TPack;
    i : Integer;
@@ -93,7 +93,7 @@ function component_each (obj : VALUE) : VALUE; cdecl;
     else result := p.rb.Send(p.rb.cEnumerator, 'new', [obj]);
  end;
 
-function component_components (obj : VALUE) : VALUE; cdecl;
+function cmp_components (obj : VALUE) : VALUE; cdecl;
  var
    p : TPack;
    i : Integer;
@@ -104,7 +104,7 @@ function component_components (obj : VALUE) : VALUE; cdecl;
      p.rb.ArrayPush(result, p.rb.Obj2Val((p.obj as TComponent).Components[i]));
  end;
 
-function component_owner (obj : VALUE) : VALUE; cdecl;
+function cmp_owner (obj : VALUE) : VALUE; cdecl;
  var
    p : TPack;
  begin
@@ -112,7 +112,7 @@ function component_owner (obj : VALUE) : VALUE; cdecl;
  result := p.rb.Obj2Val((p.obj as TComponent).Owner);
  end;
 
-function component_to_h (obj : VALUE) : VALUE; cdecl;
+function cmp_hash (obj : VALUE) : VALUE; cdecl;
  var
    p : TPack;
    i : Integer;
@@ -127,7 +127,7 @@ function component_to_h (obj : VALUE) : VALUE; cdecl;
      end;
  end;
 
-function component_index (obj : VALUE) : VALUE; cdecl;
+function cmp_index (obj : VALUE) : VALUE; cdecl;
  var
    p : TPack;
  begin
@@ -135,7 +135,7 @@ function component_index (obj : VALUE) : VALUE; cdecl;
  result := p.rb.Int2Val((p.obj as TComponent).ComponentIndex);
  end;
 
-function component_index_set (obj : VALUE; idx : VALUE) : VALUE; cdecl;
+function cmp_index_set (obj : VALUE; idx : VALUE) : VALUE; cdecl;
  var
    p : TPack;
  begin
@@ -148,23 +148,18 @@ function component_index_set (obj : VALUE; idx : VALUE) : VALUE; cdecl;
 procedure hookTComponent (ruby : TRuby; cls : TClass; value : VALUE);
  begin
  ruby.Include(value, ruby.mEnumerable);
- ruby.Send(value, 'attr_accessor', [ruby.Str2Sym('name')]);
- ruby.DefineMethod(value, 'name', @component_name);
- ruby.DefineMethod(value, 'name=', @component_setname);
- ruby.DefineMethod(value, '[]', @component_get);
- ruby.DefineMethod(value, 'each', @component_each);
- ruby.DefineMethod(value, 'components', @component_components);
+ ruby.DefineAttribute(value, 'name', @cmp_name, @cmp_name_set);
+ ruby.DefineAttribute(value, 'owner', @cmp_owner, nil);
+ ruby.DefineAttribute(value, 'index', @cmp_index, @cmp_index_set);
+ ruby.DefineMethod(value, '[]', @cmp_get);
+ ruby.DefineMethod(value, 'each', @cmp_each);
+ ruby.DefineMethod(value, 'components', @cmp_components);
+ ruby.DefineMethod(value, 'to_h', @cmp_hash);
  ruby.DefineAlias(value, 'to_a', 'components');
- ruby.Send(value, 'attr_reader', [ruby.Str2Sym('owner')]);
- ruby.DefineMethod(value, 'owner', @component_owner);
- ruby.DefineMethod(value, 'to_h', @component_to_h);
- ruby.Send(value, 'attr_accessor', [ruby.Str2Sym('index')]);
- ruby.DefineMethod(value, 'index', @component_index);
- ruby.DefineMethod(value, 'index=', @component_index_set);
  end;
 {$hints on}
 
-function basicaction_execute (obj : VALUE) : VALUE; cdecl;
+function act_execute (obj : VALUE) : VALUE; cdecl;
  var
    p : TPack;
  begin
@@ -172,7 +167,7 @@ function basicaction_execute (obj : VALUE) : VALUE; cdecl;
  result := p.rb.Bln2Val((p.obj as TBasicAction).Execute);
  end;
 
-function basicaction_update (obj : VALUE) : VALUE; cdecl;
+function act_update (obj : VALUE) : VALUE; cdecl;
  var
    p : TPack;
  begin
@@ -183,12 +178,12 @@ function basicaction_update (obj : VALUE) : VALUE; cdecl;
 {$hints off}
 procedure hookTBasicAction (ruby : TRuby; cls : TClass; value : VALUE);
  begin
- ruby.DefineMethod(value, 'execute', @basicaction_execute);
- ruby.DefineMethod(value, 'update', @basicaction_update);
+ ruby.DefineMethod(value, 'execute', @act_execute);
+ ruby.DefineMethod(value, 'update', @act_update);
  end;
 {$hints on}
 
-function collection_owner (obj : VALUE) : VALUE; cdecl;
+function col_owner (obj : VALUE) : VALUE; cdecl;
  var
    p : TPack;
  begin
@@ -196,7 +191,7 @@ function collection_owner (obj : VALUE) : VALUE; cdecl;
  result := p.rb.Obj2Val((p.obj as TCollection).Owner);
  end;
 
-function collection_add (obj : VALUE) : VALUE; cdecl;
+function col_add (obj : VALUE) : VALUE; cdecl;
  var
    p : TPack;
  begin
@@ -204,7 +199,7 @@ function collection_add (obj : VALUE) : VALUE; cdecl;
  result := p.rb.Obj2Val((p.obj as TCollection).Add);
  end;
 
-function collection_update (obj : VALUE) : VALUE; cdecl;
+function col_update (obj : VALUE) : VALUE; cdecl;
  var
    p : TPack;
    c : TCollection;
@@ -220,7 +215,7 @@ function collection_update (obj : VALUE) : VALUE; cdecl;
     else result := p.rb.Qnil;
  end;
 
-function collection_delete (obj : VALUE; idx : VALUE) : VALUE; cdecl;
+function col_delete (obj : VALUE; idx : VALUE) : VALUE; cdecl;
  var
    p : TPack;
    c : TCollection;
@@ -233,7 +228,7 @@ function collection_delete (obj : VALUE; idx : VALUE) : VALUE; cdecl;
  c.Delete(i);
  end;
 
-function collection_insert (obj : VALUE; idx : VALUE) : VALUE; cdecl;
+function col_insert (obj : VALUE; idx : VALUE) : VALUE; cdecl;
  var
    p : TPack;
  begin
@@ -241,7 +236,7 @@ function collection_insert (obj : VALUE; idx : VALUE) : VALUE; cdecl;
  result := p.rb.Obj2Val((p.obj as TCollection).Insert(p.rb.Val2Int(idx)));
  end;
 
-function collection_find (obj : VALUE; id : VALUE) : VALUE; cdecl;
+function col_find (obj : VALUE; id : VALUE) : VALUE; cdecl;
  var
    p : TPack;
  begin
@@ -249,7 +244,7 @@ function collection_find (obj : VALUE; id : VALUE) : VALUE; cdecl;
  result := p.rb.Obj2Val((p.obj as TCollection).FindItemID(p.rb.Val2Int(id)));
  end;
 
-function collection_clear (obj : VALUE) : VALUE; cdecl;
+function col_clear (obj : VALUE) : VALUE; cdecl;
  var
    p : TPack;
  begin
@@ -258,7 +253,7 @@ function collection_clear (obj : VALUE) : VALUE; cdecl;
  result := obj;
  end;
 
-function collection_exchange (obj : VALUE; idx1, idx2 : VALUE) : VALUE; cdecl;
+function col_exchange (obj : VALUE; idx1, idx2 : VALUE) : VALUE; cdecl;
  var
    p : TPack;
  begin
@@ -274,15 +269,17 @@ var
 
 function rb_collectionitem_compare (a, b : TCollectionItem) : Integer;
  begin
- result := sort_rb.Val2Int(sort_rb.Send(sort_rb.Obj2Val(a), '<=>', [sort_rb.Obj2Val(b)]));
+ result := sort_rb.Val2Int(sort_rb.Send(sort_rb.Obj2Val(a), '<=>',
+                                        [sort_rb.Obj2Val(b)]));
  end;
 
 function rb_collectionitem_compare_block (a, b : TCollectionItem) : Integer;
  begin
- result := sort_rb.Val2Int(sort_rb.Send(sort_bl, 'call', [sort_rb.Obj2Val(a), sort_rb.Obj2Val(b)]));
+ result := sort_rb.Val2Int(sort_rb.Send(sort_bl, 'call', [sort_rb.Obj2Val(a),
+                                                          sort_rb.Obj2Val(b)]));
  end;
 
-function collection_sort (argc : cint; argv : PVALUE; obj : VALUE) : VALUE; cdecl;
+function col_sort (argc : cint; argv : PVALUE; obj : VALUE) : VALUE; cdecl;
  var
    p : TPack;
    c : TCollection;
@@ -302,7 +299,7 @@ function collection_sort (argc : cint; argv : PVALUE; obj : VALUE) : VALUE; cdec
  end;
  end;
 
-function collection_each (obj : VALUE) : VALUE; cdecl;
+function col_each (obj : VALUE) : VALUE; cdecl;
  var
    p : TPack;
    i : Integer;
@@ -319,7 +316,7 @@ function collection_each (obj : VALUE) : VALUE; cdecl;
     else result := p.rb.Send(p.rb.cEnumerator, 'new', [obj]);
  end;
 
-function collection_count (obj : VALUE) : VALUE; cdecl;
+function col_count (obj : VALUE) : VALUE; cdecl;
  var
    p : TPack;
  begin
@@ -327,7 +324,7 @@ function collection_count (obj : VALUE) : VALUE; cdecl;
  result := p.rb.Int2Val((p.obj as TCollection).Count);
  end;
 
-function collection_get (obj : VALUE; idx : VALUE) : VALUE; cdecl;
+function col_get (obj : VALUE; idx : VALUE) : VALUE; cdecl;
  var
    p : TPack;
  begin
@@ -335,7 +332,7 @@ function collection_get (obj : VALUE; idx : VALUE) : VALUE; cdecl;
  result := p.rb.Obj2Val((p.obj as TCollection).Items[p.rb.Val2Int(idx)]);
  end;
 
-function collection_set (obj : VALUE; idx, value : VALUE) : VALUE; cdecl;
+function col_set (obj : VALUE; idx, value : VALUE) : VALUE; cdecl;
  var
    p : TPack;
  begin
@@ -344,7 +341,7 @@ function collection_set (obj : VALUE; idx, value : VALUE) : VALUE; cdecl;
  result := value;
  end;
 
-function collection_items (obj : VALUE) : VALUE; cdecl;
+function col_items (obj : VALUE) : VALUE; cdecl;
  var
    p : TPack;
    c : TCollection;
@@ -357,7 +354,7 @@ function collection_items (obj : VALUE) : VALUE; cdecl;
      p.rb.ArrayPush(result, p.rb.Obj2Val(c.Items[i]));
  end;
 
-function collection_itemclass (obj : VALUE) : VALUE; cdecl;
+function col_itemclass (obj : VALUE) : VALUE; cdecl;
  var
    p : TPack;
  begin
@@ -369,32 +366,116 @@ function collection_itemclass (obj : VALUE) : VALUE; cdecl;
 procedure hookTCollection (ruby : TRuby; cls : TClass; value : VALUE);
  begin
  ruby.Include(value, ruby.mEnumerable);
- ruby.Send(value, 'attr_reader', [ruby.Str2Sym('owner')]);
- ruby.DefineMethod(value, 'owner', @collection_owner);
- ruby.DefineMethod(value, 'add', @collection_add);
- ruby.DefineMethod(value, 'delete', @collection_delete);
- ruby.DefineMethod(value, 'insert', @collection_insert);
- ruby.DefineMethod(value, 'exchange', @collection_exchange);
- ruby.DefineMethod(value, 'clear', @collection_clear);
- ruby.DefineMethod(value, 'update', @collection_update);
- ruby.DefineMethod(value, 'find', @collection_find);
- ruby.DefineMethod(value, 'sort!', @collection_sort);
- ruby.DefineMethod(value, 'each', @collection_each);
- ruby.DefineMethod(value, 'count', @collection_count);
- ruby.DefineMethod(value, '[]', @collection_get);
- ruby.DefineMethod(value, '[]=', @collection_set);
- ruby.DefineMethod(value, 'items', @collection_items);
+ ruby.DefineAttribute(value, 'owner', @col_owner, nil);
+ ruby.DefineMethod(value, 'add', @col_add);
+ ruby.DefineMethod(value, 'delete', @col_delete);
+ ruby.DefineMethod(value, 'insert', @col_insert);
+ ruby.DefineMethod(value, 'exchange', @col_exchange);
+ ruby.DefineMethod(value, 'clear', @col_clear);
+ ruby.DefineMethod(value, 'update', @col_update);
+ ruby.DefineMethod(value, 'find', @col_find);
+ ruby.DefineMethod(value, 'sort!', @col_sort);
+ ruby.DefineMethod(value, 'each', @col_each);
+ ruby.DefineMethod(value, 'count', @col_count);
+ ruby.DefineMethod(value, '[]', @col_get);
+ ruby.DefineMethod(value, '[]=', @col_set);
+ ruby.DefineMethod(value, 'items', @col_items);
+ ruby.DefineMethod(value, 'itemclass', @col_itemclass);
  ruby.DefineAlias(value, 'to_a', 'items');
- ruby.DefineMethod(value, 'itemclass', @collection_itemclass);
  end;
 {$hints on}
+
+function coi_owner (obj : VALUE) : VALUE; cdecl;
+ var
+   p : TPack;
+ begin
+ unpack_object(obj, p);
+ result := p.rb.Obj2Val((p.obj as TCollectionItem).Collection);
+ end;
+
+function coi_owner_set (obj : VALUE; value : VALUE) : VALUE; cdecl;
+ var
+   p : TPack;
+ begin
+ unpack_object(obj, p);
+ (p.obj as TCollectionItem).Collection := p.rb.Val2Obj(value) as TCollection;
+ result := value;
+ end;
+
+function coi_id (obj : VALUE) : VALUE; cdecl;
+ var
+   p : TPack;
+ begin
+ unpack_object(obj, p);
+ result := p.rb.Int2Val((p.obj as TCollectionItem).ID);
+ end;
+
+function coi_index (obj : VALUE) : VALUE; cdecl;
+ var
+   p : TPack;
+ begin
+ unpack_object(obj, p);
+ result := p.rb.Int2Val((p.obj as TCollectionItem).Index);
+ end;
+
+function coi_index_set (obj : VALUE; value : VALUE) : VALUE; cdecl;
+ var
+   p : TPack;
+ begin
+ unpack_object(obj, p);
+ (p.obj as TCollectionItem).Index := p.rb.Val2Int(value);
+ result := value;
+ end;
+
+function coi_displayname (obj : VALUE) : VALUE; cdecl;
+ var
+   p : TPack;
+ begin
+ unpack_object(obj, p);
+ result := p.rb.Str2Val((p.obj as TCollectionItem).DisplayName);
+ end;
+
+function coi_displayname_set (obj : VALUE; value : VALUE) : VALUE; cdecl;
+ var
+   p : TPack;
+ begin
+ unpack_object(obj, p);
+ (p.obj as TCollectionItem).DisplayName := p.rb.Val2Str(value);
+ result := value;
+ end;
 
 {$hints off}
 procedure hookTCollectionItem (ruby : TRuby; cls : TClass; value : VALUE);
  begin
-
+ ruby.DefineAttribute(value, 'owner', @coi_owner, @coi_owner_set);
+ ruby.DefineAttribute(value, 'id', @coi_id, nil);
+ ruby.DefineAttribute(value, 'index', @coi_index, @coi_index_set);
+ ruby.DefineAttribute(value, 'displayname', @coi_displayname, @coi_displayname_set);
  end;
 {$hints on}
+
+function sts_add (obj : VALUE; str : VALUE) : VALUE; cdecl;
+ var
+   p : TPack;
+ begin
+ unpack_object(obj, p);
+ result := p.rb.Int2Val((p.obj as TStrings).Add(p.rb.Val2Str(str)));
+ end;
+
+function sts_addobject (obj : VALUE; str, obj2 : VALUE) : VALUE; cdecl;
+ var
+   p : TPack;
+ begin
+ unpack_object(obj, p);
+ result := p.rb.Int2Val((p.obj as TStrings).AddObject(p.rb.Val2Str(str),
+                                                      p.rb.Val2Obj(obj2)));
+ end;
+
+procedure hookTStrings (ruby : TRuby; cls : TClass; value : VALUE);
+ begin
+ ruby.DefineMethod(value, 'add', @sts_add);
+ ruby.DefineMethod(value, 'addobject', @sts_addobject);
+ end;
 
 initialization
  InitCriticalSection(sort_cs);
@@ -403,6 +484,7 @@ initialization
  TRuby.AddRegisterClassHook(TBasicAction, @hookTBasicAction);
  TRuby.AddRegisterClassHook(TCollection, @hookTCollection);
  TRuby.AddRegisterClassHook(TCollectionItem, @hookTCollectionItem);
+ TRuby.AddRegisterClassHook(TStrings, @hookTStrings);
 finalization
  DoneCriticalsection(sort_cs);
 end.

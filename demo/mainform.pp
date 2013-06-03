@@ -177,7 +177,7 @@ procedure TfrmMain.actRuby19Execute(Sender : TObject);
     else try
            fldRuby := TRuby19.Auto;
            fldRuby['frmMain'] := fldRuby.Obj2Val(frmMain);
-           fldRuby['panels'] := fldRuby.Obj2Val(stbMain.Panels);
+           fldRuby['TESTME'] := fldRuby.Str2Val('ololll a');
            actRuby19.Checked := true;
            actRun.Enabled := true;
            stbMain.Panels[0].text := fldRuby.Description;
