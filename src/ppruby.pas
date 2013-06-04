@@ -7,7 +7,7 @@ unit ppRuby;
 interface
 
 uses
-  Ruby, RubyClasses, LazarusPackageIntf;
+  Ruby, RubyClasses, RubyMenus, LazarusPackageIntf;
 
 implementation
 

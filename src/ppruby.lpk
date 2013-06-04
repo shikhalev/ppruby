@@ -35,7 +35,7 @@
     <Description Value="Ruby API interface for FPC"/>
     <License Value="GNU LGPL"/>
     <Version Minor="10"/>
-    <Files Count="2">
+    <Files Count="3">
       <Item1>
         <Filename Value="ruby.pas"/>
         <UnitName Value="Ruby"/>
@@ -44,6 +44,10 @@
         <Filename Value="rubyclasses.pas"/>
         <UnitName Value="RubyClasses"/>
       </Item2>
+      <Item3>
+        <Filename Value="rubymenus.pas"/>
+        <UnitName Value="rubymenus"/>
+      </Item3>
     </Files>
     <Type Value="RunAndDesignTime"/>
     <RequiredPkgs Count="2">
