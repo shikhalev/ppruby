@@ -449,7 +449,7 @@ object frmMain: TfrmMain
     MouseActions = <>
     MouseSelActions = <>
     Lines.Strings = (
-      'synMain'
+      '$frmMain'
     )
     SelectedColor.FrameEdges = sfeAround
     SelectedColor.BackPriority = 50
@@ -636,7 +636,7 @@ object frmMain: TfrmMain
   end
   object alsMain: TActionList
     Images = ilsMain
-    left = 384
+    left = 400
     top = 144
     object actFileNew: TAction
       Category = 'File'
@@ -1358,7 +1358,7 @@ object frmMain: TfrmMain
   end
   object mnuMain: TMainMenu
     Images = ilsMain
-    left = 416
+    left = 456
     top = 144
     object mnuFile: TMenuItem
       Caption = 'File'
@@ -2070,6 +2070,6 @@ object frmMain: TfrmMain
     DollarVariables = True
     ActiveDot = False
     left = 352
-    top = 112
+    top = 96
   end
 end

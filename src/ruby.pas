@@ -407,6 +407,8 @@ type
     function Val2Bln (value : VALUE) : Boolean;
     function IsSymbol (value : VALUE) : Boolean;
     function IsFixnum (value : VALUE) : Boolean;
+    function ValType (value : VALUE) : Integer; virtual; abstract;
+    function IsData (value : VALUE) : Boolean; virtual; abstract;
     // properties (self)
     property GlobalVars [const name : UTF8String] : VALUE read GlobalVarGet write GlobalVarSet; default;
     // methods (self)
@@ -422,7 +424,14 @@ type
   TRuby18 = class(TRuby)
   protected
     const
-      T_DATA = $22;
+      T_NIL    = $01;
+      T_FIXNUM = $0A;
+      T_TRUE   = $20;
+      T_FALSE  = $21;
+      T_DATA   = $22;
+      T_SYMBOL = $24;
+      T_UNDEF  = $3C;
+      T_MASK   = $3F;
   protected
     // fields: error
     ruby_errinfo : PVALUE;
@@ -439,6 +448,9 @@ type
     // class methods
     class function defaultLibrary : UTF8String; override;
   public
+    // methods
+    function ValType (value : VALUE) : Integer; override;
+    function IsData(value : VALUE) : Boolean; override;
     // properties (wrappers)
     property mPrecision : VALUE read rb_mPrecision;
     function Description : UTF8String; override;
@@ -449,7 +461,14 @@ type
   TRuby19 = class(TRuby)
   protected
     const
-      T_DATA = $0C;
+      T_DATA   = $0C;
+      T_NIL    = $11;
+      T_TRUE   = $12;
+      T_FALSE  = $13;
+      T_SYMBOL = $14;
+      T_FIXNUM = $15;
+      T_UNDEF  = $1B;
+      T_MASK   = $1F;
   protected
     // fields: rb_ functions
     rb_errinfo : function : VALUE; cdecl;
@@ -470,6 +489,9 @@ type
     // class methods
     class function defaultLibrary : UTF8String; override;
   public
+    // methods
+    function ValType (value : VALUE) : Integer; override;
+    function IsData(value : VALUE) : Boolean; override;
     // properties (wrappers)
     property mWaitReadable : VALUE read rb_mWaitReadable;
     property mWaitWritable : VALUE read rb_mWaitWritable;
@@ -858,6 +880,7 @@ type
     flags : VALUE;
     klass : VALUE;
   end;
+  PRBasic = ^RBasic;
 
   RData = record
     basic : RBasic;
@@ -1842,6 +1865,30 @@ class function TRuby18.defaultLibrary : UTF8String;
 {$endif}
  end;
 
+function TRuby18.ValType(value : VALUE) : Integer;
+ begin
+ if IsSymbol(value)
+    then result := T_SYMBOL
+    else if IsFixnum(value)
+            then result := T_FIXNUM
+            else if value = Qfalse
+                    then result := T_FALSE
+                    else if value = Qtrue
+                            then result := T_TRUE
+                            else if value = Qnil
+                                    then result := T_NIL
+                                    else if value = Qundef
+                                            then result := T_UNDEF
+{$hints off}
+                                            else result := PRBasic(value)^.flags and T_MASK;
+{$hints on}
+ end;
+
+function TRuby18.IsData(value : VALUE) : Boolean;
+ begin
+ result := ValType(value) = T_DATA;
+ end;
+
 function TRuby18.Description : UTF8String;
  begin
  result := UTF8String(PPChar(ruby_description)^) + '';
@@ -1904,6 +1951,30 @@ class function TRuby19.defaultLibrary : UTF8String;
 {$else}
  {$error Unsupported OS!}
 {$endif}
+ end;
+
+function TRuby19.ValType(value : VALUE) : Integer;
+ begin
+ if IsSymbol(value)
+    then result := T_SYMBOL
+    else if IsFixnum(value)
+            then result := T_FIXNUM
+            else if value = Qfalse
+                    then result := T_FALSE
+                    else if value = Qtrue
+                            then result := T_TRUE
+                            else if value = Qnil
+                                    then result := T_NIL
+                                    else if value = Qundef
+                                            then result := T_UNDEF
+{$hints off}
+                                            else result := PRBasic(value)^.flags and T_MASK;
+{$hints on}
+ end;
+
+function TRuby19.IsData(value : VALUE) : Boolean;
+ begin
+ result := ValType(value) = T_DATA;
  end;
 
 { TRuby20 }

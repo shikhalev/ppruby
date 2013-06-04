@@ -2,7 +2,7 @@
   This source is only used to compile and install the package.
  }
 
-unit ppruby;
+unit ppRuby;
 
 interface
 
@@ -16,5 +16,5 @@ begin
 end;
 
 initialization
-  RegisterPackage( 'ppruby', @Register);
+  RegisterPackage( 'ppRuby', @Register);
 end.

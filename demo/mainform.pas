@@ -129,7 +129,7 @@ procedure TfrmMain.actRuby18Execute(Sender : TObject);
          end
     else try
            fldRuby := TRuby18.Auto;
-           fldRuby.Cls2Val(TForm);
+           fldRuby['frmMain'] := fldRuby.Obj2Val(frmMain);
            actRuby18.Checked := true;
            actRun.Enabled := true;
            stbMain.Panels[0].text := fldRuby.Description;
@@ -151,6 +151,8 @@ procedure TfrmMain.actCleanOutputExecute(Sender : TObject);
  end;
 
 procedure TfrmMain.actRuby19Execute(Sender : TObject);
+ var
+   tmp : VALUE;
  begin
  if actRuby18.Checked
     then begin
@@ -176,8 +178,8 @@ procedure TfrmMain.actRuby19Execute(Sender : TObject);
          end
     else try
            fldRuby := TRuby19.Auto;
-           fldRuby['frmMain'] := fldRuby.Obj2Val(frmMain);
-           fldRuby['TESTME'] := fldRuby.Str2Val('ololll a');
+           tmp := fldRuby.Obj2Val(frmMain);
+           fldRuby['frmMain'] := tmp;
            actRuby19.Checked := true;
            actRun.Enabled := true;
            stbMain.Panels[0].text := fldRuby.Description;

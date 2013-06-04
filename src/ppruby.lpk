@@ -1,14 +1,31 @@
 <?xml version="1.0"?>
 <CONFIG>
   <Package Version="4">
-    <Name Value="ppruby"/>
+    <Name Value="ppRuby"/>
     <Author Value="Ivan Shikhalev"/>
     <CompilerOptions>
       <Version Value="11"/>
       <SearchPaths>
         <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/>
       </SearchPaths>
+      <Parsing>
+        <SyntaxOptions>
+          <CStyleOperator Value="False"/>
+          <AllowLabel Value="False"/>
+        </SyntaxOptions>
+      </Parsing>
+      <CodeGeneration>
+        <Optimizations>
+          <VariablesInRegisters Value="True"/>
+          <OptimizationLevel Value="2"/>
+        </Optimizations>
+      </CodeGeneration>
       <Other>
+        <Verbosity>
+          <ShowSummary Value="True"/>
+          <ShowHintsForUnusedUnitsInMainSrc Value="True"/>
+        </Verbosity>
+        <WriteFPCLogo Value="False"/>
         <CompilerMessages>
           <MsgFileName Value=""/>
         </CompilerMessages>
@@ -16,6 +33,7 @@
       </Other>
     </CompilerOptions>
     <Description Value="Ruby API interface for FPC"/>
+    <License Value="GNU LGPL"/>
     <Version Minor="10"/>
     <Files Count="2">
       <Item1>
