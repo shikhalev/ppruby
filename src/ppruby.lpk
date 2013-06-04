@@ -22,7 +22,6 @@
       </CodeGeneration>
       <Other>
         <Verbosity>
-          <ShowSummary Value="True"/>
           <ShowHintsForUnusedUnitsInMainSrc Value="True"/>
         </Verbosity>
         <WriteFPCLogo Value="False"/>
@@ -35,7 +34,7 @@
     <Description Value="Ruby API interface for FPC"/>
     <License Value="GNU LGPL"/>
     <Version Minor="10"/>
-    <Files Count="3">
+    <Files Count="4">
       <Item1>
         <Filename Value="ruby.pas"/>
         <UnitName Value="Ruby"/>
@@ -46,8 +45,12 @@
       </Item2>
       <Item3>
         <Filename Value="rubymenus.pas"/>
-        <UnitName Value="rubymenus"/>
+        <UnitName Value="RubyMenus"/>
       </Item3>
+      <Item4>
+        <Filename Value="rubycontrols.pas"/>
+        <UnitName Value="RubyControls"/>
+      </Item4>
     </Files>
     <Type Value="RunAndDesignTime"/>
     <RequiredPkgs Count="2">

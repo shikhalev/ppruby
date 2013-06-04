@@ -153,7 +153,7 @@ type
     // fields: other ruby vars
     ruby_description : Pointer;
     // fields: own ruby objects
-    rb_mPascal : VALUE;
+    rb_mPascal, rb_ePascalError : VALUE;
     // methods
     procedure loadFunc (out field; const name : UTF8String);
     procedure loadPtr (out field; const name : UTF8String);
@@ -184,6 +184,7 @@ type
     class function methodName (const name : AnsiString) : AnsiString;
   public
     rb_scan_args : function (argc : cint; argv : PVALUE; fmt : PChar) : cint; cdecl; varargs;
+    rb_raise : procedure (exc : VALUE; fmt : PChar); cdecl; varargs;
   public
     // constants
     const
@@ -390,6 +391,7 @@ type
     function HashNew : VALUE;
     function HashGet (hash : VALUE; key : VALUE) : VALUE;
     function HashSet (hash : VALUE; key, value : VALUE) : VALUE;
+    procedure Error (e : Exception);
     // methods (coversions)
     function Int2Val (n : PtrInt) : VALUE;
     function SLL2Val (const n : Int64) : VALUE;
@@ -538,6 +540,7 @@ implementation
 
 const
   msgNoRuby = 'The file "%s" not found or not a ruby library.';
+  msgPasErr = '%s: %s';
 
 { ERubyEval }
 
@@ -691,6 +694,7 @@ procedure TRuby.load;
  loadFunc(rb_ary_new2,                'rb_ary_new2');
  loadFunc(rb_ary_push,                'rb_ary_push');
  loadFunc(rb_scan_args,               'rb_scan_args');
+ loadFunc(rb_raise,                   'rb_raise');
  // io
  loadPtr(rb_stdin,  'rb_stdin');
  loadPtr(rb_stdout, 'rb_stdout');
@@ -786,6 +790,7 @@ procedure TRuby.setup;
  // namespace
  rb_require('set');
  rb_mPascal := DefineModule('Pascal');
+ rb_ePascalError := DefineClass(rb_mPascal, 'Error', rb_eStandardError);
  end;
 
 procedure TRuby.done;
@@ -999,8 +1004,8 @@ constructor TRuby.Create(const lib, script : UTF8String);
     then raise ENoRuby.CreateFmt(msgNoRuby, [lib]);
  load;
  init(script);
- setup;
  loadVals;
+ setup;
  end;
 
 destructor TRuby.Destroy;
@@ -1647,6 +1652,11 @@ function TRuby.HashSet(hash : VALUE; key, value : VALUE) : VALUE;
  result := rb_hash_aset(hash, key, value);
  end;
 
+procedure TRuby.Error(e : Exception);
+ begin
+ rb_raise(rb_ePascalError, msgPasErr, PChar(ansistring(e.ClassName)), PChar(e.Message));
+ end;
+
 function TRuby.Int2Val(n : PtrInt) : VALUE;
  begin
  result := rb_int2inum(n)
@@ -2013,45 +2023,48 @@ function U2U (c : Integer) : UnicodeString; inline;
 
 function pascal_get_prop (obj : VALUE; prop : VALUE) : VALUE; cdecl;
  var
-   pack : TPack;
-   name : UTF8String;
-   info : PPropInfo;
+   p : TPack;
+   n : UTF8String;
+   i : PPropInfo;
  begin
- unpack_object(obj, pack);
- name := pack.rb.Val2Str(prop);
- info := GetPropInfo(pack.obj, name);
- if info <> nil
-    then case info^.PropType^.Kind of
+ unpack_object(obj, p);
+ try
+   n := p.rb.Val2Str(prop);
+   i := GetPropInfo(p.obj, n);
+   if i <> nil
+      then case i^.PropType^.Kind of
               tkInteger :
-                result := pack.rb.Int2Val(GetOrdProp(pack.obj, info));
+                result := p.rb.Int2Val(GetOrdProp(p.obj, i));
               tkInt64 :
-                result := pack.rb.SLL2Val(GetInt64Prop(pack.obj, info));
+                result := p.rb.SLL2Val(GetInt64Prop(p.obj, i));
               tkQWord :
-                result := pack.rb.ULL2Val(QWord(GetInt64Prop(pack.obj,
-                                                                 info)));
+                result := p.rb.ULL2Val(QWord(GetInt64Prop(p.obj, i)));
               tkEnumeration :
-                result := pack.rb.Str2Sym(GetEnumProp(pack.obj, info));
+                result := p.rb.Str2Sym(GetEnumProp(p.obj, i));
               tkSet :
-                result := pack.rb.Str2Set(GetSetProp(pack.obj, info,
-                                                          false));
+                result := p.rb.Str2Set(GetSetProp(p.obj, i, false));
               tkFloat :
-                result := pack.rb.Flt2Val(GetFloatProp(pack.obj, info));
+                result := p.rb.Flt2Val(GetFloatProp(p.obj, i));
               tkSString, tkLString, tkAString :
-                result := pack.rb.Str2Val(GetStrProp(pack.obj, info));
+                result := p.rb.Str2Val(GetStrProp(p.obj, i));
               tkWString, tkUString :
-                result := pack.rb.Str2Val(GetUnicodeStrProp(pack.obj, info));
+                result := p.rb.Str2Val(GetUnicodeStrProp(p.obj, i));
               tkChar :
-                result := pack.rb.Str2Val(A2A(GetOrdProp(pack.obj, info)));
+                result := p.rb.Str2Val(A2A(GetOrdProp(p.obj, i)));
               tkWChar, tkUChar :
-                result := pack.rb.Str2Val(U2U(GetOrdProp(pack.obj, info)));
+                result := p.rb.Str2Val(U2U(GetOrdProp(p.obj, i)));
               tkBool :
-                result := pack.rb.Bln2Val(GetOrdProp(pack.obj, info) <> 0);
+                result := p.rb.Bln2Val(GetOrdProp(p.obj, i) <> 0);
               tkClass :
-                result := pack.rb.Obj2Val(GetObjectProp(pack.obj, info));
+                result := p.rb.Obj2Val(GetObjectProp(p.obj, i));
               else
-                result := pack.rb.Qnil;
-         end
-    else result := pack.rb.Qnil;
+                result := p.rb.Qnil;
+           end
+      else result := p.rb.Qnil;
+  except
+    on e : Exception do
+       p.rb.Error(e);
+  end;
  end;
 
 function A1 (const s : ansistring) : Integer; inline;
@@ -2066,63 +2079,64 @@ function U1 (const s : UnicodeString) : Integer; inline;
 
 function pascal_set_prop (obj : VALUE; prop, value : VALUE) : VALUE; cdecl;
  var
-   pack : TPack;
-   name : UTF8String;
-   info : PPropInfo;
+   p : TPack;
+   n : UTF8String;
+   i : PPropInfo;
  begin
- unpack_object(obj, pack);
- name := pack.rb.Val2Str(prop);
- info := GetPropInfo(pack.obj, name);
- if info <> nil
-    then case info^.PropType^.Kind of
+ unpack_object(obj, p);
+ try
+   n := p.rb.Val2Str(prop);
+   i := GetPropInfo(p.obj, n);
+   if i <> nil
+      then case i^.PropType^.Kind of
               tkInteger :
-                SetOrdProp(pack.obj, info, pack.rb.Val2Int(value));
+                SetOrdProp(p.obj, i, p.rb.Val2Int(value));
               tkInt64 :
-                SetInt64Prop(pack.obj, info, pack.rb.Val2SLL(value));
+                SetInt64Prop(p.obj, i, p.rb.Val2SLL(value));
               tkQWord :
-                SetInt64Prop(pack.obj, info,
-                             Int64(pack.rb.Val2ULL(value)));
+                SetInt64Prop(p.obj, i,
+                             Int64(p.rb.Val2ULL(value)));
               tkEnumeration :
-                SetEnumProp(pack.obj, info, pack.rb.Sym2Str(value));
+                SetEnumProp(p.obj, i, p.rb.Sym2Str(value));
               tkSet :
-                SetSetProp(pack.obj, info, pack.rb.Set2Str(value));
+                SetSetProp(p.obj, i, p.rb.Set2Str(value));
               tkFloat :
-                SetFloatProp(pack.obj, info, pack.rb.Val2Flt(value));
+                SetFloatProp(p.obj, i, p.rb.Val2Flt(value));
               tkSString, tkLString, tkAString :
-                SetStrProp(pack.obj, info, pack.rb.Val2Str(value));
+                SetStrProp(p.obj, i, p.rb.Val2Str(value));
               tkWString, tkUString :
-                SetUnicodeStrProp(pack.obj, info,
-                                  pack.rb.Val2Str(value));
+                SetUnicodeStrProp(p.obj, i,
+                                  p.rb.Val2Str(value));
               tkChar :
-                SetOrdProp(pack.obj, info,
-                           A1(pack.rb.Val2Str(value)));
+                SetOrdProp(p.obj, i,
+                           A1(p.rb.Val2Str(value)));
               tkUChar, tkWChar :
-                SetOrdProp(pack.obj, info,
-                           U1(pack.rb.Val2Str(value)));
+                SetOrdProp(p.obj, i,
+                           U1(p.rb.Val2Str(value)));
               tkBool :
-                SetOrdProp(pack.obj, info, Ord(pack.rb.Val2Bln(value)));
+                SetOrdProp(p.obj, i, Ord(p.rb.Val2Bln(value)));
               tkClass :
-                SetObjectProp(pack.obj, info, pack.rb.Val2Obj(value));
-         end;
- result := value;
+                SetObjectProp(p.obj, i, p.rb.Val2Obj(value));
+           end;
+   result := value;
+ except
+   on e : Exception do
+      p.rb.Error(e);
+ end;
  end;
 
 function object_equals (obj : VALUE; other : VALUE) : VALUE; cdecl;
  var
-   pack, otherpack : TPack;
+   p, op : TPack;
  begin
- unpack_object(obj, pack);
- unpack_object(other, otherpack);
- result := pack.rb.Bln2Val(pack.obj.Equals(otherpack.obj));
+ unpack_object(obj, p);
+ try
+   unpack_object(other, op);
+   result := p.rb.Bln2Val(p.obj.Equals(op.obj));
+ except
+   on e : Exception do
+      p.rb.Error(e);
  end;
-
-function object_to_s (obj : VALUE) : VALUE; cdecl;
- var
-   pack : TPack;
- begin
- unpack_object(obj, pack);
- result := pack.rb.Str2Val('#<Pascal: #' + HexStr(Pointer(pack.obj)) + ' [' +
-                            pack.obj.ClassName + ']>');
  end;
 
 {$hints off}
