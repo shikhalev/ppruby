@@ -9,6 +9,25 @@ uses
 
 implementation
 
+type
+  TNotifyCompanion = class(TEventCompanion)
+  public
+    procedure Handler (Sender: TObject);
+    function GetHandler : TMethod; override;
+  end;
+
+{ TNotifyCompanion }
+
+procedure TNotifyCompanion.Handler(Sender : TObject);
+ begin
+  Call([ruby.Obj2Val(Sender)]);
+ end;
+
+function TNotifyCompanion.GetHandler : TMethod;
+ begin
+  result := TMethod(@self.Handler);
+ end;
+
 function prs_assign (obj : VALUE; src : VALUE) : VALUE; cdecl;
  var
    p, sp : TPack;
@@ -1474,6 +1493,7 @@ initialization
  TRuby.AddRegisterClassHook(TCollectionItem, @hookTCollectionItem);
  TRuby.AddRegisterClassHook(TStrings,        @hookTStrings);
  TRuby.AddRegisterClassHook(TStringList,     @hookTStringList);
+ TRuby.AddCompanionClass('TNotifyEvent', TNotifyCompanion);
 finalization
  DoneCriticalsection(sort_cs);
 end.

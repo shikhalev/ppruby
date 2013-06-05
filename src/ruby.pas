@@ -56,6 +56,18 @@ type
   end;
   PPack = ^TPack;
 
+  TEventCompanion = class
+  protected
+    ruby : TRuby;
+    proc : VALUE;
+    function Call (const args : array of VALUE) : VALUE;
+  public
+    constructor Create (r : TRuby; p : VALUE); virtual;
+    function GetHandler : TMethod; virtual; abstract;
+  end;
+
+  TEventCompanionClass = class of TEventCompanion;
+
   { TRuby }
 
   TRuby = class
@@ -66,6 +78,11 @@ type
           hook : FRegisterClassHook;
         end;
     class function findHook (cls : TClass; hook : FRegisterClassHook; out idx : Integer) : Boolean;
+    class var
+      listCompanions : array of record
+          name : ansistring;
+          cls : TEventCompanionClass;
+        end;
     var
       cacheClasses : array of record
           cls : TClass;
@@ -78,13 +95,15 @@ type
           value : VALUE;
         end;
     function findUnit (const name : AnsiString; out value : VALUE) : Boolean;
-    var
+{    var
       cacheObjects : array of record
           obj : TPack;
           value : VALUE;
         end;
     function findObject (obj : TObject; out value : VALUE) : Boolean;
-    procedure freeValue (p : PPack);
+    procedure freeValue (p : PPack);  }
+    var
+      cacheCompanions : array of TEventCompanion;
   protected
     // fields: lib
     libHandle : THandle;
@@ -200,6 +219,8 @@ type
     class function Auto (const vers : array of TRubyClass) : TRuby;
     class procedure AddRegisterClassHook (cls : TClass; hook : FRegisterClassHook);
     class procedure DelRegisterClassHook (cls : TClass; hook : FRegisterClassHook);
+    class procedure AddCompanionClass (const etype : ansistring; cls : TEventCompanionClass);
+    class function GetCompanionClass (const etype : ansistring) : TEventCompanionClass;
     // constructor & destructor
     constructor Create (const lib, script : UTF8String); virtual;
     destructor Destroy; override;
@@ -597,10 +618,15 @@ function TRuby.findUnit(const name : AnsiString; out value : VALUE) : Boolean;
  result := false;
  end;
 
-function TRuby.findObject(obj : TObject; out value : VALUE) : Boolean;
+{ function TRuby.findObject(obj : TObject; out value : VALUE) : Boolean;
  var
    i : Integer;
  begin
+ if obj = nil
+    then begin
+         value := Qnil;
+         Exit;
+         end;
  for i := 0 to High(cacheObjects) do
      if cacheObjects[i].obj.obj = obj
         then begin
@@ -609,22 +635,17 @@ function TRuby.findObject(obj : TObject; out value : VALUE) : Boolean;
              Exit;
              end;
  result := false;
- end;
+ end;  }
 
-procedure TRuby.freeValue(p : PPack);
+{ procedure TRuby.freeValue(p : PPack);
  var
    i, h, d : Integer;
  begin
  h := High(cacheObjects);
  for i := 0 to h do
      if @(cacheObjects[i].obj) = p
-        then begin
-             for d := i to h - 1 do
-                 cacheObjects[d] := cacheObjects[d + 1];
-             SetLength(cacheObjects, h);
-             Exit;
-             end;
- end;
+        then cacheObjects[i].obj.obj := nil;
+ end; }
 
 procedure TRuby.loadFunc (out field; const name : UTF8String);
  begin
@@ -808,8 +829,8 @@ const
   RubifiedProperties = [tkInteger, tkInt64, tkQWord, tkEnumeration, tkSet,
                         tkFloat, tkSString, tkLString, tkAString, tkUString,
                         tkWString, tkUChar, tkChar, tkWChar, tkBool, tkClass];
-  // todo: events support
-  // RubifiedEvents = [tkMethod];
+
+  RubifiedEvents = [tkMethod];
 
 procedure TRuby.registerProperties (cls : TClass; value : VALUE);
  var
@@ -817,7 +838,7 @@ procedure TRuby.registerProperties (cls : TClass; value : VALUE);
    list : PPropList;
    prop : PPropInfo;
    i : Integer;
-   nm : AnsiString;
+   nm, tp : AnsiString;
    code : UTF8String;
  begin
  data := GetTypeData(cls.ClassInfo);
@@ -836,7 +857,18 @@ procedure TRuby.registerProperties (cls : TClass; value : VALUE);
                      '  pascal_set_prop(''' + nm + ''', value)' + LineEnding +
                      'end';
              Send(value, 'class_eval', [Str2Val(code)]);
-             end;
+             end
+        else if prop^.PropType^.Kind in RubifiedEvents
+                then begin
+                     nm := methodName(prop^.Name);
+                     tp := UpperCase(prop^.PropType^.Name);
+                     code := 'def ' + nm + '(&block)' + LineEnding +
+                             '  $pp_events ||= []' + LineEnding +
+                             '  $pp_events << block' + LineEnding +
+                             '  pascal_event(''' + nm + ''', ''' + tp + ''', &block)' + LineEnding +
+                             'end';
+                     Send(value, 'class_eval', [Str2Val(code)]);
+                     end;
      end;
  end;
 
@@ -996,6 +1028,33 @@ class procedure TRuby.DelRegisterClassHook(cls : TClass;
          end;
  end;
 
+class procedure TRuby.AddCompanionClass(const etype : ansistring;
+  cls : TEventCompanionClass);
+ var
+   l : Integer;
+ begin
+ l := Length(listCompanions);
+ SetLength(listCompanions, l + 1);
+ listCompanions[l].name := UpperCase(etype);
+ listCompanions[l].cls := cls;
+ end;
+
+class function TRuby.GetCompanionClass(
+  const etype : ansistring) : TEventCompanionClass;
+ var
+   i : Integer;
+   n : ansistring;
+ begin
+ n := UpperCase(etype);
+ for i := 0 to High(listCompanions) do
+     if listCompanions[i].name = n
+        then begin
+             result := listCompanions[i].cls;
+             Exit;
+             end;
+ result := nil;
+ end;
+
 constructor TRuby.Create(const lib, script : UTF8String);
  begin
  inherited Create;
@@ -1009,8 +1068,13 @@ constructor TRuby.Create(const lib, script : UTF8String);
  end;
 
 destructor TRuby.Destroy;
+ var
+   i : Integer;
  begin
  done;
+ for i := 0 to High(cacheCompanions) do
+     cacheCompanions[i].Free;
+ SetLength(cacheCompanions, 0);
  inherited Destroy;
  end;
 
@@ -1796,19 +1860,24 @@ function TRuby.RegisterUnit(const name : AnsiString) : VALUE;
 
 procedure obj_free (p : Pointer); cdecl;
  begin
- PPack(p)^.rb.freeValue(p);
+ { PPack(p)^.rb.freeValue(p); }
+ FreeMem(p);
  end;
 
 function TRuby.Obj2Val(obj : TObject) : VALUE;
  var
-   l : Integer;
+   p : PPack;
  begin
  if obj = nil
     then begin
          result := Qnil;
          Exit;
          end;
- if not findObject(obj, result)
+ p := GetMem(sizeof(TPack));
+ p^.obj := obj;
+ p^.rb := self;
+ result := rb_data_object_alloc(Cls2Val(obj.ClassType), p, nil, @obj_free);
+ { if not findObject(obj, result)
     then begin
          l := Length(cacheObjects);
          SetLength(cacheObjects, l + 1);
@@ -1817,7 +1886,7 @@ function TRuby.Obj2Val(obj : TObject) : VALUE;
          result := rb_data_object_alloc(Cls2Val(obj.ClassType),
                                         @cacheObjects[l].obj, nil, @obj_free);
          cacheObjects[l].value := result;
-         end;
+         end; }
  end;
 
 function TRuby.Val2Obj(value : VALUE) : TObject;
@@ -2002,6 +2071,25 @@ class function TRuby20.defaultLibrary : UTF8String;
 {$endif}
  end;
 
+{ TEventCompanion }
+
+function TEventCompanion.Call(const args : array of VALUE) : VALUE;
+ begin
+ result := ruby.Send(proc, 'call', args);
+ end;
+
+constructor TEventCompanion.Create(r : TRuby; p : VALUE);
+ var
+   l : Integer;
+ begin
+ inherited Create;
+ ruby := r;
+ proc := p;
+ l := Length(ruby.cacheCompanions);
+ SetLength(ruby.cacheCompanions, l + 1);
+ ruby.cacheCompanions[l] := self;
+ end;
+
 { Init related }
 
 procedure unpack_object (value : VALUE; out rec : TPack);
@@ -2139,13 +2227,48 @@ function object_equals (obj : VALUE; other : VALUE) : VALUE; cdecl;
  end;
  end;
 
+function pascal_event (argc : cint; argv : PVALUE; slf : VALUE) : VALUE; cdecl;
+ var
+   p : TPack;
+   nm, tp, blk : VALUE;
+   m : TMethod;
+   c : TEventCompanion;
+   cc : TEventCompanionClass;
+ begin
+  unpack_object(slf, p);
+  try
+    p.rb.rb_scan_args(argc, argv, '2&', @nm, @tp, @blk);
+    if blk = p.rb.Qnil
+       then begin
+            m.Code := nil;
+            m.Data := nil;
+            SetMethodProp(p.obj, p.rb.Val2Str(nm), m);
+            end
+       else begin
+            cc := p.rb.GetCompanionClass(p.rb.Val2Str(tp));
+            if cc <> nil
+               then begin
+                    c := cc.Create(p.rb, blk);
+                    m := c.GetHandler;
+                    SetMethodProp(p.obj, p.rb.Val2Str(nm), m);
+                    end;
+            end;
+    result := blk;
+  except
+    on e : Exception do
+       p.rb.Error(e);
+  end;
+ end;
+
 {$hints off}
 procedure HookTObject (ruby : TRuby; cls : TClass; value : VALUE);
  begin
  ruby.DefineMethod(value, 'pascal_get_prop', @pascal_get_prop);
  ruby.DefineMethod(value, 'pascal_set_prop', @pascal_set_prop);
+ ruby.DefineMethod(value, 'pascal_event',    @pascal_event);
  ruby.Send(value, 'private', [ruby.Str2Sym('pascal_get_prop'),
-                              ruby.Str2Sym('pascal_set_prop')]);
+                              ruby.Str2Sym('pascal_set_prop'),
+                              ruby.Str2Sym('pascal_event')]);
  ruby.DefineMethod(value, '==', @object_equals);
  end;
 {$hints on}

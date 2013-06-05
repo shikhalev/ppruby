@@ -660,12 +660,14 @@ object frmMain: TfrmMain
       Category = 'File'
       Caption = 'Save as...'
       ImageIndex = 3
+      OnExecute = actFileSaveAsExecute
       ShortCut = 49235
     end
     object actFileExit: TAction
       Category = 'File'
       Caption = 'Exit'
       ImageIndex = 4
+      OnExecute = actFileExitExecute
     end
     object actEditUndo: TAction
       Category = 'Edit'

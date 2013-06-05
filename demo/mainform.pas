@@ -84,6 +84,8 @@ type
     tbnFileNew: TToolButton;
     tbnFileOpen: TToolButton;
     procedure actCleanOutputExecute(Sender : TObject);
+    procedure actFileExitExecute(Sender : TObject);
+    procedure actFileSaveAsExecute(Sender : TObject);
     procedure actRuby18Execute(Sender : TObject);
     procedure actRuby19Execute(Sender : TObject);
     procedure actRunExecute(Sender : TObject);
@@ -149,6 +151,16 @@ procedure TfrmMain.actCleanOutputExecute(Sender : TObject);
  begin
  memOutput.Clear;
  end;
+
+procedure TfrmMain.actFileExitExecute(Sender : TObject);
+ begin
+ frmMain.Caption := 'actFileExit';
+ end;
+
+procedure TfrmMain.actFileSaveAsExecute(Sender : TObject);
+begin
+
+end;
 
 procedure TfrmMain.actRuby19Execute(Sender : TObject);
  var

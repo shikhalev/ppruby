@@ -17,7 +17,6 @@
       <CodeGeneration>
         <Optimizations>
           <VariablesInRegisters Value="True"/>
-          <OptimizationLevel Value="2"/>
         </Optimizations>
       </CodeGeneration>
       <Other>
