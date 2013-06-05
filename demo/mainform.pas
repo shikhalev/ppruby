@@ -23,7 +23,6 @@ type
     actEditCut: TAction;
     actEditCopy: TAction;
     actEditPaste: TAction;
-    actEditDelete: TAction;
     actEditSelectAll: TAction;
     actCleanOutput: TAction;
     actHelpAbout: TAction;
@@ -37,8 +36,6 @@ type
     mnuEditCopy: TMenuItem;
     mnuEditPaste: TMenuItem;
     mnuSep4: TMenuItem;
-    mnuEditDelete: TMenuItem;
-    mnuSep5: TMenuItem;
     mnuEditSelectAll: TMenuItem;
     mnuHelp: TMenuItem;
     mnuRun: TMenuItem;
@@ -87,8 +84,17 @@ type
     tbnFileNew: TToolButton;
     tbnFileOpen: TToolButton;
     procedure actCleanOutputExecute(Sender : TObject);
+    procedure actEditCopyExecute(Sender : TObject);
+    procedure actEditCutExecute(Sender : TObject);
+    procedure actEditPasteExecute(Sender : TObject);
+    procedure actEditSelectAllExecute(Sender : TObject);
+    procedure actEditUndoExecute(Sender : TObject);
     procedure actFileExitExecute(Sender : TObject);
+    procedure actFileNewExecute(Sender : TObject);
+    procedure actFileOpenExecute(Sender : TObject);
     procedure actFileSaveAsExecute(Sender : TObject);
+    procedure actFileSaveExecute(Sender : TObject);
+    procedure actHelpAboutExecute(Sender : TObject);
     procedure actRuby18Execute(Sender : TObject);
     procedure actRuby19Execute(Sender : TObject);
     procedure actRunExecute(Sender : TObject);
@@ -96,6 +102,7 @@ type
   private
     fldRuby : TRuby;
     fldOutPut : TPascalOut;
+    fldFileName : ansistring;
   public
     { public declarations }
   end;
@@ -135,7 +142,7 @@ procedure TfrmMain.actRuby18Execute(Sender : TObject);
            fldRuby := TRuby18.Auto;
            fldOutPut := TStringsOut.Create(fldRuby, memOutput.Lines);
            fldRuby.StdOut := fldOutPut.IO;
-           fldRuby['frmMain'] := fldRuby.Obj2Val(frmMain);
+           fldRuby['frmMain'] := fldRuby.Obj2Val(self);
            actRuby18.Checked := true;
            actRun.Enabled := true;
            stbMain.Panels[0].text := fldRuby.Description;
@@ -155,15 +162,73 @@ procedure TfrmMain.actCleanOutputExecute(Sender : TObject);
  memOutput.Clear;
  end;
 
+procedure TfrmMain.actEditCopyExecute(Sender : TObject);
+ begin
+  synMain.CopyToClipboard;
+ end;
+
+procedure TfrmMain.actEditCutExecute(Sender : TObject);
+ begin
+  synMain.CutToClipboard;
+ end;
+
+procedure TfrmMain.actEditPasteExecute(Sender : TObject);
+ begin
+  synMain.PasteFromClipboard;
+ end;
+
+procedure TfrmMain.actEditSelectAllExecute(Sender : TObject);
+ begin
+  synMain.SelectAll;
+ end;
+
+procedure TfrmMain.actEditUndoExecute(Sender : TObject);
+ begin
+  synMain.Undo;
+ end;
+
 procedure TfrmMain.actFileExitExecute(Sender : TObject);
  begin
-  frmMain.Close;
+  self.Close;
+ end;
+
+procedure TfrmMain.actFileNewExecute(Sender : TObject);
+ begin
+  if synMain.Modified
+     then ;
+ end;
+
+procedure TfrmMain.actFileOpenExecute(Sender : TObject);
+ begin
+  if dlgOpen.Execute
+     then begin
+           fldFileName := dlgOpen.FileName;
+           synMain.lines.LoadFromFile(fldFileName);
+           self.Caption := 'ppRuby Demo: ' + fldFileName;
+          end;
  end;
 
 procedure TfrmMain.actFileSaveAsExecute(Sender : TObject);
-begin
+ begin
+  if dlgSave.Execute
+     then begin
+           fldFileName := dlgSave.FileName;
+           synMain.Lines.SaveToFile(fldFileName);
+           self.Caption := 'ppRuby Demo: ' + fldFileName;
+          end;
+ end;
 
-end;
+procedure TfrmMain.actFileSaveExecute(Sender : TObject);
+ begin
+  if fldFileName = ''
+     then actFileSaveAs.Execute
+     else synMain.Lines.SaveToFile(fldFileName);
+ end;
+
+procedure TfrmMain.actHelpAboutExecute(Sender : TObject);
+ begin
+  //
+ end;
 
 procedure TfrmMain.actRuby19Execute(Sender : TObject);
  begin
@@ -191,7 +256,7 @@ procedure TfrmMain.actRuby19Execute(Sender : TObject);
            fldRuby := TRuby19.Auto;
            fldOutPut := TStringsOut.Create(fldRuby, memOutput.Lines);
            fldRuby.StdOut := fldOutPut.IO;
-           fldRuby['frmMain'] := fldRuby.Obj2Val(frmMain);
+           fldRuby['frmMain'] := fldRuby.Obj2Val(self);
            actRuby19.Checked := true;
            actRun.Enabled := true;
            stbMain.Panels[0].text := fldRuby.Description;
