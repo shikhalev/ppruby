@@ -2,19 +2,19 @@
   This source is only used to compile and install the package.
  }
 
-unit RubyFCL; 
+unit ppRuby;
 
 interface
 
 uses
-  ppRuby, ppRubyClasses, LazarusPackageIntf;
+  Ruby, RubyClasses, RubyMenus, RubyControls, LazarusPackageIntf;
 
 implementation
 
-procedure Register; 
+procedure Register;
 begin
-end; 
+end;
 
 initialization
-  RegisterPackage('RubyFCL', @Register); 
+  RegisterPackage( 'ppRuby', @Register);
 end.

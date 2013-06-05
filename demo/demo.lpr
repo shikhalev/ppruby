@@ -1,4 +1,4 @@
-program RubyDemo;
+program demo;
 
 {$mode objfpc}{$H+}
 
@@ -7,11 +7,13 @@ uses
   cthreads,
   {$ENDIF}{$ENDIF}
   Interfaces, // this includes the LCL widgetset
-  Forms, MainForm, rubyfcl, rubylcl, rubyide;
+  Forms, MainForm
+  { you can add units after this };
 
 {$R *.res}
 
 begin
+  RequireDerivedFormResource := True;
   Application.Initialize;
   Application.CreateForm(TfrmMain, frmMain);
   Application.Run;
