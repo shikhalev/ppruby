@@ -124,7 +124,9 @@ type
     rb_inspect : function (value : VALUE) : VALUE; cdecl;
     rb_funcall2, rb_funcall3 : function (obj : VALUE; method : ID; argc : cint; argv : PVALUE) : VALUE; cdecl;
     rb_intern : function (name : PChar) : ID; cdecl;
-    rb_str_new2 : function (str : PChar) : VALUE; cdecl;
+    rb_str_new2, rb_locale_str_new_cstr : function (str : PChar) : VALUE; cdecl;
+    rb_utf8_encoding : function : Pointer; cdecl;
+    rb_enc_str_new : function (str : PChar; len : clong; enc : Pointer) : VALUE; cdecl;
     rb_data_object_alloc : function (cls : VALUE; data : Pointer; mark, free : FRubyDataFunc) : VALUE; cdecl;
     rb_protect : function (func : FRubyFunc; data : VALUE; out state : cint) : VALUE; cdecl;
     rb_check_type : procedure (value : VALUE; t : cint); cdecl;
@@ -319,7 +321,7 @@ type
     function Inspect (value : VALUE) : VALUE;
     function Intern (const str : UTF8String) : ID;
     function Val2Str (value : VALUE) : UTF8String;
-    function Str2Val (const str : UTF8String) : VALUE;
+    function Str2Val (const str : UTF8String) : VALUE; virtual;
     function Call (obj : VALUE; method : ID; const args : array of VALUE) : VALUE;
     function Call (obj : VALUE; name : UTF8String; const args : array of VALUE) : VALUE;
     function Send (obj : VALUE; method : ID; const args : array of VALUE) : VALUE;
@@ -513,6 +515,7 @@ type
     class function defaultLibrary : UTF8String; override;
   public
     // methods
+    function Str2Val(const str : UTF8String) : VALUE; override;
     function ValType (value : VALUE) : Integer; override;
     function IsData(value : VALUE) : Boolean; override;
     // properties (wrappers)
@@ -716,6 +719,7 @@ procedure TRuby.load;
  loadFunc(rb_funcall3,                'rb_funcall3');
  loadFunc(rb_intern,                  'rb_intern');
  loadFunc(rb_str_new2,                'rb_str_new2');
+ loadFunc(rb_locale_str_new_cstr,     'rb_locale_str_new_cstr');
  loadFunc(rb_data_object_alloc,       'rb_data_object_alloc');
  loadFunc(rb_protect,                 'rb_protect');
  loadFunc(rb_check_type,              'rb_check_type');
@@ -745,6 +749,8 @@ procedure TRuby.load;
  loadFunc(rb_ary_push,                'rb_ary_push');
  loadFunc(rb_scan_args,               'rb_scan_args');
  loadFunc(rb_raise,                   'rb_raise');
+ loadFunc(rb_enc_str_new,             'rb_enc_str_new');
+ loadFunc(rb_utf8_encoding,           'rb_utf8_encoding');
  // io
  loadPtr(rb_stdin,  'rb_stdin');
  loadPtr(rb_stdout, 'rb_stdout');
@@ -1117,13 +1123,35 @@ function TRuby.Require(const name : UTF8String) : VALUE;
  result := rb_require(PChar(name));
  end;
 
+type
+  TEvalPack = record
+    rb : TRuby;
+    str : UTF8String;
+  end;
+  PEvalPack = ^TEvalPack;
+
+function protected_eval (p : PEvalPack) : VALUE; cdecl;
+ begin
+  try
+    result := p^.rb.Send(p^.rb.mKernel, 'eval', [p^.rb.Str2Val(p^.str)]);
+  except
+    on e : Exception do
+       p^.rb.Error(e);
+  end;
+ end;
+
 function TRuby.EvalString(const str : UTF8String) : VALUE;
  var
+   rec : TEvalPack;
    res : Integer;
    err : VALUE;
  begin
  setErrInfo(Qnil);
- result := rb_eval_string_protect(PChar(str), res);
+ rec.rb := self;
+ rec.str := str;
+{$hints off}
+ result := rb_protect(FRubyFunc(@protected_eval), VALUE(@rec), res);
+{$hints on}
  if res <> 0
     then begin
          err := getErrInfo;
@@ -2029,7 +2057,9 @@ procedure TRuby19.loadVals;
 
 procedure TRuby19.setup;
  begin
+ EvalString('# encoding: utf-8');
  EvalString('Encoding.default_internal = "UTF-8"');
+ EvalString('Encoding.default_external = "UTF-8"');
  inherited setup;
  end;
 
@@ -2059,6 +2089,11 @@ class function TRuby19.defaultLibrary : UTF8String;
 {$else}
  {$error Unsupported OS!}
 {$endif}
+ end;
+
+function TRuby19.Str2Val(const str : UTF8String) : VALUE;
+ begin
+  result := rb_locale_str_new_cstr(PChar(str));
  end;
 
 function TRuby19.ValType(value : VALUE) : Integer;
