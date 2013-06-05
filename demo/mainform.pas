@@ -7,7 +7,7 @@ interface
 uses
   Classes, SysUtils, FileUtil, SynMemo, SynHighlighterAny, SynUniHighlighter,
   Forms, Controls, Graphics, Dialogs, StdCtrls, ComCtrls, ActnList, Menus,
-  Ruby, RubyClasses;
+  ExtCtrls, Ruby, RubyClasses;
 
 type
 
@@ -61,6 +61,9 @@ type
     mnuFile: TMenuItem;
     mnuMain: TMainMenu;
     memOutput: TMemo;
+    dlgOpen : TOpenDialog;
+    dlgSave : TSaveDialog;
+    splMain : TSplitter;
     stbMain: TStatusBar;
     anyMain: TSynAnySyn;
     synMain: TSynMemo;
@@ -92,6 +95,7 @@ type
 
   private
     fldRuby : TRuby;
+    fldOutPut : TPascalOut;
   public
     { public declarations }
   end;
@@ -109,35 +113,34 @@ procedure TfrmMain.actRuby18Execute(Sender : TObject);
  begin
  if actRuby19.Checked
     then begin
-         fldRuby.Destroy;
-         fldRuby := nil;
+         FreeAndNil(fldRuby);
+         FreeAndNil(fldOutPut);
          actRuby19.Checked := false;
          actRun.Enabled := false;
          stbMain.Panels[0].Text := '[not loaded]';
-         memOutput.Lines.Add('---');
          memOutput.Lines.Add('=== Unload');
-         memOutput.Lines.Add('---');
+         memOutput.Lines.Add('');
          end;
  if actRuby18.Checked
     then begin
-         fldRuby.Destroy;
-         fldRuby := nil;
+         FreeAndNil(fldRuby);
+         FreeAndNil(fldOutPut);
          actRuby18.Checked := false;
          actRun.Enabled := false;
          stbMain.Panels[0].Text := '[not loaded]';
-         memOutput.Lines.Add('---');
          memOutput.Lines.Add('=== Unload');
-         memOutput.Lines.Add('---');
+         memOutput.Lines.Add('');
          end
     else try
            fldRuby := TRuby18.Auto;
+           fldOutPut := TStringsOut.Create(fldRuby, memOutput.Lines);
+           fldRuby.StdOut := fldOutPut.IO;
            fldRuby['frmMain'] := fldRuby.Obj2Val(frmMain);
            actRuby18.Checked := true;
            actRun.Enabled := true;
            stbMain.Panels[0].text := fldRuby.Description;
-           memOutput.Lines.Add('---');
            memOutput.Lines.Add('=== Load: ' + fldRuby.Description);
-           memOutput.Lines.add('---');
+           memOutput.Lines.Add('');
          except
            on ERuby do
               begin
@@ -154,7 +157,7 @@ procedure TfrmMain.actCleanOutputExecute(Sender : TObject);
 
 procedure TfrmMain.actFileExitExecute(Sender : TObject);
  begin
- frmMain.Caption := 'actFileExit';
+  frmMain.Close;
  end;
 
 procedure TfrmMain.actFileSaveAsExecute(Sender : TObject);
@@ -163,41 +166,37 @@ begin
 end;
 
 procedure TfrmMain.actRuby19Execute(Sender : TObject);
- var
-   tmp : VALUE;
  begin
  if actRuby18.Checked
     then begin
-         fldRuby.Destroy;
-         fldRuby := nil;
+         FreeAndNil(fldRuby);
+         FreeAndNil(fldOutPut);
          actRuby18.Checked := false;
          actRun.Enabled := false;
          stbMain.Panels[0].Text := '[not loaded]';
-         memOutput.Lines.Add('---');
          memOutput.Lines.Add('=== Unload');
-         memOutput.Lines.Add('---');
+         memOutput.Lines.Add('');
          end;
  if actRuby19.Checked
     then begin
-         fldRuby.Destroy;
-         fldRuby := nil;
+         FreeAndNil(fldRuby);
+         FreeAndNil(fldOutPut);
          actRuby19.Checked := false;
          actRun.Enabled := false;
          stbMain.Panels[0].Text := '[not loaded]';
-         memOutput.Lines.Add('---');
          memOutput.Lines.Add('=== Unload');
-         memOutput.Lines.Add('---');
+         memOutput.Lines.Add('');
          end
     else try
            fldRuby := TRuby19.Auto;
-           tmp := fldRuby.Obj2Val(frmMain);
-           fldRuby['frmMain'] := tmp;
+           fldOutPut := TStringsOut.Create(fldRuby, memOutput.Lines);
+           fldRuby.StdOut := fldOutPut.IO;
+           fldRuby['frmMain'] := fldRuby.Obj2Val(frmMain);
            actRuby19.Checked := true;
            actRun.Enabled := true;
            stbMain.Panels[0].text := fldRuby.Description;
-           memOutput.Lines.Add('---');
            memOutput.Lines.Add('=== Load: ' + fldRuby.Description);
-           memOutput.Lines.add('---');
+           memOutput.Lines.Add('');
          except
            on ERuby do
               begin
@@ -209,17 +208,22 @@ procedure TfrmMain.actRuby19Execute(Sender : TObject);
 
 procedure TfrmMain.actRunExecute(Sender : TObject);
  begin
- try
-   stbMain.Panels[2].Text := '= ' + fldRuby.Val2Str(fldRuby.Inspect(fldRuby.EvalString(synMain.Text)));
-   stbMain.Panels[1].Text := 'OK';
- except
-   on e : ERubyEval do
-      begin
-      stbMain.Panels[2].Text := e.Message;
-      stbMain.Panels[1].Text := 'Error!';
-      raise;
-      end;
- end;
+  try
+    Screen.Cursor := crHourGlass;
+    try
+      stbMain.Panels[2].Text := '= ' + fldRuby.Val2Str(fldRuby.Inspect(fldRuby.EvalString(synMain.Text)));
+      stbMain.Panels[1].Text := 'OK';
+    except
+      on e : ERubyEval do
+         begin
+          stbMain.Panels[2].Text := e.Message;
+          stbMain.Panels[1].Text := 'Error!';
+          raise;
+         end;
+    end;
+  finally
+    Screen.Cursor := crDefault;
+  end;
  end;
 
 end.

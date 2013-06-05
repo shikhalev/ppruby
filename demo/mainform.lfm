@@ -11,7 +11,7 @@ object frmMain: TfrmMain
   inline synMain: TSynMemo
     Cursor = crIBeam
     Left = 0
-    Height = 444
+    Height = 439
     Top = 26
     Width = 800
     Align = alClient
@@ -633,6 +633,15 @@ object frmMain: TfrmMain
     ReadOnly = True
     ScrollBars = ssAutoBoth
     TabOrder = 3
+  end
+  object splMain: TSplitter
+    Cursor = crVSplit
+    Left = 0
+    Height = 5
+    Top = 465
+    Width = 800
+    Align = alBottom
+    ResizeAnchor = akBottom
   end
   object alsMain: TActionList
     Images = ilsMain
@@ -2072,6 +2081,20 @@ object frmMain: TfrmMain
     DollarVariables = True
     ActiveDot = False
     left = 352
+    top = 96
+  end
+  object dlgOpen: TOpenDialog
+    Title = 'Open Ruby file...'
+    DefaultExt = '.rb'
+    Filter = 'Ruby Files|*.rb|All Files|*.*'
+    left = 400
+    top = 96
+  end
+  object dlgSave: TSaveDialog
+    Title = 'Save file as...'
+    DefaultExt = '.rb'
+    Filter = 'Ruby Files|*.rb|All Files|*.*'
+    left = 456
     top = 96
   end
 end

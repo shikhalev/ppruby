@@ -49,6 +49,7 @@ type
   FRubyMethodArr = function (argc : LongInt; argv : PVALUE; obj : VALUE) : VALUE; cdecl;
 
   TRubyClass = class of TRuby;
+  TPascalOutClass = class of TPascalOut;
 
   TPack = record
     obj : TObject;
@@ -61,9 +62,9 @@ type
     ruby : TRuby;
     proc : VALUE;
     function Call (const args : array of VALUE) : VALUE;
+    function GetHandler : TMethod; virtual; abstract;
   public
     constructor Create (r : TRuby; p : VALUE); virtual;
-    function GetHandler : TMethod; virtual; abstract;
   end;
 
   TEventCompanionClass = class of TEventCompanion;
@@ -95,15 +96,14 @@ type
           value : VALUE;
         end;
     function findUnit (const name : AnsiString; out value : VALUE) : Boolean;
-{    var
-      cacheObjects : array of record
-          obj : TPack;
-          value : VALUE;
-        end;
-    function findObject (obj : TObject; out value : VALUE) : Boolean;
-    procedure freeValue (p : PPack);  }
     var
       cacheCompanions : array of TEventCompanion;
+    var
+      cacheOutClasses : array of record
+          cls : TPascalOutClass;
+          value : VALUE;
+        end;
+      function findOutClass (cls : TPascalOutClass; out value : VALUE) : Boolean;
   protected
     // fields: lib
     libHandle : THandle;
@@ -536,6 +536,21 @@ type
     class function defaultLibrary : UTF8String; override;
   end;
 
+  TOutClass = class of TPascalOut;
+
+  TPascalOut = class
+  private
+    rbOwner : TRuby;
+    function getIO : VALUE;
+  protected
+    function Write (txt : VALUE) : VALUE; virtual; abstract;
+  public
+    class function RbClass (rb : TRuby) : VALUE;
+    constructor Create (rb : TRuby);
+    property Owner : TRuby read rbOwner;
+    property IO : VALUE read getIO;
+  end;
+
 { Common }
 
 procedure unpack_object (value : VALUE; out rec : TPack);
@@ -616,6 +631,20 @@ function TRuby.findUnit(const name : AnsiString; out value : VALUE) : Boolean;
              Exit;
              end;
  result := false;
+ end;
+
+function TRuby.findOutClass(cls : TPascalOutClass; out value : VALUE) : Boolean;
+ var
+   i : Integer;
+ begin
+  for i := 0 to High(cacheOutClasses) do
+      if cacheOutClasses[i].cls = cls
+         then begin
+               value := cacheOutClasses[i].value;
+               result := true;
+               Exit;
+              end;
+  result := false;
  end;
 
 { function TRuby.findObject(obj : TObject; out value : VALUE) : Boolean;
@@ -2088,6 +2117,52 @@ constructor TEventCompanion.Create(r : TRuby; p : VALUE);
  l := Length(ruby.cacheCompanions);
  SetLength(ruby.cacheCompanions, l + 1);
  ruby.cacheCompanions[l] := self;
+ end;
+
+{ TPascalOut }
+
+function TPascalOut.getIO : VALUE;
+ var
+   p : PPack;
+ begin
+ p := GetMem(sizeof(TPack));
+ p^.rb := rbOwner;
+ p^.obj := self;
+ result := rbOwner.rb_data_object_alloc(RbClass(rbOwner), p, nil, @obj_free);
+ end;
+
+function out_write (slf : VALUE; txt : VALUE) : VALUE; cdecl;
+ var
+   p : TPack;
+ begin
+  unpack_object(slf, p);
+  try
+    result := (p.obj as TPascalOut).Write(txt);
+  except
+    on e : Exception do
+       p.rb.Error(e);
+  end;
+ end;
+
+class function TPascalOut.RbClass(rb : TRuby) : VALUE;
+ var
+   l : Integer;
+ begin
+  if not rb.findOutClass(self, result)
+     then begin
+           result := rb.DefineClass(rb.RegisterUnit(self.UnitName), self.ClassName, rb.rb_cIO);
+           rb.DefineMethod(result, 'write', @out_write);
+           l := Length(rb.cacheOutClasses);
+           SetLength(rb.cacheOutClasses, l + 1);
+           rb.cacheOutClasses[l].cls := self;
+           rb.cacheOutClasses[l].value := result;
+          end;
+ end;
+
+constructor TPascalOut.Create(rb : TRuby);
+ begin
+  inherited Create;
+  rbOwner := rb;
  end;
 
 { Init related }

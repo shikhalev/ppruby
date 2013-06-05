@@ -7,12 +7,24 @@ interface
 uses
   Classes, SysUtils, ctypes, Ruby;
 
+type
+  TStringsOut = class(TPascalOut)
+  private
+    fldStrings : TStrings;
+  protected
+    function Write (txt : VALUE) : VALUE; override;
+  public
+    constructor Create (rb: TRuby; strs : TStrings);
+    property Strings : TStrings read fldStrings;
+  end;
+
 implementation
 
 type
   TNotifyCompanion = class(TEventCompanion)
-  public
+  private
     procedure Handler (Sender: TObject);
+  protected
     function GetHandler : TMethod; override;
   end;
 
@@ -27,6 +39,24 @@ function TNotifyCompanion.GetHandler : TMethod;
  begin
   result := TMethod(@self.Handler);
  end;
+
+{ TStringsOut }
+
+function TStringsOut.Write(txt : VALUE) : VALUE;
+ var
+   str : AnsiString;
+ begin
+  str := Owner.Val2Str(txt);
+  fldStrings.Text := fldStrings.Text + str;
+  result := Owner.Int2Val(Length(str));
+ end;
+
+constructor TStringsOut.Create(rb : TRuby; strs : TStrings);
+ begin
+ inherited Create(rb);
+ fldStrings := strs;
+ end;
+
 
 function prs_assign (obj : VALUE; src : VALUE) : VALUE; cdecl;
  var
