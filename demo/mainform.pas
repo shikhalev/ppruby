@@ -5,7 +5,7 @@ unit MainForm;
 interface
 
 uses
-  Classes, SysUtils, FileUtil, SynMemo, SynHighlighterAny, SynUniHighlighter,
+  Classes, SysUtils, FileUtil, SynMemo, SynHighlighterAny,
   Forms, Controls, Graphics, Dialogs, StdCtrls, ComCtrls, ActnList, Menus,
   ExtCtrls, Ruby, RubyClasses;
 
@@ -189,21 +189,44 @@ procedure TfrmMain.actEditUndoExecute(Sender : TObject);
 
 procedure TfrmMain.actFileExitExecute(Sender : TObject);
  begin
+ if synMain.Modified
+    then case MessageDlg('File is modified', 'File is modified, want you save it to disk?', mtConfirmation, mbYesNoCancel, 0, mbYes) of
+           mrYes :
+             actFileSave.Execute;
+           mrCancel :
+             Exit;
+         end;
   self.Close;
  end;
 
 procedure TfrmMain.actFileNewExecute(Sender : TObject);
  begin
-  if synMain.Modified
-     then ;
+ if synMain.Modified
+    then case MessageDlg('File is modified', 'File is modified, want you save it to disk?', mtConfirmation, mbYesNoCancel, 0, mbYes) of
+           mrYes :
+             actFileSave.Execute;
+           mrCancel :
+             Exit;
+         end;
+  synMain.Clear;
+  synMain.Modified := false;
+  self.Caption := 'ppRuby Demo';
  end;
 
 procedure TfrmMain.actFileOpenExecute(Sender : TObject);
  begin
+  if synMain.Modified
+     then case MessageDlg('File is modified', 'File is modified, want you save it to disk?', mtConfirmation, mbYesNoCancel, 0, mbYes) of
+            mrYes :
+              actFileSave.Execute;
+            mrCancel :
+              Exit;
+          end;
   if dlgOpen.Execute
      then begin
            fldFileName := dlgOpen.FileName;
            synMain.lines.LoadFromFile(fldFileName);
+           synMain.Modified := false;
            self.Caption := 'ppRuby Demo: ' + fldFileName;
           end;
  end;
@@ -214,6 +237,7 @@ procedure TfrmMain.actFileSaveAsExecute(Sender : TObject);
      then begin
            fldFileName := dlgSave.FileName;
            synMain.Lines.SaveToFile(fldFileName);
+           synMain.Modified := false;
            self.Caption := 'ppRuby Demo: ' + fldFileName;
           end;
  end;
@@ -222,7 +246,10 @@ procedure TfrmMain.actFileSaveExecute(Sender : TObject);
  begin
   if fldFileName = ''
      then actFileSaveAs.Execute
-     else synMain.Lines.SaveToFile(fldFileName);
+     else begin
+           synMain.Lines.SaveToFile(fldFileName);
+           synMain.Modified := false;
+          end;
  end;
 
 procedure TfrmMain.actHelpAboutExecute(Sender : TObject);
