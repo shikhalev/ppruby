@@ -34,3 +34,7 @@ and classes in their for Pascal classes.
 You have access for published properties of objects and some public properties
 and methods. Also subcomponents may be accessed by hash-like syntax with
 <code>Symbol</code> names.
+
+## More complex usage
+
+Documentation and examples coming soon.
