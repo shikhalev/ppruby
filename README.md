@@ -21,12 +21,16 @@ var
 rb := TRuby.Auto([TRuby20, TRuby19, TRuby18]);
 // or
 rb := TRuby<ver>.Create(libFile);
-rb[<global var>] := rb.Obj2Val(Application); // or any other object
+
+rb[<global>] := rb.Obj2Val(Application); // or any other object
 rb.EvalString(<any ruby code>);
 ````
 
 ### At Ruby side
 
-You have the module |Pascal| with nested submodules for Pascal units and classes
-in their for Pascal classes.
+You have the module <code>Pascal</code> with nested submodules for Pascal units
+and classes in their for Pascal classes.
 
+You have access for published properties of objects and some public properties
+and methods. Also subcomponents may be accessed by hash-like syntax with
+<code>Symbol</code> names.
