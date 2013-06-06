@@ -28,12 +28,12 @@ rb.EvalString(<any ruby code>);
 
 ### At Ruby side
 
-You have the module <code>Pascal</code> with nested submodules for Pascal units
+You have the module `Pascal` with nested submodules for Pascal units
 and classes in their for Pascal classes.
 
 You have access for published properties of objects and some public properties
 and methods. Also subcomponents may be accessed by hash-like syntax with
-<code>Symbol</code> names.
+`Symbol` names.
 
 ## More complex usage
 
