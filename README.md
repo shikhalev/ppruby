@@ -21,4 +21,12 @@ var
 rb := TRuby.Auto([TRuby20, TRuby19, TRuby18]);
 // or
 rb := TRuby<ver>.Create(libFile);
+rb[<global var>] := rb.Obj2Val(Application); // or any other object
+rb.EvalString(<any ruby code>);
 ````
+
+### At Ruby side
+
+You have the module |Pascal| with nested submodules for Pascal units and classes
+in their for Pascal classes.
+
