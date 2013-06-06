@@ -1,4 +1,5 @@
 
-= ppRuby
-== Ruby bindings for Free Pascal / Lazarus
+# ppRuby
+
+## Ruby bindings for Free Pascal / Lazarus
 
