@@ -13,7 +13,7 @@ Ruby bindings for Free Pascal / Lazarus.
 
 Create a binding object.
 
-````Delphi
+```Delphi
 var
   rb : TRuby;
 
@@ -24,7 +24,7 @@ rb := TRuby<ver>.Create(libFile);
 
 rb[<global>] := rb.Obj2Val(Application); // or any other object
 rb.EvalString(<any ruby code>);
-````
+```
 
 ### At Ruby side
 
