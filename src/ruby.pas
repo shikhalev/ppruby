@@ -1261,7 +1261,8 @@ function TRuby.EvalString(const str : UTF8String) : VALUE;
  if res <> 0
     then begin
          err := getErrInfo;
-         raise ERubyEval.Create(err, Val2Str(Inspect(err)));
+         //raise ERubyEval.Create(err, Val2Str(Inspect(err)));
+         result := err;
          end;
  end;
 

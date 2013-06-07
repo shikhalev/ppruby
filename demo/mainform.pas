@@ -285,9 +285,11 @@ procedure TfrmMain.actRunExecute(Sender : TObject);
  begin
   try
     stbMain.Panels[2].Text := '= ' + rblMain.Execute;
-    stbMain.Panels[1].Text := 'OK';
+    if rblMain.Ruby.ErrInfo = rblMain.Ruby.Qnil
+       then stbMain.Panels[1].Text := 'OK'
+       else stbMain.Panels[1].Text := 'Error!';
   except
-    on e : ERubyEval do
+    on e : ERuby do
        begin
         stbMain.Panels[2].Text := e.Message;
         stbMain.Panels[1].Text := 'Error!';
