@@ -1352,7 +1352,8 @@ procedure hookTStrings (ruby : TRuby; cls : TClass; value : VALUE);
  ruby.DefineAttribute(value, 'delimited_text', @sts_delimited_text,
                                                @sts_delimited_text_set);
  ruby.DefineAttribute(value, 'strict_delimiter', @sts_strict_delimiter,
-                                                 @sts_strict_delimiter_set);
+                                                 @sts_strict_delimiter_set,
+                                                 true);
  ruby.DefineAttribute(value, 'quote',     @sts_quote,     @sts_quote_set);
  ruby.DefineAttribute(value, 'separator', @sts_separator, @sts_separator_set);
  ruby.DefineAttribute(value, 'comma_text', @sts_comma_text,
@@ -1507,9 +1508,9 @@ procedure hookTStringList (ruby : TRuby; cls : TClass; value : VALUE);
  begin
  ruby.DefineAttribute(value, 'duplicates', @sls_duplicates,
                                            @sls_duplicates_set);
- ruby.DefineAttribute(value, 'sorted', @sls_sorted, @sls_sorted_set);
+ ruby.DefineAttribute(value, 'sorted', @sls_sorted, @sls_sorted_set, true);
  ruby.DefineAttribute(value, 'casesensitive', @sls_case_sensitive,
-                                              @sls_case_sensitive_set);
+                                              @sls_case_sensitive_set, true);
  ruby.DefineMethod(value, 'sort!', @sls_sort);
  end;
 {$hints on}

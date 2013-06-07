@@ -24,6 +24,7 @@ type
   TRuby = class;
 
   FRegisterClassHook = procedure (ruby : TRuby; cls : TClass; value : VALUE);
+  FInitHook = procedure (ruby : TRuby);
 
   FRubyDataFunc = procedure (p : Pointer); cdecl;
   FRubyFunc = function (value : VALUE) : VALUE; cdecl;
@@ -104,6 +105,27 @@ type
           value : VALUE;
         end;
       function findOutClass (cls : TPascalOutClass; out value : VALUE) : Boolean;
+  private
+    type
+      TModPack = record
+        engine : TRuby;
+        module : VALUE;
+      end;
+      TModPackArray = array of TModPack;
+    class var
+      cacheModules : TModPackArray;
+  public
+    class function EngineByModule (value : VALUE) : TRuby;
+  protected
+    procedure registerModule (module : VALUE);
+    procedure registerModules (const modules : array of VALUE);
+    procedure freeModules;
+  private
+    class var
+      listInitHooks : array of FInitHook;
+  public
+    class procedure AddInitHook (hook : FInitHook);
+    class procedure DelInitHook (hook : FInitHook);
   protected
     // fields: lib
     libHandle : THandle;
@@ -403,7 +425,9 @@ type
     procedure DefineGlobalFunction (const name : UTF8String; func : FRubyMethod17);
     procedure DefineGlobalFunction (const name : UTF8String; func : FRubyMethodArr);
     procedure DefineAlias (module : VALUE; const target, source : UTF8String);
-    procedure DefineAttribute(module : VALUE; const name : UTF8String; getter : FRubyMethod0; setter : FRubyMethod1);
+    procedure DefineAttribute(module : VALUE; const name : UTF8String;
+                getter : FRubyMethod0; setter : FRubyMethod1;
+                isbool : Boolean = false);
     procedure Include (target, source : VALUE);
     function GlobalVarGet (const name : UTF8String) : VALUE;
     procedure GlobalVarSet (const name : UTF8String; value : VALUE);
@@ -650,6 +674,78 @@ function TRuby.findOutClass(cls : TPascalOutClass; out value : VALUE) : Boolean;
   result := false;
  end;
 
+class function TRuby.EngineByModule(value : VALUE) : TRuby;
+ var
+   i : Integer;
+ begin
+  for i := 0 to Length(cacheModules) do
+      if cacheModules[i].module = value
+         then begin
+               result := cacheModules[i].engine;
+               Exit;
+              end;
+  result := nil;
+ end;
+
+procedure TRuby.registerModule(module : VALUE);
+ var
+   l : Integer;
+ begin
+  l := Length(cacheModules);
+  SetLength(cacheModules, l + 1);
+  cacheModules[l].engine := self;
+  cacheModules[l].module := module;
+ end;
+
+procedure TRuby.registerModules(const modules : array of VALUE);
+ var
+   i : Integer;
+ begin
+  for i := 0 to High(modules) do
+      registerModule(modules[i]);
+ end;
+
+procedure TRuby.freeModules;
+ var
+   newModules : TModPackArray;
+   i, l : Integer;
+ begin
+  SetLength(newModules, 0);
+  for i := 0 to High(cacheModules) do
+      if cacheModules[i].engine <> self
+         then begin
+               l := Length(newModules);
+               SetLength(newModules, l + 1);
+               newModules[l] := cacheModules[i];
+              end;
+  SetLength(cacheModules, 0);
+  cacheModules := newModules;
+ end;
+
+class procedure TRuby.AddInitHook(hook : FInitHook);
+ var
+   l : Integer;
+ begin
+  l := Length(listInitHooks);
+  SetLength(listInitHooks, l + 1);
+  listInitHooks[l] := hook;
+ end;
+
+class procedure TRuby.DelInitHook(hook : FInitHook);
+ var
+   i, h, d : Integer;
+ begin
+  h := High(listInitHooks);
+  for i := 0 to h do
+      if listInitHooks[i] = hook
+         then begin
+               for d := i to h - 1 do
+                   listInitHooks[d] := listInitHooks[d + 1];
+               SetLength(listInitHooks, h);
+               Exit;
+              end;
+ end;
+
 { function TRuby.findObject(obj : TObject; out value : VALUE) : Boolean;
  var
    i : Integer;
@@ -690,8 +786,12 @@ procedure TRuby.loadPtr (out field; const name : UTF8String);
  end;
 
 procedure TRuby.loadValue (out field; const name : UTF8String);
+ var
+   v : VALUE;
  begin
- VALUE(field) := PVALUE(GetProcedureAddress(libHandle, name))^;
+ v := PVALUE(GetProcedureAddress(libHandle, name))^;
+ VALUE(field) := v;
+ registerModule(v);
  end;
 
 procedure TRuby.load;
@@ -776,7 +876,6 @@ procedure TRuby.loadVals;
  loadValue(rb_cBignum,        'rb_cBignum');
  loadValue(rb_cBinding,       'rb_cBinding');
  loadValue(rb_cClass,         'rb_cClass');
-// loadValue(rb_cCont,          'rb_cCont');
  loadValue(rb_cData,          'rb_cData');
  loadValue(rb_cDir,           'rb_cDir');
  loadValue(rb_cEnumerator,    'rb_cEnumerator');
@@ -843,10 +942,10 @@ procedure TRuby.init(const script : UTF8String);
 
 procedure TRuby.setup;
  begin
- // namespace
- rb_require('set');
- rb_mPascal := DefineModule('Pascal');
- rb_ePascalError := DefineClass(rb_mPascal, 'Error', rb_eStandardError);
+  rb_require('set');
+  rb_mPascal := DefineModule('Pascal');
+  rb_ePascalError := DefineClass(rb_mPascal, 'Error', rb_eStandardError);
+  registerModule(EvalString('self'));
  end;
 
 procedure TRuby.done;
@@ -891,6 +990,8 @@ procedure TRuby.registerProperties (cls : TClass; value : VALUE);
                      'def ' + nm + '=(value)' + LineEnding +
                      '  pascal_set_prop(''' + nm + ''', value)' + LineEnding +
                      'end';
+             if prop^.PropType^.Kind = tkBool
+                then code := code + LineEnding + 'alias :' + nm + '? :' + nm;
              Send(value, 'class_eval', [Str2Val(code)]);
              end
         else if prop^.PropType^.Kind in RubifiedEvents
@@ -1091,6 +1192,8 @@ class function TRuby.GetCompanionClass(
  end;
 
 constructor TRuby.Create(const lib, script : UTF8String);
+ var
+   i : Integer;
  begin
  inherited Create;
  libHandle := LoadLibrary(lib);
@@ -1100,6 +1203,8 @@ constructor TRuby.Create(const lib, script : UTF8String);
  init(script);
  loadVals;
  setup;
+ for i := 0 to High(listInitHooks) do
+     listInitHooks[i](self);
  end;
 
 destructor TRuby.Destroy;
@@ -1110,6 +1215,7 @@ destructor TRuby.Destroy;
  for i := 0 to High(cacheCompanions) do
      cacheCompanions[i].Free;
  SetLength(cacheCompanions, 0);
+ freeModules;
  inherited Destroy;
  end;
 
@@ -1162,32 +1268,38 @@ function TRuby.EvalString(const str : UTF8String) : VALUE;
 function TRuby.DefineModule(const name : UTF8String) : VALUE;
  begin
  result := rb_define_module(PChar(name));
+ registerModule(result);
  end;
 
 function TRuby.DefineModule(ns : VALUE; const name : UTF8String) : VALUE;
  begin
  result := rb_define_module_under(ns, PChar(name));
+ registerModule(result);
  end;
 
 function TRuby.DefineClass(const name : UTF8String; super : VALUE) : VALUE;
  begin
  result := rb_define_class(PChar(name), super);
+ registerModule(result);
  end;
 
 function TRuby.DefineClass(ns : VALUE; const name : UTF8String;
   super : VALUE) : VALUE;
  begin
  result := rb_define_class_under(ns, PChar(name), super);
+ registerModule(result);
  end;
 
 function TRuby.DefineClass(const name : UTF8String) : VALUE;
  begin
  result := rb_define_class(PChar(name), rb_cObject);
+ registerModule(result);
  end;
 
 function TRuby.DefineClass(ns : VALUE; const name : UTF8String) : VALUE;
  begin
  result := rb_define_class_under(ns, PChar(name), rb_cObject);
+ registerModule(result);
  end;
 
 procedure TRuby.DefineConstant(const name : UTF8String; value : VALUE);
@@ -1707,7 +1819,7 @@ procedure TRuby.DefineAlias(module : VALUE; const target, source : UTF8String);
  end;
 
 procedure TRuby.DefineAttribute(module : VALUE; const name : UTF8String;
-  getter : FRubyMethod0; setter : FRubyMethod1);
+  getter : FRubyMethod0; setter : FRubyMethod1; isbool : Boolean);
  var
    at : UTF8String;
  begin
@@ -1718,7 +1830,11 @@ procedure TRuby.DefineAttribute(module : VALUE; const name : UTF8String;
             else at := 'attr_accessor';
  Send(module, at, [Str2Sym(name)]);
  if getter <> nil
-    then DefineMethod(module, name, getter);
+    then begin
+          DefineMethod(module, name, getter);
+          if isbool
+             then DefineAlias(module, name + '?', name);
+         end;
  if setter <> nil
     then DefineMethod(module, name + '=', setter);
  end;
@@ -2329,8 +2445,12 @@ function object_equals (obj : VALUE; other : VALUE) : VALUE; cdecl;
  begin
  unpack_object(obj, p);
  try
-   unpack_object(other, op);
-   result := p.rb.Bln2Val(p.obj.Equals(op.obj));
+   if not p.rb.IsData(other)
+      then result := p.rb.Qfalse
+      else begin
+            unpack_object(other, op);
+            result := p.rb.Bln2Val(p.obj.Equals(op.obj));
+           end;
  except
    on e : Exception do
       p.rb.Error(e);

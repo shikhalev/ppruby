@@ -33,7 +33,7 @@
     <Description Value="Ruby API interface for FPC"/>
     <License Value="GNU LGPL"/>
     <Version Minor="10"/>
-    <Files Count="4">
+    <Files Count="6">
       <Item1>
         <Filename Value="ruby.pas"/>
         <UnitName Value="Ruby"/>
@@ -50,6 +50,15 @@
         <Filename Value="rubycontrols.pas"/>
         <UnitName Value="RubyControls"/>
       </Item4>
+      <Item5>
+        <Filename Value="rubyforms.pas"/>
+        <UnitName Value="RubyForms"/>
+      </Item5>
+      <Item6>
+        <Filename Value="rubylink.pas"/>
+        <HasRegisterProc Value="True"/>
+        <UnitName Value="RubyLink"/>
+      </Item6>
     </Files>
     <Type Value="RunAndDesignTime"/>
     <RequiredPkgs Count="2">

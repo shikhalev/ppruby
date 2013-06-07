@@ -7,12 +7,14 @@ unit ppRuby;
 interface
 
 uses
-  Ruby, RubyClasses, RubyMenus, RubyControls, LazarusPackageIntf;
+  Ruby, RubyClasses, RubyMenus, RubyControls, RubyForms, RubyLink, 
+  LazarusPackageIntf;
 
 implementation
 
 procedure Register;
 begin
+  RegisterUnit( 'RubyLink', @RubyLink.Register);
 end;
 
 initialization

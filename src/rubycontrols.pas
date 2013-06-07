@@ -173,7 +173,7 @@ function cnt_visible_set (slf : VALUE; value : VALUE) : VALUE; cdecl;
 procedure hookTControl (ruby : TRuby; cls : TClass; value : VALUE);
  begin
   ruby.DefineAttribute(value, 'parent',  @cnt_parent,  @cnt_parent_set);
-  ruby.DefineAttribute(value, 'visible', @cnt_visible, @cnt_visible_set);
+  ruby.DefineAttribute(value, 'visible', @cnt_visible, @cnt_visible_set, true);
   ruby.DefineMethod(value, 'show',    @cnt_show);
   ruby.DefineMethod(value, 'hide',    @cnt_hide);
   ruby.DefineMethod(value, 'refresh', @cnt_refresh);

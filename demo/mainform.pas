@@ -7,7 +7,7 @@ interface
 uses
   Classes, SysUtils, FileUtil, SynMemo, SynHighlighterAny,
   Forms, Controls, Graphics, Dialogs, StdCtrls, ComCtrls, ActnList, Menus,
-  ExtCtrls, Ruby, RubyClasses;
+  ExtCtrls, Ruby, RubyClasses, RubyControls, RubyForms, RubyLink;
 
 type
 
@@ -60,6 +60,7 @@ type
     memOutput: TMemo;
     dlgOpen : TOpenDialog;
     dlgSave : TSaveDialog;
+    rblMain : TRubyLink;
     splMain : TSplitter;
     stbMain: TStatusBar;
     anyMain: TSynAnySyn;
@@ -98,10 +99,10 @@ type
     procedure actRuby18Execute(Sender : TObject);
     procedure actRuby19Execute(Sender : TObject);
     procedure actRunExecute(Sender : TObject);
+    procedure rblMainActivate(Sender : TObject);
+    procedure rblMainDeactivate(Sender : TObject);
 
   private
-    fldRuby : TRuby;
-    fldOutPut : TPascalOut;
     fldFileName : ansistring;
   public
     { public declarations }
@@ -118,43 +119,34 @@ implementation
 
 procedure TfrmMain.actRuby18Execute(Sender : TObject);
  begin
- if actRuby19.Checked
-    then begin
-         FreeAndNil(fldRuby);
-         FreeAndNil(fldOutPut);
-         actRuby19.Checked := false;
-         actRun.Enabled := false;
-         stbMain.Panels[0].Text := '[not loaded]';
-         memOutput.Lines.Add('=== Unload');
-         memOutput.Lines.Add('');
-         end;
- if actRuby18.Checked
-    then begin
-         FreeAndNil(fldRuby);
-         FreeAndNil(fldOutPut);
-         actRuby18.Checked := false;
-         actRun.Enabled := false;
-         stbMain.Panels[0].Text := '[not loaded]';
-         memOutput.Lines.Add('=== Unload');
-         memOutput.Lines.Add('');
-         end
-    else try
-           fldRuby := TRuby18.Auto;
-           fldOutPut := TStringsOut.Create(fldRuby, memOutput.Lines);
-           fldRuby.StdOut := fldOutPut.IO;
-           fldRuby['frmMain'] := fldRuby.Obj2Val(self);
-           actRuby18.Checked := true;
-           actRun.Enabled := true;
-           stbMain.Panels[0].text := fldRuby.Description;
-           memOutput.Lines.Add('=== Load: ' + fldRuby.Description);
-           memOutput.Lines.Add('');
-         except
-           on ERuby do
-              begin
-              actRuby18.Enabled := false;
-              raise;
-              end;
-         end;
+  if actRuby19.Checked
+     then begin
+           rblMain.Active := false;
+           actRun.Enabled := false;
+           actRuby18.Checked := false;
+          end;
+  if actRuby18.Checked
+     then begin
+          rblMain.Active := false;
+          actRun.Enabled := false;
+          actRuby18.Checked := false;
+          end
+     else try
+            rblMain.Versions := [rvRuby18];
+            rblMain.Active := true;
+            if rblMain.Active
+               then begin
+                     actRun.Enabled := true;
+                     actRuby18.Checked := true;
+                    end
+               else actRuby18.Enabled := false;
+          except
+            on ERuby do
+               begin
+                actRuby18.Enabled := false;
+                raise;
+               end;
+          end;
  end;
 
 procedure TfrmMain.actCleanOutputExecute(Sender : TObject);
@@ -259,63 +251,59 @@ procedure TfrmMain.actHelpAboutExecute(Sender : TObject);
 
 procedure TfrmMain.actRuby19Execute(Sender : TObject);
  begin
- if actRuby18.Checked
-    then begin
-         FreeAndNil(fldRuby);
-         FreeAndNil(fldOutPut);
-         actRuby18.Checked := false;
-         actRun.Enabled := false;
-         stbMain.Panels[0].Text := '[not loaded]';
-         memOutput.Lines.Add('=== Unload');
-         memOutput.Lines.Add('');
-         end;
- if actRuby19.Checked
-    then begin
-         FreeAndNil(fldRuby);
-         FreeAndNil(fldOutPut);
-         actRuby19.Checked := false;
-         actRun.Enabled := false;
-         stbMain.Panels[0].Text := '[not loaded]';
-         memOutput.Lines.Add('=== Unload');
-         memOutput.Lines.Add('');
-         end
-    else try
-           fldRuby := TRuby19.Auto;
-           fldOutPut := TStringsOut.Create(fldRuby, memOutput.Lines);
-           fldRuby.StdOut := fldOutPut.IO;
-           fldRuby['frmMain'] := fldRuby.Obj2Val(self);
-           actRuby19.Checked := true;
-           actRun.Enabled := true;
-           stbMain.Panels[0].text := fldRuby.Description;
-           memOutput.Lines.Add('=== Load: ' + fldRuby.Description);
-           memOutput.Lines.Add('');
-         except
-           on ERuby do
-              begin
-              actRuby19.Enabled := false;
-              raise;
-              end;
-         end;
+  if actRuby18.Checked
+     then begin
+           rblMain.Active := false;
+           actRun.Enabled := false;
+           actRuby18.Checked := false;
+          end;
+  if actRuby19.Checked
+     then begin
+          rblMain.Active := false;
+          actRun.Enabled := false;
+          actRuby19.Checked := false;
+          end
+     else try
+            rblMain.Versions := [rvRuby19];
+            rblMain.Active := true;
+            if rblMain.Active
+               then begin
+                     actRun.Enabled := true;
+                     actRuby19.Checked := true;
+                    end
+               else actRuby19.Enabled := false;
+          except
+            on ERuby do
+               begin
+                actRuby19.Enabled := false;
+                raise;
+               end;
+          end;
  end;
 
 procedure TfrmMain.actRunExecute(Sender : TObject);
  begin
   try
-    Screen.Cursor := crHourGlass;
-    try
-      stbMain.Panels[2].Text := '= ' + fldRuby.Val2Str(fldRuby.Inspect(fldRuby.EvalString(synMain.Text)));
-      stbMain.Panels[1].Text := 'OK';
-    except
-      on e : ERubyEval do
-         begin
-          stbMain.Panels[2].Text := e.Message;
-          stbMain.Panels[1].Text := 'Error!';
-          raise;
-         end;
-    end;
-  finally
-    Screen.Cursor := crDefault;
+    stbMain.Panels[2].Text := '= ' + rblMain.Execute;
+    stbMain.Panels[1].Text := 'OK';
+  except
+    on e : ERubyEval do
+       begin
+        stbMain.Panels[2].Text := e.Message;
+        stbMain.Panels[1].Text := 'Error!';
+        raise;
+       end;
   end;
+ end;
+
+procedure TfrmMain.rblMainActivate(Sender : TObject);
+ begin
+  stbMain.Panels[0].Text := rblMain.Ruby.Description;
+ end;
+
+procedure TfrmMain.rblMainDeactivate(Sender : TObject);
+ begin
+  stbMain.Panels[0].Text := '[inactive]';
  end;
 
 end.

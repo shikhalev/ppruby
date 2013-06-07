@@ -449,7 +449,7 @@ object frmMain: TfrmMain
     MouseActions = <>
     MouseSelActions = <>
     Lines.Strings = (
-      '$frmMain'
+      'p application[:frmMain]'
     )
     SelectedColor.FrameEdges = sfeAround
     SelectedColor.BackPriority = 50
@@ -2057,5 +2057,15 @@ object frmMain: TfrmMain
     Filter = 'Ruby Files|*.rb|All Files|*.*'
     left = 456
     top = 96
+  end
+  object rblMain: TRubyLink
+    Versions = [rvRuby18, rvRuby19]
+    Active = False
+    Output = memOutput
+    Source = synMain
+    OnActivate = rblMainActivate
+    OnDeactivate = rblMainDeactivate
+    left = 280
+    top = 144
   end
 end
