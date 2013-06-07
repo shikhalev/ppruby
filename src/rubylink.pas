@@ -34,6 +34,7 @@ type
     { Protected declarations }
   public
     constructor Create(AOwner : TComponent); override;
+    destructor Destroy; override;
     property Ruby : TRuby read fldRuby;
     function Execute (const code : String) : String;
     function Execute : String;
@@ -121,6 +122,13 @@ constructor TRubyLink.Create(AOwner : TComponent);
   inherited Create(AOwner);
   fldVersions := DEFAULT_VERSION_SET;
   fldRuby := nil;
+ end;
+
+destructor TRubyLink.Destroy;
+ begin
+  FreeAndNil(fldOut);
+  FreeAndNil(fldRuby);
+  inherited Destroy;
  end;
 
 function TRubyLink.Execute(const code : String) : String;
