@@ -32,7 +32,7 @@
     </CompilerOptions>
     <Description Value="Ruby API interface for FPC"/>
     <License Value="GNU LGPL"/>
-    <Version Minor="10"/>
+    <Version Minor="10" Release="1"/>
     <Files Count="6">
       <Item1>
         <Filename Value="ruby.pas"/>
