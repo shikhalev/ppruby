@@ -19,6 +19,11 @@
           <VariablesInRegisters Value="True"/>
         </Optimizations>
       </CodeGeneration>
+      <Linking>
+        <Debugging>
+          <UseExternalDbgSyms Value="True"/>
+        </Debugging>
+      </Linking>
       <Other>
         <Verbosity>
           <ShowHintsForUnusedUnitsInMainSrc Value="True"/>
