@@ -13,6 +13,7 @@ uses
 {$R *.res}
 
 begin
+  Application.Title := 'ppRuby Demo App';
   RequireDerivedFormResource := True;
   Application.Initialize;
   Application.CreateForm(TfrmMain, frmMain);

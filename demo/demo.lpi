@@ -5,7 +5,7 @@
     <General>
       <SessionStorage Value="InProjectDir"/>
       <MainUnit Value="0"/>
-      <Title Value="demo"/>
+      <Title Value="ppRuby Demo App"/>
       <UseAppBundle Value="False"/>
       <ResourceType Value="res"/>
       <Icon Value="0"/>
@@ -93,7 +93,7 @@
     </Other>
   </CompilerOptions>
   <Debugging>
-    <Exceptions Count="4">
+    <Exceptions Count="5">
       <Item1>
         <Name Value="EAbort"/>
       </Item1>
@@ -105,7 +105,12 @@
       </Item3>
       <Item4>
         <Name Value="ERuby"/>
+        <Enabled Value="False"/>
       </Item4>
+      <Item5>
+        <Name Value="ERubyEval"/>
+        <Enabled Value="False"/>
+      </Item5>
     </Exceptions>
   </Debugging>
 </CONFIG>
