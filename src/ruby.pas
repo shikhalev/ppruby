@@ -226,6 +226,7 @@ type
   public
     rb_scan_args : function (argc : cint; argv : PVALUE; fmt : PChar) : cint; cdecl; varargs;
     rb_raise : procedure (exc : VALUE; fmt : PChar); cdecl; varargs;
+    rb_notimplement : procedure; cdecl;
   public
     // constants
     const
@@ -818,6 +819,7 @@ procedure TRuby.load;
  loadFunc(rb_ary_push,                'rb_ary_push');
  loadFunc(rb_scan_args,               'rb_scan_args');
  loadFunc(rb_raise,                   'rb_raise');
+ loadFunc(rb_notimplement,            'rb_notimplement');
  loadFunc(rb_enc_str_new,             'rb_enc_str_new');
  loadFunc(rb_utf8_encoding,           'rb_utf8_encoding');
  // io
@@ -2428,6 +2430,14 @@ function pascal_event (argc : cint; argv : PVALUE; slf : VALUE) : VALUE; cdecl;
   end;
  end;
 
+function object_new (slf : VALUE) : VALUE; cdecl;
+ var
+   rb : TRuby;
+ begin
+  rb := TRuby.EngineByModule(slf);
+  rb.rb_notimplement();
+ end;
+
 {$hints off}
 procedure HookTObject (ruby : TRuby; cls : TClass; value : VALUE);
  begin
@@ -2438,6 +2448,7 @@ procedure HookTObject (ruby : TRuby; cls : TClass; value : VALUE);
                               ruby.Str2Sym('pascal_set_prop'),
                               ruby.Str2Sym('pascal_event')]);
  ruby.DefineMethod(value, '==', @object_equals);
+ ruby.DefineSingletonMethod(value, 'new', @object_new);
  end;
 {$hints on}
 

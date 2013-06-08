@@ -1,7 +1,7 @@
 object frmMain: TfrmMain
-  Left = 238
+  Left = 294
   Height = 600
-  Top = 102
+  Top = 120
   Width = 800
   Caption = 'ppRuby Demo'
   ClientHeight = 579
