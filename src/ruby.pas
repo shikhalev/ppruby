@@ -1316,7 +1316,7 @@ function TRuby.Str2Val(const str : UTF8String) : VALUE;
 function TRuby.Call (obj : VALUE; method : ID;
   const args : array of VALUE) : VALUE;
  begin
- result := rb_funcall3(obj, method, Length(args), @(args[0]));
+ result := rb_funcall3(obj, method, Length(args), @args[0]);
  end;
 
 function TRuby.Call(obj : VALUE; name : UTF8String;
@@ -1328,7 +1328,7 @@ function TRuby.Call(obj : VALUE; name : UTF8String;
 function TRuby.Send(obj : VALUE; method : ID;
   const args : array of VALUE) : VALUE;
  begin
- result := rb_funcall2(obj, method, Length(args), @(args[0]));
+ result := rb_funcall2(obj, method, Length(args), @args[0]);
  end;
 
 function TRuby.Send(obj : VALUE; name : UTF8String;
