@@ -72,6 +72,13 @@ procedure rb_define_singleton_method (instance : VALUE; name : PChar;
 procedure rb_define_global_function (name : PChar; func : Pointer; argc : cint);
          cdecl; external RUBYLIB;
 
+function rb_eval_string_protect (code : PChar; state : PVALUE) : VALUE; cdecl;
+         external RUBYLIB;
+
+function rb_string_value_cstr (constref value : VALUE) : PChar; cdecl;
+         external RUBYLIB;
+function rb_inspect (value : VALUE) : VALUE; cdecl; external RUBYLIB;
+
 implementation
 
 end.
