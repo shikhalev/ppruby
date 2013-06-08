@@ -293,7 +293,7 @@ procedure TfrmMain.actRunExecute(Sender : TObject);
        begin
         stbMain.Panels[2].Text := e.Message;
         stbMain.Panels[1].Text := 'Error!';
-        raise;
+        //raise;
        end;
   end;
  end;

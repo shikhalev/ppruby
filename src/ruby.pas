@@ -589,7 +589,7 @@ type
 
   { ERubyEval }
 
-  ERubyEval = class(Exception)
+  ERubyEval = class(ERuby)
   private
     fldErrInfo : VALUE;
   public
@@ -1229,41 +1229,18 @@ function TRuby.Require(const name : UTF8String) : VALUE;
  result := rb_require(PChar(name));
  end;
 
-type
-  TEvalPack = record
-    rb : TRuby;
-    str : UTF8String;
-  end;
-  PEvalPack = ^TEvalPack;
-
-function protected_eval (p : PEvalPack) : VALUE; cdecl;
- begin
-  try
-    result := p^.rb.Send(p^.rb.mKernel, 'eval', [p^.rb.Str2Val(p^.str)]);
-  except
-    on e : Exception do
-       p^.rb.Error(e);
-  end;
- end;
-
 function TRuby.EvalString(const str : UTF8String) : VALUE;
  var
-   rec : TEvalPack;
    res : Integer;
    err : VALUE;
  begin
  setErrInfo(Qnil);
- rec.rb := self;
- rec.str := str;
-{$hints off}
- //result := rb_protect(FRubyFunc(@protected_eval), VALUE(@rec), res);
  rb_gv_set('script_string', Str2Val(str));
  result := rb_eval_string_protect('eval $script_string', res);
-{$hints on}
  if res <> 0
     then begin
          err := getErrInfo;
-         //raise ERubyEval.Create(err, Val2Str(Inspect(err)));
+         raise ERubyEval.Create(err, Val2Str(Inspect(err)));
          result := err;
          end;
  end;
