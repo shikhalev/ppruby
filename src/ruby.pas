@@ -1256,7 +1256,9 @@ function TRuby.EvalString(const str : UTF8String) : VALUE;
  rec.rb := self;
  rec.str := str;
 {$hints off}
- result := rb_protect(FRubyFunc(@protected_eval), VALUE(@rec), res);
+ //result := rb_protect(FRubyFunc(@protected_eval), VALUE(@rec), res);
+ rb_gv_set('script_string', Str2Val(str));
+ result := rb_eval_string_protect('eval $script_string', res);
 {$hints on}
  if res <> 0
     then begin
