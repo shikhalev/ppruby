@@ -11,7 +11,7 @@ object frmMain: TfrmMain
   inline synMain: TSynMemo
     Cursor = crIBeam
     Left = 0
-    Height = 439
+    Height = 386
     Top = 26
     Width = 800
     Align = alClient
@@ -620,8 +620,8 @@ object frmMain: TfrmMain
   end
   object memOutput: TMemo
     Left = 0
-    Height = 90
-    Top = 470
+    Height = 143
+    Top = 417
     Width = 800
     Align = alBottom
     Color = clBtnShadow
@@ -638,7 +638,7 @@ object frmMain: TfrmMain
     Cursor = crVSplit
     Left = 0
     Height = 5
-    Top = 465
+    Top = 412
     Width = 800
     Align = alBottom
     ResizeAnchor = akBottom

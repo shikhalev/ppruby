@@ -1,4 +1,4 @@
-{$mode ObjFPC}
+{$mode ObjFPC}{$H+}
 
 unit Ruby;
 
@@ -148,7 +148,7 @@ type
     rb_utf8_encoding : function : Pointer; cdecl;
     rb_enc_str_new : function (str : PChar; len : clong; enc : Pointer) : VALUE; cdecl;
     rb_data_object_alloc : function (cls : VALUE; data : Pointer; mark, free : FRubyDataFunc) : VALUE; cdecl;
-    rb_protect : function (func : FRubyFunc; data : VALUE; out state : cint) : VALUE; cdecl;
+    //rb_protect : function (func : FRubyFunc; data : VALUE; out state : cint) : VALUE; cdecl;
     rb_check_type : procedure (value : VALUE; t : cint); cdecl;
     rb_int2inum : function (n : PtrInt) : VALUE; cdecl;
     rb_num2int : function (value : VALUE) : PtrInt; cdecl;
@@ -206,9 +206,9 @@ type
     procedure done; virtual;
     function defaultSuperclass : VALUE; virtual;
     procedure registerProperties (cls : TClass; value : VALUE); virtual;
-    procedure check_type (value : VALUE; t : Integer); virtual;
-    procedure check_data (value : VALUE); virtual; abstract;
-    function get_data (value : VALUE) : Pointer; virtual;
+//    procedure check_type (value : VALUE; t : Integer); virtual;
+//    procedure check_data (value : VALUE); virtual; abstract;
+//    function get_data (value : VALUE) : Pointer; virtual;
     // property access
     function getErrInfo : VALUE; virtual; abstract;
     function getStdIn : VALUE; virtual;
@@ -489,7 +489,7 @@ type
     procedure load; override;
     procedure loadVals; override;
     procedure setup; override;
-    procedure check_data(value : VALUE); override;
+//    procedure check_data(value : VALUE); override;
     // property access
     function getErrInfo : VALUE; override;
     procedure setErrInfo(value : VALUE); override;
@@ -530,7 +530,7 @@ type
     procedure load; override;
     procedure loadVals; override;
     procedure setup; override;
-    procedure check_data(value : VALUE); override;
+//    procedure check_data(value : VALUE); override;
     // property access
     function getErrInfo : VALUE; override;
     procedure setErrInfo(value : VALUE); override;
@@ -791,7 +791,7 @@ procedure TRuby.load;
  loadFunc(rb_str_new2,                'rb_str_new2');
  loadFunc(rb_locale_str_new_cstr,     'rb_locale_str_new_cstr');
  loadFunc(rb_data_object_alloc,       'rb_data_object_alloc');
- loadFunc(rb_protect,                 'rb_protect');
+// loadFunc(rb_protect,                 'rb_protect');
  loadFunc(rb_check_type,              'rb_check_type');
  loadFunc(rb_int2inum,                'rb_int2inum');
  loadFunc(rb_num2int,                 'rb_num2int');
@@ -979,45 +979,45 @@ procedure TRuby.registerProperties (cls : TClass; value : VALUE);
      end;
  end;
 
-type
-  TCheckTypeRec = record
-    func : procedure (value : VALUE; t : cint); cdecl;
-    value : VALUE;
-    t : Integer;
-  end;
-  PCheckTypeRec = ^TCheckTypeRec;
-
-function check_type_wrapper (value : VALUE) : VALUE; cdecl;
- var
-   p : PCheckTypeRec;
- begin
-{$hints off}
- p := PCheckTypeRec(value);
-{$hints on}
- p^.func(p^.value, p^.t);
- result := TRuby.Qtrue
- end;
-
-procedure TRuby.check_type(value : VALUE; t : Integer);
- var
-   rec : TCheckTypeRec;
-   val : VALUE;
-   res : Integer;
-   err : VALUE;
- begin
- rec.func := rb_check_type;
- rec.value := value;
- rec.t := t;
-{$hints off}
- val := PtrUInt(@rec);
-{$hints on}
- rb_protect(@check_type_wrapper, val, res);
- if res <> 0
-    then begin
-         err := getErrInfo;
-         raise ERubyType.Create(err, Val2Str(Inspect(err)));
-         end;
- end;
+//type
+//  TCheckTypeRec = record
+//    func : procedure (value : VALUE; t : cint); cdecl;
+//    value : VALUE;
+//    t : Integer;
+//  end;
+//  PCheckTypeRec = ^TCheckTypeRec;
+//
+//function check_type_wrapper (value : VALUE) : VALUE; cdecl;
+// var
+//   p : PCheckTypeRec;
+// begin
+//{$hints off}
+// p := PCheckTypeRec(value);
+//{$hints on}
+// p^.func(p^.value, p^.t);
+// result := TRuby.Qtrue
+// end;
+//
+//procedure TRuby.check_type(value : VALUE; t : Integer);
+// var
+//   rec : TCheckTypeRec;
+//   val : VALUE;
+//   res : Integer;
+//   err : VALUE;
+// begin
+// rec.func := rb_check_type;
+// rec.value := value;
+// rec.t := t;
+//{$hints off}
+// val := PtrUInt(@rec);
+//{$hints on}
+// rb_protect(@check_type_wrapper, val, res);
+// if res <> 0
+//    then begin
+//         err := getErrInfo;
+//         raise ERubyType.Create(err, Val2Str(Inspect(err)));
+//         end;
+// end;
 
 type
   RBasic = record
@@ -1033,13 +1033,13 @@ type
   end;
   PRData = ^RData;
 
-function TRuby.get_data (value : VALUE) : Pointer;
- begin
- check_data(value);
-{$hints off}
- result := PRData(value)^.data;
-{$hints on}
- end;
+//function TRuby.get_data (value : VALUE) : Pointer;
+// begin
+// check_data(value);
+//{$hints off}
+// result := PRData(value)^.data;
+//{$hints on}
+// end;
 
 function TRuby.getStdIn : VALUE;
  begin
@@ -2006,7 +2006,9 @@ function TRuby.Val2Obj(value : VALUE) : TObject;
  begin
  if value = Qnil
     then result := nil
-    else result := PPack(get_data(value))^.obj;
+{$hints off}
+    else result := PPack(PRData(value)^.data)^.obj;
+{$hints on}
  end;
 
 { TRuby18 }
@@ -2029,10 +2031,10 @@ procedure TRuby18.setup;
  inherited setup;
  end;
 
-procedure TRuby18.check_data(value : VALUE);
- begin
- check_type(value, T_DATA);
- end;
+//procedure TRuby18.check_data(value : VALUE);
+// begin
+// check_type(value, T_DATA);
+// end;
 
 function TRuby18.getErrInfo : VALUE;
  begin
@@ -2119,10 +2121,10 @@ procedure TRuby19.setup;
  inherited setup;
  end;
 
-procedure TRuby19.check_data(value : VALUE);
- begin
- check_type(value, T_DATA);
- end;
+//procedure TRuby19.check_data(value : VALUE);
+// begin
+// check_type(value, T_DATA);
+// end;
 
 function TRuby19.getErrInfo : VALUE;
  begin
@@ -2436,6 +2438,7 @@ function object_new (slf : VALUE) : VALUE; cdecl;
  begin
   rb := TRuby.EngineByModule(slf);
   rb.rb_notimplement();
+  result := rb.Qnil;
  end;
 
 {$hints off}

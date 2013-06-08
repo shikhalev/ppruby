@@ -38,7 +38,7 @@
     <Description Value="Ruby API interface for FPC"/>
     <License Value="GNU LGPL"/>
     <Version Minor="10" Release="2"/>
-    <Files Count="6">
+    <Files Count="7">
       <Item1>
         <Filename Value="ruby.pas"/>
         <UnitName Value="Ruby"/>
@@ -64,6 +64,11 @@
         <HasRegisterProc Value="True"/>
         <UnitName Value="RubyLink"/>
       </Item6>
+      <Item7>
+        <Filename Value="rubyapi.pas"/>
+        <AddToUsesPkgSection Value="False"/>
+        <UnitName Value="RubyAPI"/>
+      </Item7>
     </Files>
     <Type Value="RunAndDesignTime"/>
     <RequiredPkgs Count="2">
