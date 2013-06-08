@@ -8,8 +8,6 @@ unit Ruby;
 
 interface
 
-// todo: free from cache
-
 uses
   SysUtils, DynLibs, ctypes, typinfo;
 
@@ -745,35 +743,6 @@ class procedure TRuby.DelInitHook(hook : FInitHook);
                Exit;
               end;
  end;
-
-{ function TRuby.findObject(obj : TObject; out value : VALUE) : Boolean;
- var
-   i : Integer;
- begin
- if obj = nil
-    then begin
-         value := Qnil;
-         Exit;
-         end;
- for i := 0 to High(cacheObjects) do
-     if cacheObjects[i].obj.obj = obj
-        then begin
-             value := cacheObjects[i].value;
-             result := true;
-             Exit;
-             end;
- result := false;
- end;  }
-
-{ procedure TRuby.freeValue(p : PPack);
- var
-   i, h, d : Integer;
- begin
- h := High(cacheObjects);
- for i := 0 to h do
-     if @(cacheObjects[i].obj) = p
-        then cacheObjects[i].obj.obj := nil;
- end; }
 
 procedure TRuby.loadFunc (out field; const name : UTF8String);
  begin
@@ -2013,7 +1982,6 @@ function TRuby.RegisterUnit(const name : AnsiString) : VALUE;
 
 procedure obj_free (p : Pointer); cdecl;
  begin
- { PPack(p)^.rb.freeValue(p); }
  FreeMem(p);
  end;
 
@@ -2030,16 +1998,6 @@ function TRuby.Obj2Val(obj : TObject) : VALUE;
  p^.obj := obj;
  p^.rb := self;
  result := rb_data_object_alloc(Cls2Val(obj.ClassType), p, nil, @obj_free);
- { if not findObject(obj, result)
-    then begin
-         l := Length(cacheObjects);
-         SetLength(cacheObjects, l + 1);
-         cacheObjects[l].obj.obj := obj;
-         cacheObjects[l].obj.rb := self;
-         result := rb_data_object_alloc(Cls2Val(obj.ClassType),
-                                        @cacheObjects[l].obj, nil, @obj_free);
-         cacheObjects[l].value := result;
-         end; }
  end;
 
 function TRuby.Val2Obj(value : VALUE) : TObject;
