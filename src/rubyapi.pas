@@ -147,6 +147,30 @@ function rb_check_string_type (str : VALUE) : VALUE; cdecl; external RUBYLIB;
 function rb_check_to_integer (val : VALUE; method : PChar) : VALUE; cdecl;
   external RUBYLIB;
 procedure rb_check_type (x : VALUE; t : cint); cdecl; external RUBYLIB;
+function rb_class2name (klass : VALUE) : PChar; cdecl; external RUBYLIB;
+function rb_class_boot (super : VALUE) : VALUE; cdecl; external RUBYLIB;
+function rb_class_inherited (super, klass : VALUE) : VALUE; cdecl;
+  external RUBYLIB;
+function rb_class_inherited_p (_mod, arg : VALUE) : VALUE; cdecl;
+  external RUBYLIB;
+function rb_class_instance_methods (argc : cint; argv : PVALUE;
+  _mod : VALUE) : VALUE; cdecl; external RUBYLIB;
+function rb_class_name (klass : VALUE) : VALUE; cdecl; external RUBYLIB;
+function rb_class_new (super : VALUE) : VALUE; cdecl; external RUBYLIB;
+function rb_class_new_instance (argc : cint; argv : PVALUE;
+  klass : VALUE) : VALUE; cdecl; external RUBYLIB;
+function rb_class_path (klass : VALUE) : VALUE; cdecl; external RUBYLIB;
+function rb_class_private_instance_methods (argc : cint; argv : PVALUE;
+  _mod : VALUE) : VALUE; cdecl; external RUBYLIB;
+function rb_class_protected_instance_methods (argc : cint; argv : PVALUE;
+  _mod : VALUE) : VALUE; cdecl; external RUBYLIB;
+function rb_class_public_instance_methods (argc : cint; argv : PVALUE;
+  _mod : VALUE) : VALUE; cdecl; external RUBYLIB;
+function rb_class_real (cl : VALUE) : VALUE; cdecl; external RUBYLIB;
+procedure rb_clear_cache; cdecl; external RUBYLIB;
+procedure rb_clear_cache_by_class (klass : VALUE); cdecl; external RUBYLIB;
+procedure rb_cmperr (x, y : VALUE); cdecl; external RUBYLIB;
+function rb_cmpint (val, a, b : VALUE) : cint; cdecl; external RUBYLIB;
 
 // common variables
 
@@ -167,6 +191,9 @@ var
   rb_cHash       : VALUE; cvar; external RUBYLIB;
   rb_cInteger    : VALUE; cvar; external RUBYLIB;
   rb_cIO         : VALUE; cvar; external RUBYLIB;
+  rb_cMatch      : VALUE; cvar; external RUBYLIB;
+  rb_cMethod     : VALUE; cvar; external RUBYLIB;
+  rb_cModule     : VALUE; cvar; external RUBYLIB;
 
 {$if defined(RUBY19) or defined(RUBY20)}
 
@@ -222,6 +249,11 @@ function rb_check_hash_type (hash : VALUE) : VALUE; cdecl; external RUBYLIB;
 function rb_check_to_float (val : VALUE) : VALUE; cdecl; external RUBYLIB;
 procedure rb_check_typeddata (obj : VALUE; data_type : Prb_data_type_t); cdecl;
   external RUBYLIB;
+function rb_class_get_superclass (klass : VALUE) : VALUE; cdecl;
+  external RUBYLIB;
+function rb_class_superclass (klass : VALUE) : VALUE; cdecl; external RUBYLIB;
+procedure rb_close_before_exec (lowfd, maxhint : cint; noclose_fds : VALUE);
+  cdecl; external RUBYLIB;
 
 // Ruby 1.9 variables
 
@@ -244,6 +276,8 @@ type
   rb_event_t = cuint;
   rb_event_hook_func_t = procedure (event : rb_event_t; node : PRNode;
     value : VALUE; id : ID; klass : VALUE); cdecl;
+  st_table = record end;
+  Pst_table = ^st_table;
 
 // Ruby 1.8 functions
 
@@ -258,6 +292,8 @@ function rb_block_dup (_self, klass, cref : VALUE) : VALUE; cdecl;
   external RUBYLIB;
 procedure rb_call_inits; cdecl; external RUBYLIB;
 function rb_check_backtrace (bt : VALUE) : VALUE; cdecl; external RUBYLIB;
+function rb_class_init_copy (clone, orig : VALUE) : VALUE; cdecl;
+  external RUBYLIB;
 
 // Ruby 1.8 variables
 
@@ -265,6 +301,8 @@ var
   rb_argv : VALUE; cvar; external RUBYLIB;
 
   rb_cCont : VALUE; cvar; external RUBYLIB;
+
+  rb_class_tbl : Pst_table; cvar; external RUBYLIB;
 
 {$endif}
 
