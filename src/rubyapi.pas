@@ -47,6 +47,10 @@ type
   F_bl_proc = type Pointer; // function : VALUE; cdecl; varargs;
   F_func    = function : VALUE; cdecl;
 
+type
+  RNode = record end;
+  PRNode = ^RNode;
+
 // common functions
 
 procedure rb_alias (klass : VALUE; name, def : ID); cdecl; external RUBYLIB;
@@ -171,29 +175,41 @@ procedure rb_clear_cache; cdecl; external RUBYLIB;
 procedure rb_clear_cache_by_class (klass : VALUE); cdecl; external RUBYLIB;
 procedure rb_cmperr (x, y : VALUE); cdecl; external RUBYLIB;
 function rb_cmpint (val, a, b : VALUE) : cint; cdecl; external RUBYLIB;
+function rb_compile_cstr (f, s : PChar; len, line : cint) : PRNode; cdecl;
+  external RUBYLIB;
+procedure rb_compile_error_append (fmt : PChar); cdecl; varargs;
+  external RUBYLIB;
+function rb_compile_file (f : PChar; _file : VALUE; start : cint) : PRNode;
+  cdecl; external RUBYLIB;
+function rb_compile_string (f : PChar; s : VALUE; line : cint) : PRNode; cdecl;
+  external RUBYLIB;
 
 // common variables
 
 var
   rb_argv0 : VALUE; cvar; external RUBYLIB;
 
-  rb_cArray      : VALUE; cvar; external RUBYLIB;
-  rb_cBignum     : VALUE; cvar; external RUBYLIB;
-  rb_cBinding    : VALUE; cvar; external RUBYLIB;
-  rb_cClass      : VALUE; cvar; external RUBYLIB;
-  rb_cData       : VALUE; cvar; external RUBYLIB;
-  rb_cDir        : VALUE; cvar; external RUBYLIB;
-  rb_cEnumerator : VALUE; cvar; external RUBYLIB;
-  rb_cFalseClass : VALUE; cvar; external RUBYLIB;
-  rb_cFile       : VALUE; cvar; external RUBYLIB;
-  rb_cFixnum     : VALUE; cvar; external RUBYLIB;
-  rb_cFloat      : VALUE; cvar; external RUBYLIB;
-  rb_cHash       : VALUE; cvar; external RUBYLIB;
-  rb_cInteger    : VALUE; cvar; external RUBYLIB;
-  rb_cIO         : VALUE; cvar; external RUBYLIB;
-  rb_cMatch      : VALUE; cvar; external RUBYLIB;
-  rb_cMethod     : VALUE; cvar; external RUBYLIB;
-  rb_cModule     : VALUE; cvar; external RUBYLIB;
+  rb_cArray         : VALUE; cvar; external RUBYLIB;
+  rb_cBignum        : VALUE; cvar; external RUBYLIB;
+  rb_cBinding       : VALUE; cvar; external RUBYLIB;
+  rb_cClass         : VALUE; cvar; external RUBYLIB;
+  rb_cData          : VALUE; cvar; external RUBYLIB;
+  rb_cDir           : VALUE; cvar; external RUBYLIB;
+  rb_cEnumerator    : VALUE; cvar; external RUBYLIB;
+  rb_cFalseClass    : VALUE; cvar; external RUBYLIB;
+  rb_cFile          : VALUE; cvar; external RUBYLIB;
+  rb_cFixnum        : VALUE; cvar; external RUBYLIB;
+  rb_cFloat         : VALUE; cvar; external RUBYLIB;
+  rb_cHash          : VALUE; cvar; external RUBYLIB;
+  rb_cInteger       : VALUE; cvar; external RUBYLIB;
+  rb_cIO            : VALUE; cvar; external RUBYLIB;
+  rb_cMatch         : VALUE; cvar; external RUBYLIB;
+  rb_cMethod        : VALUE; cvar; external RUBYLIB;
+  rb_cModule        : VALUE; cvar; external RUBYLIB;
+  rb_cNameErrorMesg : VALUE; cvar; external RUBYLIB;
+  rb_cNilClass      : VALUE; cvar; external RUBYLIB;
+  rb_cNumeric       : VALUE; cvar; external RUBYLIB;
+  rb_cObject        : VALUE; cvar; external RUBYLIB;
 
 {$if defined(RUBY19) or defined(RUBY20)}
 
@@ -254,6 +270,18 @@ function rb_class_get_superclass (klass : VALUE) : VALUE; cdecl;
 function rb_class_superclass (klass : VALUE) : VALUE; cdecl; external RUBYLIB;
 procedure rb_close_before_exec (lowfd, maxhint : cint; noclose_fds : VALUE);
   cdecl; external RUBYLIB;
+procedure rb_compile_error (_file : PChar; line : cint; fmt : PChar); cdecl;
+  varargs; external RUBYLIB;
+procedure rb_compile_error_with_enc (_file : PChar; line : cint; enc : Pointer;
+  fmt : PChar); cdecl; varargs; external RUBYLIB;
+procedure rb_compile_warn (_file : PChar; line : cint; fmt : PChar); cdecl;
+  varargs; external RUBYLIB;
+procedure rb_compile_warning (_file : PChar; line : cint; fmt : PChar); cdecl;
+  varargs; external RUBYLIB;
+function rb_Complex (x, y : VALUE) : VALUE; cdecl; external RUBYLIB;
+function rb_complex_new (x, y : VALUE) : VALUE; cdecl; external RUBYLIB;
+function rb_complex_polar (x, y : VALUE) : VALUE; cdecl; external RUBYLIB;
+function rb_complex_raw (x, y : VALUE) : VALUE; cdecl; external RUBYLIB;
 
 // Ruby 1.9 variables
 
@@ -267,10 +295,6 @@ var
 {$elseif defined(RUBY18)}
 
 // Ruby 1.8 types
-
-type
-  RNode = record end;
-  PRNode = ^RNode;
 
 type
   rb_event_t = cuint;
@@ -294,6 +318,7 @@ procedure rb_call_inits; cdecl; external RUBYLIB;
 function rb_check_backtrace (bt : VALUE) : VALUE; cdecl; external RUBYLIB;
 function rb_class_init_copy (clone, orig : VALUE) : VALUE; cdecl;
   external RUBYLIB;
+procedure rb_compile_error (fmt : PChar); cdecl; varargs; external RUBYLIB;
 
 // Ruby 1.8 variables
 
