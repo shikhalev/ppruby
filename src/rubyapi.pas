@@ -44,6 +44,9 @@ type
   PVALUE = ^VALUE;
   ID = type PtrUInt;
 
+  F_bl_proc = type Pointer; // function : VALUE; cdecl; varargs;
+  F_func    = function : VALUE; cdecl;
+
 // common functions
 
 procedure rb_alias (klass : VALUE; name, def : ID); cdecl; external RUBYLIB;
@@ -124,11 +127,46 @@ function rb_big_rshift (x, y : VALUE) : VALUE; cdecl; external RUBYLIB;
 function rb_big_unpack (bug : pculong; num_longs : clong) : VALUE; cdecl;
   external RUBYLIB;
 function rb_big_xor (xx, yy : VALUE) : VALUE; cdecl; external RUBYLIB;
+function rb_block_call (obj : VALUE; mid : ID; argc : cint; argv : PVALUE;
+  bl_proc : F_bl_proc; data2 : VALUE) : VALUE; cdecl; external RUBYLIB;
+function rb_block_given_p : cint; cdecl; external RUBYLIB;
+function rb_block_proc : VALUE; cdecl; external RUBYLIB;
+procedure rb_bug (fmt : PChar); cdecl; varargs; external RUBYLIB;
+function rb_call_super (argc : cint; argv : PVALUE) : VALUE; cdecl;
+  external RUBYLIB;
+function rb_catch (tag : PChar; func : F_func; data : VALUE) : VALUE; cdecl;
+  external RUBYLIB;
+function rb_check_array_type (ary : VALUE) : VALUE; cdecl; external RUBYLIB;
+function rb_check_convert_type (val : VALUE; _type : cint; tname : PChar;
+  method : PChar) : VALUE; cdecl; external RUBYLIB;
+procedure rb_check_frozen (obj : VALUE); cdecl; external RUBYLIB;
+procedure rb_check_inheritable (super : VALUE); cdecl; external RUBYLIB;
+procedure rb_check_safe_obj (x : VALUE); cdecl; external RUBYLIB;
+procedure rb_check_safe_str (x : VALUE); cdecl; external RUBYLIB;
+function rb_check_string_type (str : VALUE) : VALUE; cdecl; external RUBYLIB;
+function rb_check_to_integer (val : VALUE; method : PChar) : VALUE; cdecl;
+  external RUBYLIB;
+procedure rb_check_type (x : VALUE; t : cint); cdecl; external RUBYLIB;
 
 // common variables
 
 var
   rb_argv0 : VALUE; cvar; external RUBYLIB;
+
+  rb_cArray      : VALUE; cvar; external RUBYLIB;
+  rb_cBignum     : VALUE; cvar; external RUBYLIB;
+  rb_cBinding    : VALUE; cvar; external RUBYLIB;
+  rb_cClass      : VALUE; cvar; external RUBYLIB;
+  rb_cData       : VALUE; cvar; external RUBYLIB;
+  rb_cDir        : VALUE; cvar; external RUBYLIB;
+  rb_cEnumerator : VALUE; cvar; external RUBYLIB;
+  rb_cFalseClass : VALUE; cvar; external RUBYLIB;
+  rb_cFile       : VALUE; cvar; external RUBYLIB;
+  rb_cFixnum     : VALUE; cvar; external RUBYLIB;
+  rb_cFloat      : VALUE; cvar; external RUBYLIB;
+  rb_cHash       : VALUE; cvar; external RUBYLIB;
+  rb_cInteger    : VALUE; cvar; external RUBYLIB;
+  rb_cIO         : VALUE; cvar; external RUBYLIB;
 
 {$if defined(RUBY19) or defined(RUBY20)}
 
@@ -140,12 +178,14 @@ type
     value : VALUE; id : ID; klass : VALUE); cdecl;
   rb_encoding = record end;
   Prb_encoding = ^rb_encoding;
+  rb_data_type_t = record end;
+  Prb_data_type_t = ^rb_data_type_t;
 
 // Ruby 1.9 functions
 
 procedure rb_add_event_hook (func : rb_event_hook_func_t;
   events : rb_event_flag_t; data : VALUE); cdecl; external RUBYLIB;
-function rb_alloc_tmp_buffer (out store : VALUE; len : cint) : Pointer; cdecl;
+function rb_alloc_tmp_buffer (store : PVALUE; len : cint) : Pointer; cdecl;
   external RUBYLIB;
 procedure rb_ary_free (ary : VALUE); cdecl; external RUBYLIB;
 function rb_ary_memsize (ary : VALUE) : csize_t; cdecl; external RUBYLIB;
@@ -173,8 +213,24 @@ function rb_big_new (len : clong; sign : cint) : VALUE; cdecl; external RUBYLIB;
 procedure rb_big_resize (big : VALUE; len : clong); cdecl; external RUBYLIB;
 function rb_bigzero_p (x : VALUE) : cint; cdecl; external RUBYLIB;
 function rb_binding_new : VALUE; cdecl; external RUBYLIB;
+procedure rb_bug_errno (mesg : PChar; errno_arg : cint); cdecl; external RUBYLIB;
+function rb_catch_obj (tag : VALUE; func : F_func; data : VALUE) : VALUE; cdecl;
+  external RUBYLIB;
+function rb_check_funcall (recv : VALUE; mid : ID; argc : cint;
+  argv : PVALUE) : VALUE; cdecl; external RUBYLIB;
+function rb_check_hash_type (hash : VALUE) : VALUE; cdecl; external RUBYLIB;
+function rb_check_to_float (val : VALUE) : VALUE; cdecl; external RUBYLIB;
+procedure rb_check_typeddata (obj : VALUE; data_type : Prb_data_type_t); cdecl;
+  external RUBYLIB;
 
 // Ruby 1.9 variables
+
+var
+  rb_cBasicObject : VALUE; cvar; external RUBYLIB;
+  rb_cComplex     : VALUE; cvar; external RUBYLIB;
+  rb_cEncoding    : VALUE; cvar; external RUBYLIB;
+  rb_cEnv         : VALUE; cvar; external RUBYLIB;
+  rb_cISeq        : VALUE; cvar; external RUBYLIB;
 
 {$elseif defined(RUBY18)}
 
@@ -198,11 +254,17 @@ procedure rb_add_method (klass : VALUE; mid : ID; node : PRNode; noex : cint);
 function rb_big_mul0 (x, y : VALUE) : VALUE; cdecl; external RUBYLIB;
 function rb_big_rand (max : VALUE; rand_buf : pcdouble) : VALUE; cdecl;
   external RUBYLIB;
+function rb_block_dup (_self, klass, cref : VALUE) : VALUE; cdecl;
+  external RUBYLIB;
+procedure rb_call_inits; cdecl; external RUBYLIB;
+function rb_check_backtrace (bt : VALUE) : VALUE; cdecl; external RUBYLIB;
 
 // Ruby 1.8 variables
 
 var
   rb_argv : VALUE; cvar; external RUBYLIB;
+
+  rb_cCont : VALUE; cvar; external RUBYLIB;
 
 {$endif}
 
