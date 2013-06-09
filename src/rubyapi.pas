@@ -183,6 +183,23 @@ function rb_compile_file (f : PChar; _file : VALUE; start : cint) : PRNode;
   cdecl; external RUBYLIB;
 function rb_compile_string (f : PChar; s : VALUE; line : cint) : PRNode; cdecl;
   external RUBYLIB;
+function rb_const_defined (klass : VALUE; id : ID) : cint; cdecl;
+  external RUBYLIB;
+function rb_const_defined_at (klass : VALUE; id : ID) : cint; cdecl;
+  external RUBYLIB;
+function rb_const_defined_from (klass : VALUE; id : ID) : cint; cdecl;
+  external RUBYLIB;
+function rb_const_get (klass : VALUE; id : ID) : VALUE; cdecl; external RUBYLIB;
+function rb_const_get_at (klass : VALUE; id : ID) : VALUE; cdecl;
+  external RUBYLIB;
+function rb_const_get_from (klass : VALUE; id : ID) : VALUE; cdecl;
+  external RUBYLIB;
+function rb_const_list (data : Pointer) : VALUE; cdecl; external RUBYLIB;
+procedure rb_const_set (klass : VALUE; id : ID; val : VALUE); cdecl;
+  external RUBYLIB;
+function rb_convert_type (val : VALUE; _type : cint; tname : PChar;
+  method : PChar) : VALUE; cdecl; external RUBYLIB;
+procedure rb_copy_generic_ivar (clone, obj : VALUE); cdecl; external RUBYLIB;
 
 // common variables
 
@@ -210,6 +227,10 @@ var
   rb_cNilClass      : VALUE; cvar; external RUBYLIB;
   rb_cNumeric       : VALUE; cvar; external RUBYLIB;
   rb_cObject        : VALUE; cvar; external RUBYLIB;
+  rb_cProc          : VALUE; cvar; external RUBYLIB;
+  rb_cRange         : VALUE; cvar; external RUBYLIB;
+  rb_cRegexp        : VALUE; cvar; external RUBYLIB;
+  rb_cStat          : VALUE; cvar; external RUBYLIB;
 
 {$if defined(RUBY19) or defined(RUBY20)}
 
@@ -282,6 +303,8 @@ function rb_Complex (x, y : VALUE) : VALUE; cdecl; external RUBYLIB;
 function rb_complex_new (x, y : VALUE) : VALUE; cdecl; external RUBYLIB;
 function rb_complex_polar (x, y : VALUE) : VALUE; cdecl; external RUBYLIB;
 function rb_complex_raw (x, y : VALUE) : VALUE; cdecl; external RUBYLIB;
+function rb_const_remove (_mod : VALUE; id : ID) : VALUE; cdecl;
+  external RUBYLIB;
 
 // Ruby 1.9 variables
 
@@ -291,6 +314,9 @@ var
   rb_cEncoding    : VALUE; cvar; external RUBYLIB;
   rb_cEnv         : VALUE; cvar; external RUBYLIB;
   rb_cISeq        : VALUE; cvar; external RUBYLIB;
+  rb_cRandom      : VALUE; cvar; external RUBYLIB;
+  rb_cRational    : VALUE; cvar; external RUBYLIB;
+  rb_cRubyVM      : VALUE; cvar; external RUBYLIB;
 
 {$elseif defined(RUBY18)}
 
@@ -319,6 +345,8 @@ function rb_check_backtrace (bt : VALUE) : VALUE; cdecl; external RUBYLIB;
 function rb_class_init_copy (clone, orig : VALUE) : VALUE; cdecl;
   external RUBYLIB;
 procedure rb_compile_error (fmt : PChar); cdecl; varargs; external RUBYLIB;
+function rb_copy_node_scope (node, rval : PRNode) : PRNode; cdecl;
+  external RUBYLIB;
 
 // Ruby 1.8 variables
 
