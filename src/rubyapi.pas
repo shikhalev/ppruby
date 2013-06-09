@@ -90,6 +90,40 @@ function rb_assoc_new (car, cdr : VALUE) : VALUE; cdecl; external RUBYLIB;
 procedure rb_attr (klass : VALUE; id : ID; read, write, ex : cint); cdecl;
   external RUBYLIB;
 function rb_attr_get (obj : VALUE; id : ID) : VALUE; cdecl; external RUBYLIB;
+procedure rb_autoload (_mod : VALUE; id : ID; _file : PChar); cdecl;
+  external RUBYLIB;
+function rb_autoload_load (_mod : VALUE; id : ID) : VALUE; cdecl;
+  external RUBYLIB;
+function rb_autoload_p (_mod : VALUE; id : ID) : VALUE; cdecl; external RUBYLIB;
+function rb_backref_get : VALUE; cdecl; external RUBYLIB;
+procedure rb_backref_set (val : VALUE); cdecl; external RUBYLIB;
+procedure rb_backtrace; cdecl; external RUBYLIB;
+procedure rb_big_2comp (x : VALUE); cdecl; external RUBYLIB;
+function rb_big2dbl (x : VALUE) : cdouble; cdecl; external RUBYLIB;
+function rb_big2ll (x : VALUE) : clonglong; cdecl; external RUBYLIB;
+function rb_big2long (x : VALUE) : clong; cdecl; external RUBYLIB;
+function rb_big2str (x : VALUE; base : cint) : VALUE; cdecl; external RUBYLIB;
+function rb_big2str0 (x : VALUE; base, trim : cint) : VALUE; cdecl;
+  external RUBYLIB;
+function rb_big2ull (x : VALUE) : culonglong; cdecl; external RUBYLIB;
+function rb_big2ulong (x : VALUE) : culong; cdecl; external RUBYLIB;
+function rb_big2ulong_pack (x : VALUE) : culong; cdecl; external RUBYLIB;
+function rb_big_and (xx, yy : VALUE) : VALUE; cdecl; external RUBYLIB;
+function rb_big_clone (x : VALUE) : VALUE; cdecl; external RUBYLIB;
+function rb_big_divmod (x, y : VALUE) : VALUE; cdecl; external RUBYLIB;
+function rb_big_lshift (x, y : VALUE) : VALUE; cdecl; external RUBYLIB;
+function rb_big_minus (x, y : VALUE) : VALUE; cdecl; external RUBYLIB;
+function rb_big_mul (x, y : VALUE) : VALUE; cdecl; external RUBYLIB;
+function rb_big_norm (x : VALUE) : VALUE; cdecl; external RUBYLIB;
+function rb_big_or (xx, yy : VALUE) : VALUE; cdecl; external RUBYLIB;
+procedure rb_big_pack (val : VALUE; buf : pculong; num_longs : clong); cdecl;
+  external RUBYLIB;
+function rb_big_plus (x, y : VALUE) : VALUE; cdecl; external RUBYLIB;
+function rb_big_pow (x, y : VALUE) : VALUE; cdecl; external RUBYLIB;
+function rb_big_rshift (x, y : VALUE) : VALUE; cdecl; external RUBYLIB;
+function rb_big_unpack (bug : pculong; num_longs : clong) : VALUE; cdecl;
+  external RUBYLIB;
+function rb_big_xor (xx, yy : VALUE) : VALUE; cdecl; external RUBYLIB;
 
 // common variables
 
@@ -125,6 +159,20 @@ function rb_ary_subseq (ary : VALUE; beg, len : clong) : VALUE; cdecl;
 function rb_ary_tmp_new (capa : clong) : VALUE; cdecl; external RUBYLIB;
 function rb_ascii8bit_encindex : cint; cdecl; external RUBYLIB;
 function rb_ascii8bit_encoding : Prb_encoding; cdecl; external RUBYLIB;
+function rb_barrier_destroy (_self : VALUE) : VALUE; cdecl; external RUBYLIB;
+function rb_barrier_new : VALUE; cdecl; external RUBYLIB;
+function rb_barrier_release (_self : VALUE) : VALUE; cdecl; external RUBYLIB;
+function rb_barrier_wait (_self : VALUE) : VALUE; cdecl; external RUBYLIB;
+function rb_big_cmp (x, y : VALUE) : VALUE; cdecl; external RUBYLIB;
+function rb_big_div (x, y : VALUE) : VALUE; cdecl; external RUBYLIB;
+function rb_big_eq (x, y : VALUE) : VALUE; cdecl; external RUBYLIB;
+function rb_big_eql (x, y : VALUE) : VALUE; cdecl; external RUBYLIB;
+function rb_big_idiv (x, y : VALUE) : VALUE; cdecl; external RUBYLIB;
+function rb_big_modulo (x, y : VALUE) : VALUE; cdecl; external RUBYLIB;
+function rb_big_new (len : clong; sign : cint) : VALUE; cdecl; external RUBYLIB;
+procedure rb_big_resize (big : VALUE; len : clong); cdecl; external RUBYLIB;
+function rb_bigzero_p (x : VALUE) : cint; cdecl; external RUBYLIB;
+function rb_binding_new : VALUE; cdecl; external RUBYLIB;
 
 // Ruby 1.9 variables
 
@@ -147,6 +195,9 @@ procedure rb_add_event_hook (func : rb_event_hook_func_t; events : rb_event_t);
   cdecl; external RUBYLIB;
 procedure rb_add_method (klass : VALUE; mid : ID; node : PRNode; noex : cint);
   cdecl; external RUBYLIB;
+function rb_big_mul0 (x, y : VALUE) : VALUE; cdecl; external RUBYLIB;
+function rb_big_rand (max : VALUE; rand_buf : pcdouble) : VALUE; cdecl;
+  external RUBYLIB;
 
 // Ruby 1.8 variables
 
