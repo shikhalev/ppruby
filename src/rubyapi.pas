@@ -86,6 +86,10 @@ procedure rb_ary_store (ary : VALUE; idx : clong; val : VALUE); cdecl;
 function rb_ary_to_ary (obj : VALUE) : VALUE; cdecl; external RUBYLIB;
 function rb_ary_to_s (ary : VALUE) : VALUE; cdecl; external RUBYLIB;
 function rb_ary_unshift (ary, item : VALUE) : VALUE; cdecl; external RUBYLIB;
+function rb_assoc_new (car, cdr : VALUE) : VALUE; cdecl; external RUBYLIB;
+procedure rb_attr (klass : VALUE; id : ID; read, write, ex : cint); cdecl;
+  external RUBYLIB;
+function rb_attr_get (obj : VALUE; id : ID) : VALUE; cdecl; external RUBYLIB;
 
 // common variables
 
@@ -100,6 +104,8 @@ type
   rb_event_flag_t = cuint;
   rb_event_hook_func_t = procedure (event : rb_event_flag_t; data : VALUE;
     value : VALUE; id : ID; klass : VALUE); cdecl;
+  rb_encoding = record end;
+  Prb_encoding = ^rb_encoding;
 
 // Ruby 1.9 functions
 
@@ -117,6 +123,8 @@ function rb_ary_resurrect (ary : VALUE) : VALUE; cdecl; external RUBYLIB;
 function rb_ary_subseq (ary : VALUE; beg, len : clong) : VALUE; cdecl;
   external RUBYLIB;
 function rb_ary_tmp_new (capa : clong) : VALUE; cdecl; external RUBYLIB;
+function rb_ascii8bit_encindex : cint; cdecl; external RUBYLIB;
+function rb_ascii8bit_encoding : Prb_encoding; cdecl; external RUBYLIB;
 
 // Ruby 1.9 variables
 
