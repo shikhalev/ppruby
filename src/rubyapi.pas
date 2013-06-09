@@ -1,3 +1,4 @@
+{$smartlink on}
 {$mode ObjFPC}{$H+}
 {$packrecords C}
 
@@ -77,6 +78,14 @@ function rb_ary_pop (ary : VALUE) : VALUE; cdecl; external RUBYLIB;
 function rb_ary_push (ary, item : VALUE) : VALUE; cdecl; external RUBYLIB;
 function rb_ary_rassoc (ary, value : VALUE) : VALUE; cdecl; external RUBYLIB;
 function rb_ary_reverse (ary : VALUE) : VALUE; cdecl; external RUBYLIB;
+function rb_ary_shift (ary : VALUE) : VALUE; cdecl; external RUBYLIB;
+function rb_ary_sort (ary : VALUE) : VALUE; cdecl; external RUBYLIB;
+function rb_ary_sort_bang (ary : VALUE) : VALUE; cdecl; external RUBYLIB;
+procedure rb_ary_store (ary : VALUE; idx : clong; val : VALUE); cdecl;
+  external RUBYLIB;
+function rb_ary_to_ary (obj : VALUE) : VALUE; cdecl; external RUBYLIB;
+function rb_ary_to_s (ary : VALUE) : VALUE; cdecl; external RUBYLIB;
+function rb_ary_unshift (ary, item : VALUE) : VALUE; cdecl; external RUBYLIB;
 
 // common variables
 
@@ -105,6 +114,9 @@ function rb_ary_replace (copy, orig : VALUE) : VALUE; cdecl; external RUBYLIB;
 function rb_ary_resize (ary : VALUE; len : clong) : VALUE; cdecl;
   external RUBYLIB;
 function rb_ary_resurrect (ary : VALUE) : VALUE; cdecl; external RUBYLIB;
+function rb_ary_subseq (ary : VALUE; beg, len : clong) : VALUE; cdecl;
+  external RUBYLIB;
+function rb_ary_tmp_new (capa : clong) : VALUE; cdecl; external RUBYLIB;
 
 // Ruby 1.9 variables
 
