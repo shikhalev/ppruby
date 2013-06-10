@@ -46,6 +46,7 @@ type
 
   F_bl_proc = type Pointer; // function : VALUE; cdecl; varargs;
   F_func    = function : VALUE; cdecl;
+  RUBY_DATA_FUNC = procedure (p : Pointer); cdecl;
 
 type
   RNode = record end;
@@ -206,6 +207,17 @@ function rb_cstr_to_dbl (p : PChar; badcheck : cint) : cdouble; cdecl;
   external RUBYLIB;
 function rb_cstr_to_inum (str : PChar; base, badcheck : cint) : VALUE; cdecl;
   external RUBYLIB;
+function rb_cvar_defined (klass : VALUE; id : ID) : VALUE; cdecl;
+  external RUBYLIB;
+function rb_cvar_get (klass : VALUE; id : ID) : VALUE; cdecl; external RUBYLIB;
+function rb_cv_get (klass : VALUE; name : PChar) : VALUE; cdecl;
+  external RUBYLIB;
+procedure rb_cv_set (klass : VALUE; name : PChar; val : VALUE); cdecl;
+  external RUBYLIB;
+function rb_data_object_alloc (klass : VALUE; datap : Pointer;
+  dmark, dfree : RUBY_DATA_FUNC) : VALUE; cdecl; external RUBYLIB;
+function rb_dbl2big (d : cdouble) : VALUE; cdecl; external RUBYLIB;
+function rb_dbl_cmp (a, b : cdouble) : VALUE; cdecl; external RUBYLIB;
 
 // common variables
 
@@ -244,6 +256,8 @@ var
   rb_cTime          : VALUE; cvar; external RUBYLIB;
   rb_cTrueClass     : VALUE; cvar; external RUBYLIB;
   rb_cUnboundMethod : VALUE; cvar; external RUBYLIB;
+
+  rb_default_rs : VALUE; cvar; external RUBYLIB;
 
 {$if defined(RUBY19) or defined(RUBY20)}
 
@@ -318,6 +332,14 @@ function rb_complex_polar (x, y : VALUE) : VALUE; cdecl; external RUBYLIB;
 function rb_complex_raw (x, y : VALUE) : VALUE; cdecl; external RUBYLIB;
 function rb_const_remove (_mod : VALUE; id : ID) : VALUE; cdecl;
   external RUBYLIB;
+procedure rb_cvar_set (klass : VALUE; id : ID; val : VALUE); cdecl;
+  external RUBYLIB;
+function rb_data_typed_object_alloc (klass : VALUE; datap : pointer;
+  _type : Prb_data_type_t) : VALUE; cdecl; external RUBYLIB;
+procedure rb_declare_transcoder (enc1, enc2, lib : PChar); cdecl;
+  external RUBYLIB;
+function rb_default_external_encoding : Prb_encoding; cdecl; external RUBYLIB;
+function rb_default_internal_encoding : Prb_encoding; cdecl; external RUBYLIB;
 
 // Ruby 1.9 variables
 
@@ -362,6 +384,8 @@ function rb_class_init_copy (clone, orig : VALUE) : VALUE; cdecl;
 procedure rb_compile_error (fmt : PChar); cdecl; varargs; external RUBYLIB;
 function rb_copy_node_scope (node, rval : PRNode) : PRNode; cdecl;
   external RUBYLIB;
+procedure rb_cvar_set (klass : VALUE; id : ID; val : VALUE; warn : cint); cdecl;
+  external RUBYLIB;
 
 // Ruby 1.8 variables
 
@@ -372,6 +396,8 @@ var
 
   rb_class_tbl : Pst_table; cvar; external RUBYLIB;
   rb_curr_thread : rb_thread_t; cvar; external RUBYLIB;
+
+  rb_deferr : VALUE; cvar; external RUBYLIB;
 
 {$endif}
 
