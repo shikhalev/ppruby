@@ -200,6 +200,12 @@ procedure rb_const_set (klass : VALUE; id : ID; val : VALUE); cdecl;
 function rb_convert_type (val : VALUE; _type : cint; tname : PChar;
   method : PChar) : VALUE; cdecl; external RUBYLIB;
 procedure rb_copy_generic_ivar (clone, obj : VALUE); cdecl; external RUBYLIB;
+function rb_cstr2inum (str : PChar; base : cint) : VALUE; cdecl;
+  external RUBYLIB;
+function rb_cstr_to_dbl (p : PChar; badcheck : cint) : cdouble; cdecl;
+  external RUBYLIB;
+function rb_cstr_to_inum (str : PChar; base, badcheck : cint) : VALUE; cdecl;
+  external RUBYLIB;
 
 // common variables
 
@@ -231,6 +237,13 @@ var
   rb_cRange         : VALUE; cvar; external RUBYLIB;
   rb_cRegexp        : VALUE; cvar; external RUBYLIB;
   rb_cStat          : VALUE; cvar; external RUBYLIB;
+  rb_cString        : VALUE; cvar; external RUBYLIB;
+  rb_cStruct        : VALUE; cvar; external RUBYLIB;
+  rb_cSymbol        : VALUE; cvar; external RUBYLIB;
+  rb_cThread        : VALUE; cvar; external RUBYLIB;
+  rb_cTime          : VALUE; cvar; external RUBYLIB;
+  rb_cTrueClass     : VALUE; cvar; external RUBYLIB;
+  rb_cUnboundMethod : VALUE; cvar; external RUBYLIB;
 
 {$if defined(RUBY19) or defined(RUBY20)}
 
@@ -328,6 +341,8 @@ type
     value : VALUE; id : ID; klass : VALUE); cdecl;
   st_table = record end;
   Pst_table = ^st_table;
+  rb_thread = record end;
+  rb_thread_t = ^rb_thread;
 
 // Ruby 1.8 functions
 
@@ -356,6 +371,7 @@ var
   rb_cCont : VALUE; cvar; external RUBYLIB;
 
   rb_class_tbl : Pst_table; cvar; external RUBYLIB;
+  rb_curr_thread : rb_thread_t; cvar; external RUBYLIB;
 
 {$endif}
 
