@@ -9,7 +9,7 @@ unit Ruby;
 interface
 
 uses
-  SysUtils, DynLibs, ctypes, typinfo;
+  SysUtils, DynLibs, ctypes, typinfo, ValCache;
 
 type
   VALUE = type PtrUInt;
