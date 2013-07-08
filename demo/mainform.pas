@@ -26,11 +26,13 @@ type
     actEditSelectAll: TAction;
     actCleanOutput: TAction;
     actHelpAbout: TAction;
+    actRuby20 : TAction;
     actRun: TAction;
     actRuby19: TAction;
     actRuby18: TAction;
     alsMain: TActionList;
     ilsMain: TImageList;
+    mnuRuby20 : TMenuItem;
     mnuFileNew: TMenuItem;
     mnuEditCut: TMenuItem;
     mnuEditCopy: TMenuItem;
