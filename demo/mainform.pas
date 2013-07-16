@@ -86,6 +86,7 @@ type
     barMain: TToolBar;
     tbnFileNew: TToolButton;
     tbnFileOpen: TToolButton;
+    tbnRuby20 : TToolButton;
     procedure actCleanOutputExecute(Sender : TObject);
     procedure actEditCopyExecute(Sender : TObject);
     procedure actEditCutExecute(Sender : TObject);
@@ -100,6 +101,7 @@ type
     procedure actHelpAboutExecute(Sender : TObject);
     procedure actRuby18Execute(Sender : TObject);
     procedure actRuby19Execute(Sender : TObject);
+    procedure actRuby20Execute(Sender : TObject);
     procedure actRunExecute(Sender : TObject);
     procedure rblMainActivate(Sender : TObject);
     procedure rblMainDeactivate(Sender : TObject);
@@ -122,6 +124,12 @@ implementation
 procedure TfrmMain.actRuby18Execute(Sender : TObject);
  begin
   if actRuby19.Checked
+     then begin
+           rblMain.Active := false;
+           actRun.Enabled := false;
+           actRuby18.Checked := false;
+          end;
+  if actRuby20.Checked
      then begin
            rblMain.Active := false;
            actRun.Enabled := false;
@@ -259,6 +267,12 @@ procedure TfrmMain.actRuby19Execute(Sender : TObject);
            actRun.Enabled := false;
            actRuby18.Checked := false;
           end;
+  if actRuby20.Checked
+     then begin
+           rblMain.Active := false;
+           actRun.Enabled := false;
+           actRuby18.Checked := false;
+          end;
   if actRuby19.Checked
      then begin
           rblMain.Active := false;
@@ -278,6 +292,44 @@ procedure TfrmMain.actRuby19Execute(Sender : TObject);
             on ERuby do
                begin
                 actRuby19.Enabled := false;
+                raise;
+               end;
+          end;
+ end;
+
+procedure TfrmMain.actRuby20Execute(Sender : TObject);
+ begin
+  if actRuby18.Checked
+     then begin
+           rblMain.Active := false;
+           actRun.Enabled := false;
+           actRuby18.Checked := false;
+          end;
+  if actRuby19.Checked
+     then begin
+           rblMain.Active := false;
+           actRun.Enabled := false;
+           actRuby19.Checked := false;
+          end;
+  if actRuby20.Checked
+     then begin
+          rblMain.Active := false;
+          actRun.Enabled := false;
+          actRuby20.Checked := false;
+          end
+     else try
+            rblMain.Versions := [rvRuby20];
+            rblMain.Active := true;
+            if rblMain.Active
+               then begin
+                     actRun.Enabled := true;
+                     actRuby20.Checked := true;
+                    end
+               else actRuby20.Enabled := false;
+          except
+            on ERuby do
+               begin
+                actRuby20.Enabled := false;
                 raise;
                end;
           end;
