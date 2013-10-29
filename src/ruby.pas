@@ -136,9 +136,9 @@ type
     rb_define_class_under : function (ns : VALUE; name : PChar; super : VALUE) : VALUE; cdecl;
     rb_define_const : procedure (ns : VALUE; name : PChar; value : VALUE); cdecl;
     rb_define_global_const : procedure (name : PChar; value : VALUE); cdecl;
-    rb_define_method, rb_define_module_function  : procedure (module : VALUE; name : PChar; func : Pointer; argc : cint);
-    rb_define_singleton_method : procedure (obj : VALUE; name : PChar; func : Pointer; argc : cint);
-    rb_define_global_function : procedure (name : PChar; func : Pointer; argc : cint);
+    rb_define_method, rb_define_module_function  : procedure (module : VALUE; name : PChar; func : Pointer; argc : cint); cdecl;
+    rb_define_singleton_method : procedure (obj : VALUE; name : PChar; func : Pointer; argc : cint); cdecl;
+    rb_define_global_function : procedure (name : PChar; func : Pointer; argc : cint); cdecl;
     rb_eval_string_protect : function (str : PChar; out state : cint) : VALUE; cdecl;
     rb_string_value_cstr : function (constref v : VALUE) : PChar; cdecl;
     rb_inspect : function (value : VALUE) : VALUE; cdecl;

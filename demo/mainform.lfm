@@ -1,17 +1,17 @@
 object frmMain: TfrmMain
-  Left = 270
+  Left = 199
   Height = 600
-  Top = 201
+  Top = 223
   Width = 800
   Caption = 'ppRuby Demo'
-  ClientHeight = 580
+  ClientHeight = 579
   ClientWidth = 800
   Menu = mnuMain
-  LCLVersion = '1.1'
+  LCLVersion = '1.3'
   inline synMain: TSynMemo
     Cursor = crIBeam
     Left = 0
-    Height = 388
+    Height = 384
     Top = 26
     Width = 800
     Align = alClient
@@ -489,8 +489,8 @@ object frmMain: TfrmMain
   end
   object stbMain: TStatusBar
     Left = 0
-    Height = 18
-    Top = 562
+    Height = 21
+    Top = 558
     Width = 800
     Panels = <    
       item
@@ -626,7 +626,7 @@ object frmMain: TfrmMain
   object memOutput: TMemo
     Left = 0
     Height = 143
-    Top = 419
+    Top = 415
     Width = 800
     Align = alBottom
     Color = clBtnShadow
@@ -643,7 +643,7 @@ object frmMain: TfrmMain
     Cursor = crVSplit
     Left = 0
     Height = 5
-    Top = 414
+    Top = 410
     Width = 800
     Align = alBottom
     ResizeAnchor = akBottom
