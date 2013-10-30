@@ -518,6 +518,9 @@ type
       T_UNDEF  = $1B;
       T_MASK   = $1F;
   protected
+    // fields: ruby_ functions
+    ruby_sysinit : procedure (argc : pcint; argv : PPPChar); cdecl;
+    ruby_init_stack : procedure (p : pointer); cdecl;
     // fields: rb_ functions
     rb_errinfo : function : VALUE; cdecl;
     rb_set_errinfo : procedure (value : VALUE); cdecl;
@@ -527,6 +530,7 @@ type
       rb_cComplex : VALUE;
     rb_eKeyError, rb_eEncodingError, rb_eEncCompatError : VALUE;
     // overrided methods
+    procedure init (const script : UTF8String); override;
     procedure load; override;
     procedure loadVals; override;
     procedure setup; override;
@@ -2090,9 +2094,23 @@ function TRuby18.Description : UTF8String;
 
 { TRuby19 }
 
+procedure TRuby19.init(const script : UTF8String);
+ var
+   c : cint;
+   v : array [0..0] of pchar;
+ begin
+  c := 0;
+  v[0] := pchar(script);
+  ruby_sysinit(@c, @v);
+  ruby_init_stack(@c);
+  inherited init(script);
+ end;
+
 procedure TRuby19.load;
  begin
  inherited load;
+ loadFunc(ruby_sysinit, 'ruby_sysinit');
+ loadFunc(ruby_init_stack, 'ruby_init_stack');
  loadFunc(rb_errinfo,     'rb_errinfo');
  loadFunc(rb_set_errinfo, 'rb_set_errinfo');
  loadPtr(ruby_description, 'ruby_description');
