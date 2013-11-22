@@ -16,17 +16,48 @@
  {$else}
   {$define RUBY19}
  {$endif}
- {$if not defined(RUBY_LIB)}
-  {$if defined(RUBY20)}
-   {$define RUBY_LIB:='libruby20.so'}
-  {$elseif defined(RUBY19)}
-   {$define RUBY_LIB:='libruby19.so'}
-  {$endif}
- {$endif}
 {$else}
  {$undef RUBY19}
  {$undef RUBY20}
  {$undef RUBY21}
  {$undef RUBY2}
+{$endif}
+
+{$if defined(RUBY_STATIC) and not defined(RUBY_LIB)}
+
+ {$if defined(DARWIN)}
+
+  {$if defined(RUBY19)}
+   {$define RUBY_LIB:='/System/Library/Frameworks/Ruby.framework/Versions/1.9/Ruby'}
+  {$elseif defined(RUBY20)}
+   {$define RUBY_LIB:='/System/Library/Frameworks/Ruby.framework/Versions/2.0/Ruby'}
+  {$endif}
+
+ {$elseif defined(GENTOO)}
+
+  {$if defined(RUBY19)}
+   {$define RUBY_LIB:='libruby19.so'}
+  {$elseif defined(RUBY20)}
+   {$define RUBY_LIB:='libruby20.so'}
+  {$endif}
+
+ {$elseif defined(UNIX)}
+
+  {$if defined(RUBY19)}
+   {$define RUBY_LIB:='libruby-1.9.1.so.1.9.1'}
+  {$elseif defined(RUBY20)}
+   {$define RUBY_LIB:='libruby-2.0.so.2.0'}
+  {$endif}
+
+ {$elseif defined(WINDOWS)}
+
+  {$if defined(RUBY19)}
+   {$define RUBY_LIB:='msvcrt-ruby191.dll'}
+  {$elseif defined(RUBY20)}
+   {$define RUBY_LIB:='msvcrt-ruby200.dll'}
+  {$endif}
+
+ {$endif}
+
 {$endif}
 
