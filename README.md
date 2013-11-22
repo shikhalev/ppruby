@@ -20,6 +20,9 @@ This is a lazarus-package for use Ruby in Pascal projects. It is solving two tas
 * Add a Ruby scripting engine in your project;
 * or write extension libraries for Ruby using Free Pascal.
 
+See also
+[the Ruby documentation](http://rubydoc.info/stdlib/core/file/README.EXT).
+
 ### Package
 
 This package contains the next parts:
