@@ -7,16 +7,16 @@ unit ppRuby;
 interface
 
 uses
-  Ruby, RubyClasses, RubyMenus, RubyControls, RubyForms, RubyLink, ValCache, 
-  LazarusPackageIntf;
+  Ruby, RbTools, RbObjects, RbClasses, RbForms, RbDialogs, RubyConnection, 
+  ppRubyDsgn, LazarusPackageIntf;
 
 implementation
 
 procedure Register;
 begin
-  RegisterUnit( 'RubyLink', @RubyLink.Register);
+  RegisterUnit('ppRubyDsgn', @ppRubyDsgn.Register);
 end;
 
 initialization
-  RegisterPackage( 'ppRuby', @Register);
+  RegisterPackage('ppRuby', @Register);
 end.

@@ -1,4 +1,4 @@
-<?xml version="1.0"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <CONFIG>
   <Package Version="4">
     <Name Value="ppRuby"/>
@@ -10,79 +10,86 @@
       </SearchPaths>
       <Parsing>
         <SyntaxOptions>
-          <CStyleOperator Value="False"/>
-          <AllowLabel Value="False"/>
+          <CStyleMacros Value="True"/>
         </SyntaxOptions>
       </Parsing>
       <CodeGeneration>
         <Optimizations>
-          <VariablesInRegisters Value="True"/>
+          <OptimizationLevel Value="2"/>
         </Optimizations>
       </CodeGeneration>
-      <Linking>
-        <Debugging>
-          <UseExternalDbgSyms Value="True"/>
-        </Debugging>
-      </Linking>
       <Other>
-        <Verbosity>
-          <ShowHintsForUnusedUnitsInMainSrc Value="True"/>
-        </Verbosity>
-        <WriteFPCLogo Value="False"/>
         <CompilerMessages>
           <MsgFileName Value=""/>
         </CompilerMessages>
         <CompilerPath Value="$(CompPath)"/>
       </Other>
     </CompilerOptions>
-    <Description Value="Ruby API interface for FPC"/>
-    <License Value="GNU LGPL"/>
-    <Version Minor="10" Release="2"/>
-    <Files Count="8">
+    <Description Value="Binding for Ruby."/>
+    <License Value="GNU GPL v3+"/>
+    <Version Major="1"/>
+    <Files Count="13">
       <Item1>
-        <Filename Value="ruby.pas"/>
-        <UnitName Value="Ruby"/>
+        <Filename Value="rbdynintf.inc"/>
+        <Type Value="Include"/>
       </Item1>
       <Item2>
-        <Filename Value="rubyclasses.pas"/>
-        <UnitName Value="RubyClasses"/>
+        <Filename Value="rbdefs.inc"/>
+        <Type Value="Include"/>
       </Item2>
       <Item3>
-        <Filename Value="rubymenus.pas"/>
-        <UnitName Value="RubyMenus"/>
+        <Filename Value="rbdynimpl.inc"/>
+        <Type Value="Include"/>
       </Item3>
       <Item4>
-        <Filename Value="rubycontrols.pas"/>
-        <UnitName Value="RubyControls"/>
+        <Filename Value="rbopts.inc"/>
+        <Type Value="Include"/>
       </Item4>
       <Item5>
-        <Filename Value="rubyforms.pas"/>
-        <UnitName Value="RubyForms"/>
+        <Filename Value="rbstatintf.inc"/>
+        <Type Value="Include"/>
       </Item5>
       <Item6>
-        <Filename Value="rubylink.pas"/>
-        <HasRegisterProc Value="True"/>
-        <UnitName Value="RubyLink"/>
+        <Filename Value="ruby.pas"/>
+        <UnitName Value="Ruby"/>
       </Item6>
       <Item7>
-        <Filename Value="rubyapi.pas"/>
-        <AddToUsesPkgSection Value="False"/>
-        <UnitName Value="RubyAPI"/>
+        <Filename Value="rbtools.pas"/>
+        <UnitName Value="RbTools"/>
       </Item7>
       <Item8>
-        <Filename Value="valcache.pas"/>
-        <UnitName Value="valcache"/>
+        <Filename Value="rbobjects.pas"/>
+        <UnitName Value="RbObjects"/>
       </Item8>
+      <Item9>
+        <Filename Value="rbclasses.pas"/>
+        <UnitName Value="RbClasses"/>
+      </Item9>
+      <Item10>
+        <Filename Value="rbforms.pas"/>
+        <UnitName Value="RbForms"/>
+      </Item10>
+      <Item11>
+        <Filename Value="rbdialogs.pas"/>
+        <UnitName Value="RbDialogs"/>
+      </Item11>
+      <Item12>
+        <Filename Value="rubyconnection.pas"/>
+        <UnitName Value="RubyConnection"/>
+      </Item12>
+      <Item13>
+        <Filename Value="pprubydsgn.pas"/>
+        <HasRegisterProc Value="True"/>
+        <UnitName Value="ppRubyDsgn"/>
+      </Item13>
     </Files>
     <Type Value="RunAndDesignTime"/>
     <RequiredPkgs Count="2">
       <Item1>
-        <PackageName Value="LCL"/>
-        <MinVersion Major="1" Valid="True"/>
+        <PackageName Value="LCLBase"/>
       </Item1>
       <Item2>
         <PackageName Value="FCL"/>
-        <MinVersion Major="1" Valid="True"/>
       </Item2>
     </RequiredPkgs>
     <UsageOptions>
