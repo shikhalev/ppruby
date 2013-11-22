@@ -1,12 +1,12 @@
 # ppRuby
 
-<img src="https://raw.github.com/shikhalev/ppruby/new/img/logo.png" align="right">
+<img src="https://raw.github.com/shikhalev/ppruby/master/img/logo.png" align="right">
 
 **Ruby binding for Free Pascal and Lazarus**
 
 **Author:** [Ivan Shikhalev](https://github.com/shikhalev).
 
-**License:** [GNU GPL](http://www.gnu.org/copyleft/gpl.html).
+**License:** [GNU GPL v3+](http://www.gnu.org/copyleft/gpl.html).
 
 **Homepage:** [this](https://github.com/shikhalev/ppruby), welcome
 to [Wiki](https://github.com/shikhalev/ppruby/wiki)
