@@ -144,6 +144,21 @@ $form.each do |cmp|
 end
 ```
 
+Подключив же еще и модуль `RbForms` получим «общую точку доступа» — 
+`Pascal::Forms.application`. Тогда перебор форм приложения может 
+выглядеть так:
+
+```Ruby
+# метод application объявлен как module_function,
+# чтобы не писать каждый раз имя модуля, подмешаем
+# его в глобальный объект
+extend Pascal::Forms
+
+application.each do |form|
+  form.caption = 'Form: #{form.name}'
+end
+```
+
 ### Исключения и контекст
 
 ## Справочная информация
