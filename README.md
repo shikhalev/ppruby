@@ -61,7 +61,8 @@ It's not fully tested but must work in Windows, Linux and Mac OS X under
 
 * Writing documentation.
 * Ruby 2.1 compatibility.
-
+* IDE integration.
+* Ruby SynHighlighter(?)
 
 
 
