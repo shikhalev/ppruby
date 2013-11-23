@@ -2,7 +2,7 @@
 
 <img src="https://raw.github.com/shikhalev/ppruby/master/img/logo.png" align="right">
 
-Пакет `ppRuby` предоставляет доступ к Ruby API для языка Free Pascal.
+Пакет `ppRuby` предоставляет доступ к [Ruby API][api] для языка Free Pascal.
 Использовать его можно для двух основных задач:
 * Написание библиотек расширения для Ruby;
 * Встраивание Ruby в программы на Free Pascal / Lazarus в качестве скриптового
@@ -44,3 +44,7 @@
 ## Модуль `Ruby`
 
 ## `RbTools` и `RbObjects`
+
+## Ссылки
+
+[api] http://rubydoc.info/stdlib/core/file/README.EXT
