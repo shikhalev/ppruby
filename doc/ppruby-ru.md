@@ -45,6 +45,4 @@
 
 ## `RbTools` и `RbObjects`
 
-## Ссылки
-
 [api]: http://rubydoc.info/stdlib/core/file/README.EXT
