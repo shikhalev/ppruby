@@ -155,7 +155,7 @@ end
 extend Pascal::Forms
 
 application.each do |form|
-  form.caption = 'Form: #{form.name}'
+  form.caption = "Form: #{form.name}"
 end
 ```
 
