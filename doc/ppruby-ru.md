@@ -47,4 +47,4 @@
 
 ## Ссылки
 
-[api] http://rubydoc.info/stdlib/core/file/README.EXT
+[api]: http://rubydoc.info/stdlib/core/file/README.EXT
