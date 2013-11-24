@@ -348,4 +348,69 @@ function pp_ruby_active : Boolean; inline;
 
 ### `RbTools` и `RbObjects`
 
+Эти два модуля — ядро пакета, ради которого все и затевалось.
+
+#### Модуль `RbTools`
+
+Во-первых, здесь определены специальные обертки контекстов для исключений,
+о которых я не устаю напоминать.
+```Pascal
+type
+  TWrapper = procedure is nested;
+
+procedure pp_protect (wrapper : TWrapper);
+procedure pp_try (wrapper : TWrapper);
+```
+Первая заключает переданный ей код в `rb_protect()` и генерирует 
+pascal-исключение в случае чего. Вторая, соотственно, в `try...except...end`
+и генерирует ruby-исключение посредством `rb_raise()`. Реализация
+через вложенно-процедурный тип параметра позволяет не заморачиваться
+с разными прототипами реальных функций.
+
+Далее — набор стандартных преобразований для использования в pascal-контексте:
+```Pascal
+function Int2Val  (const x : PtrInt       ) : VALUE;
+function UInt2Val (const x : PtrUInt      ) : VALUE;
+function Bool2Val (const x : Boolean      ) : VALUE;
+function Dbl2Val  (const x : Double       ) : VALUE;
+function Str2Val  (const x : UTF8String   ) : VALUE;
+function UStr2Val (const x : UnicodeString) : VALUE;
+function Str2Sym  (const x : UTF8String   ) : VALUE;
+function UStr2Sym (const x : UnicodeString) : VALUE;
+function Val2Int  (v : VALUE) : PtrInt;
+function Val2UInt (v : VALUE) : PtrUInt;
+function Val2Bool (v : VALUE) : Boolean;
+function Val2Dbl  (v : VALUE) : Double;
+function Val2Str  (v : VALUE) : UTF8String;
+function Val2UStr (v : VALUE) : UnicodeString;
+function Sym2Str  (v : VALUE) : UTF8String;
+function Sym2UStr (v : VALUE) : UnicodeString;
+
+function Str2ID (const x : UTF8String) : ID;
+function UStr2ID (const x : UnicodeString) : ID;
+function ID2Str (id : ID) : UTF8String;
+function ID2UStr (id : ID) : UnicodeString;
+```
+
+... и аналогично для Ruby-контекста:
+```Pascal
+function IV (x : PtrInt ) : VALUE; inline;
+function UV (x : PtrUInt) : VALUE; inline;
+function BV (x : Boolean) : VALUE; inline;
+function DV (x : Double ) : VALUE; inline;
+function SV (x : PChar)   : VALUE; inline;
+function SY (x : PChar)   : VALUE; inline;
+function VI (x : VALUE) : PtrInt;  inline;
+function VU (x : VALUE) : PtrUInt; inline;
+function VB (x : VALUE) : Boolean; inline;
+function VD (x : VALUE) : Double;  inline;
+function VP (x : VALUE) : PChar;   inline;
+function YP (x : VALUE) : PChar;   inline;
+function SD (x : PChar) : ID; inline;
+function DP (x : ID) : PChar; inline;
+```
+С учетом `inline` это практически набор синонимов для функций API.
+
+
+
 [api]: http://rubydoc.info/stdlib/core/file/README.EXT
