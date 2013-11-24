@@ -76,18 +76,18 @@ function NIL_P (obj : VALUE) : Boolean; inline;
   Result := obj = Qnil;
  end;
 
-function BUILTIN_TYPE (obj : VALUE) : ruby_value_type; inline; deprecated 'For internal use';
+function BUILTIN_TYPE (obj : VALUE) : ruby_value_type; inline;
  begin
   Result := ruby_value_type(Integer(PRBasic(obj)^.flags.value and
                                                               PtrUInt(T_MASK)));
  end;
 
-function ID2SYM (id : ID) : VALUE; inline; deprecated 'For internal use';
+function ID2SYM (id : ID) : VALUE; inline;
  begin
   Result.value := (PtrUInt(id) shl SPECIAL_SHIFT) or SYMBOL_FLAG;
  end;
 
-function SYM2ID (sym : VALUE) : ID; inline; deprecated 'For internal use';
+function SYM2ID (sym : VALUE) : ID; inline;
  begin
   Result.id := sym.value shr SPECIAL_SHIFT;
  end;
