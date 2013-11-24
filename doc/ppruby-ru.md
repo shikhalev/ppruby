@@ -406,11 +406,37 @@ function VB (x : VALUE) : Boolean; inline;
 function VD (x : VALUE) : Double;  inline;
 function VP (x : VALUE) : PChar;   inline;
 function YP (x : VALUE) : PChar;   inline;
+
 function SD (x : PChar) : ID; inline;
 function DP (x : ID) : PChar; inline;
 ```
 С учетом `inline` это практически набор синонимов для функций API.
 
+Ряд полезных оберток над API для pascal-контекста:
+```Pascal
+function pp_inspect (v : VALUE) : UTF8String;
+function pp_eval (const code : UTF8String) : VALUE;
+function pp_call (obj : VALUE; const method : UTF8String;
+                          const args : array of VALUE) : VALUE;
+function pp_send (obj : VALUE; const method : UTF8String;
+                          const args : array of VALUE) : VALUE;
+function pp_to_s (obj : VALUE) : UTF8String;
+```
+`pp_call()` может вызывать только public-методы, тогда как `pp_send()` —
+любые.
+
+И три коротких вспомогательных для ruby-контекста:
+```Pascal
+function C (obj : VALUE; method : PChar; const args : array of VALUE) : VALUE;
+function S (v : VALUE) : PChar; inline;
+function XS (v : VALUE) : PChar; inline;
+```
+Тут, чувствую, не обойтись без пояснений:
+* `C()` — это аналог `pp_send()`, хотя сокращение от «call», конечно.
+* `S()` — это аналог `pp_inspect()`, а
+* `XS()` — `pp_to_s()`.
+Понять это нельзя, запомнить сложно, но всегда можно заглянуть в реализацию,
+на то и открытость.
 
 
 [api]: http://rubydoc.info/stdlib/core/file/README.EXT
