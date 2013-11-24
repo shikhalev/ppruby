@@ -14,6 +14,8 @@ and [Issue tracker](https://github.com/shikhalev/ppruby/issues).
 
 **Version:** 1.0 public beta.
 
+**Documentation:** [only in Russian](https://github.com/shikhalev/ppruby/blob/master/doc/ppruby-ru.md), sorry...
+
 ## Overview
 
 This is a lazarus-package for use Ruby in Pascal projects. It is solving two task:
