@@ -46,7 +46,6 @@ type
   RbInfo = record
     check_flonum : Boolean;
   end;
-  pp_load_hook = procedure (lib : THandle);
 
 const
   Rb19 : RbInfo = ( check_flonum : False );
