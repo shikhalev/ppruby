@@ -612,3 +612,9 @@ procedure pp_reg_class_hook (cls : TClass; hook : pp_class_hook);
 
 
 [api]: http://rubydoc.info/stdlib/core/file/README.EXT
+
+---
+
+<a href="http://www.liveinternet.ru/click">
+<img src="http://counter.yadro.ru/hit?t14.10" align="right">
+</a>
