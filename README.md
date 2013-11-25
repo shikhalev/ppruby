@@ -66,8 +66,3 @@ It's not fully tested but must work in Windows, Linux and Mac OS X under
 * IDE integration.
 * Ruby SynHighlighter(?)
 
----
-
-<a href="http://www.liveinternet.ru/click">
-<img src="http://counter.yadro.ru/hit?t14.10" align="right">
-</a>
