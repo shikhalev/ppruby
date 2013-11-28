@@ -23,5 +23,10 @@ properties.
     This subdir will be expanded in future.
   * files `aboutform.{lfm,pas}`, `demo.{ico,lpi,lpr}`, 
     `mainform.{lfm,pas}` — the source files of demo-app.
+* The directory `doc` and `doc/*.md` files — this documentation.
+* The directory `img` and `img/logo.*` files — the logo of project.
+* The directory `src` — the source of package.
+  * `rbopts.inc` — include file with compiler directives. It is
+    included in all units of package.
 
 
