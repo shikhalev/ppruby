@@ -1,6 +1,8 @@
 # The ppRuby package
 
-The ppRuby package provides access to Ruby API for Free Pascal. 
+<img src="https://raw.github.com/shikhalev/ppruby/master/img/logo.png" align="right">
+
+The `ppRuby` package provides access to Ruby API for Free Pascal. 
 It is possible to use for two main tasks:
 
 * Writing binary extensions for Ruby;
