@@ -39,5 +39,14 @@ properties.
     * `rbdynimpl.inc` — implementation for dynamic loading;
     * `rbmacroimpl.inc` — implementation of inline-functions;
     * `rbdyninit.inc` — initialization of dynamic loading subsystem.
-
+  * `rbtools.pas` — base utilities unit.
+  * `rbobjects.pas` — objects conversion routines.
+  * `rbclasses.pas`, `rbdialogs.pas`, `rbforms.pas` — define public
+    methods for standard classes (uncomplete).
+  * `rubyconnection.pas` — contains non-visual LCL-component 
+    `TRubyConnection` for manage the connection to Ruby API 
+    in design-time.
+    * `rubyconnection_icon.lrs` — icon for `TRubyConnection`.
+  * `pprubydsgn.pas` — registration components in IDE.
+  * `ppruby.lpk` and `ppruby.pas` — package source.
 
