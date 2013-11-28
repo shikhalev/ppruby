@@ -28,5 +28,16 @@ properties.
 * The directory `src` — the source of package.
   * `rbopts.inc` — include file with compiler directives. It is
     included in all units of package.
+  * `rbdefs.inc` — include file with conditional defines.
+  * `ruby.pas` — Ruby API declarations and some small routines
+    needed for dynamic library loading. Some parts is exctracted 
+    in separate files:
+    * `rbtypes.inc` — API types;
+    * `rbdynintf.inc` — dynamic API interface;
+    * `rbstatintf.inc` — static API interface;
+    * `rbmacrointf.inc` — interface for inline-functions;
+    * `rbdynimpl.inc` — implementation for dynamic loading;
+    * `rbmacroimpl.inc` — implementation of inline-functions;
+    * `rbdyninit.inc` — initialization of dynamic loading subsystem.
 
 
