@@ -99,7 +99,48 @@ Specific things for FPC and `ppRuby` are follow:
 
 ### Embedded scripting
 
+This package is designed for maximal simplification of addition
+Ruby as scripting engine to Lazarus projects. It is enough to
+set a global variable with some object and than call the script
+evaluation. As example, to enumerate components of a form we can:
 
+```Pascal
+uses
+  ..., RbTools, RbObjects, RbClasses;
+
+...
+rb_gv_set('form', Obj2Val(frmMain));
+pp_eval(script);
+```
+where `script` contains something like:
+
+```Ruby
+$form.each do |cmp|
+  if cmp.respond_to? :caption
+    cmp.caption = cmp.name
+  end
+end
+```
+
+When we use the `RbForms` unit, we have the “common access point” —
+`Pascal::Forms.application`. Enumeration of forms can be this:
+
+```Ruby
+# the ‘application’ method is defined as ‘module_function’
+# we can mixin the module for reduce writing
+extend Pascal::Forms
+
+application.each do |form|
+ form.caption = "Form: #{form.name}"
+end
+```
+
+Also the output handling is possible throught setting the global
+variable `$stdout` (and, may be, `$stderr`) with special value
+converted from interface `IOutput` defined in `RbObject`. The 
+`TRubyConnection` implements this interface and redirect output
+in selected component. With same substitution we can use in scripts
+usual `puts`, `p` or `printf` methods.
 
 
 
