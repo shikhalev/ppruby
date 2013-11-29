@@ -14,7 +14,7 @@ units from package which provide some utils for ease and object
 conversion technic with automatic translation of `published` 
 properties.
 
-## Intro
+## Preamble
 
 ### Files
 
@@ -49,4 +49,31 @@ properties.
     * `rubyconnection_icon.lrs` — icon for `TRubyConnection`.
   * `pprubydsgn.pas` — registration components in IDE.
   * `ppruby.lpk` and `ppruby.pas` — package source.
+
+### Conditional defines
+
+* `RUBY_STATIC` — static mode. Use early binding in compile-time.
+  In this mode also the next defines have meaning:
+  * `RUBY19`, `RUBY20` and (in a nearest future) `RUBY21` — Ruby
+    library version;
+  * `RUBY_LIB` — Ruby library name macro. This is setted automatocally
+    in dependence of version above and OS defines (`DARWIN`, `UNIX` 
+    except `DARWIN`, `WINDOWS`).
+
+    Autoname for `UNIX` correspond to Debian distribution, but it 
+    may be changed to Gentoo one by define `GENTOO`. If you use any
+    other distro with another Ruby library name, tell me please.
+    
+  The correct way to change defines above — in `rbdefs.inc` or 
+  in package settings.
+  
+* `RUBY_DYNAMIC` — dynaic mode. Use late binding at run-time.
+  Library name and version will selected as described below in
+  unit `ruby.pas` description.
+
+
+
+
+
+    
 
