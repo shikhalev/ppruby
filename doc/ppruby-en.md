@@ -67,9 +67,39 @@ properties.
   The correct way to change defines above — in `rbdefs.inc` or 
   in package settings.
   
-* `RUBY_DYNAMIC` — dynaic mode. Use late binding at run-time.
+* `RUBY_DYNAMIC` — dynamic mode. Use late binding at run-time.
   Library name and version will selected as described below in
-  unit `ruby.pas` description.
+  unit `ruby.pas` description. In this mode some API constants
+  are the variables because they have different values in different
+  Ruby versions...
+
+It is possible to use the package without any differences between
+static and dynamic modes, Ruby version and OS. Don't add unneeded
+dependencies in your utils, all diffs must be in compilation and
+initialization stages.
+
+## Usage
+
+### Writing extensions
+
+The creation of Ruby binary extensions was not a main task of
+the package. But it is possible throught API functions. For
+API description see 
+[the Ruby docs](http://rubydoc.info/stdlib/core/file/README.EXT).
+Specific things for FPC and `ppRuby` are follow:
+
+* Extensions must be compiled in static mode because in this 
+  case loading is managed by Ruby side.
+* The conversion utilites from `RbTools` and `RbObjects` are
+  applicable, but it is necessary to keep in mind than life-time
+  of objects also managed by Ruby.
+* It is very impotant to provide an absence of intersection
+  Ruby and Pascal exceptions handling (see below more detailed
+  conversation about exceptions).
+
+### Embedded scripting
+
+
 
 
 
