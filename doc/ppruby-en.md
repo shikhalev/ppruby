@@ -140,7 +140,33 @@ variable `$stdout` (and, may be, `$stderr`) with special value
 converted from interface `IOutput` defined in `RbObject`. The 
 `TRubyConnection` implements this interface and redirect output
 in selected component. With same substitution we can use in scripts
-usual `puts`, `p` or `printf` methods.
+usual `puts`, `p` or `printf` methods as demonstrated in demo project.
+
+### Exceptions and context
+
+Important. Ruby and Free Pascal use similar technics for exception
+handlings but they are fully independed. When a ruby-exception raised
+in Pascal `try...end` block it freely goes throught the scope and
+the exception-stack got corrupted. And when a pascal-exception raised
+in Ruby `rb_protect()` or same too. This situation brings to Segmentation
+fault on a next exception in most cases.
+
+To prevent we must always to know which context is currently used and
+don't mixing contexts. If a code for ruby-method may raise pascal-exception
+this must be wrapped in `try...except`, if some code in Pascal context
+may raise a ruby-exception this must be wrapped by `rb_protect()`.
+
+FPC make a implicit exception handling blocks in subroutines besides
+explicit. To stop this behavior it's used `{$implicitexceptions off}`
+in `rbopts.inc`. Unfortunately, this way may be a reason for some
+memory leaks. More comprehensive work with this problem will be done
+in neares versions of package.
+
+## Reference
+
+### The `Ruby` unit
+
+
 
 
 
