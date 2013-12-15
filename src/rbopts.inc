@@ -1,7 +1,7 @@
 {$codepage utf-8}
 {$mode ObjFPC}
 {$booleval off}
-{$implicitexceptions off}
+// {$implicitexceptions off}
 {$inline on}
 {$longstrings on}
 {$macro on}

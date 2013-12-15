@@ -17,7 +17,7 @@
       <UseVersionInfo Value="True"/>
       <AutoIncrementBuild Value="True"/>
       <MajorVersionNr Value="1"/>
-      <BuildNr Value="1"/>
+      <BuildNr Value="2"/>
       <StringTable LegalCopyright="© Ivan Shikhalev, 2010–2013" ProductVersion=""/>
     </VersionInfo>
     <BuildModes Count="1">
